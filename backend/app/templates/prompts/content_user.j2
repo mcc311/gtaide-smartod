@@ -1,0 +1,30 @@
+請幫我撰寫以下公文的內容欄位：
+
+公文類型：{{ doc_type }}
+行文方向：{{ direction }}
+行文性質：{{ '內部行文' if is_internal else '對外行文' }}
+發文機關：{{ intent.get('sender', '') }}
+受文機關：{{ intent.get('receiver', '') }}
+行文目的：{{ intent.get('purpose', '') }}
+主旨摘要：{{ intent.get('subject_brief', '') }}
+{% if intent.get('reference_doc') %}
+引述來文：{{ intent['reference_doc'] }}
+{% endif %}
+{% if intent.get('attachments') %}
+附件：{{ intent['attachments'] | join('、') }}
+{% endif %}
+
+系統已選定的用語：
+  起首語：{{ phrases.get('開頭語', '') }}
+  期望語：{{ phrases.get('期望語', '') }}
+  稱謂：{{ phrases.get('稱謂', '') }}
+  自稱：{{ phrases.get('自稱', '') }}
+  引敘語：{{ phrases.get('引敘語', '') }}
+{% if rag_examples %}
+
+以下是相似公文的範例供參考：
+{% for example in rag_examples[:3] %}
+--- 範例 {{ loop.index }} ---
+{{ example[:500] ~ '...' if example | length > 500 else example }}
+{% endfor %}
+{% endif %}

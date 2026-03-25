@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* GTAIDE Design System - Navy + Orange + Cream */
+
+  /* Navy #1B2D6B as primary */
+  --color-primary: #1B2D6B;
+  --color-primary-foreground: #FFFFFF;
+
+  /* Orange #F5922A as accent/CTA */
+  --color-accent: #F5922A;
+  --color-accent-foreground: #FFFFFF;
+
+  /* Cream background */
+  --color-background: #F5F1EC;
+  --color-foreground: #222222;
+
+  /* Cards on white */
+  --color-card: #FFFFFF;
+  --color-card-foreground: #222222;
+
+  /* Popover */
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #222222;
+
+  /* Secondary */
+  --color-secondary: #F5F1EC;
+  --color-secondary-foreground: #1B2D6B;
+
+  /* Muted */
+  --color-muted: #F0EDE8;
+  --color-muted-foreground: #666666;
+
+  /* Destructive */
+  --color-destructive: #D5705D;
+  --color-destructive-foreground: #FFFFFF;
+
+  /* Borders - warm gray */
+  --color-border: #E1E1E1;
+  --color-input: #E1E1E1;
+  --color-ring: #1B2D6B;
+
+  /* Generous radius per design guide */
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.75rem;    /* 12px */
+  --radius-lg: 1rem;       /* 16px */
+  --radius-xl: 1.25rem;    /* 20px */
+}
+
+body {
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  background-color: #F5F1EC;
+  color: #222222;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

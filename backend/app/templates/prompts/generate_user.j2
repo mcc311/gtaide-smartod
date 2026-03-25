@@ -1,0 +1,31 @@
+公文類型：{{ doc_type }}
+行文方向：{{ direction }}
+發文機關：{{ intent.get('sender', '') }}
+受文者：{{ intent.get('receiver', '') }}
+受文者類型：{{ intent.get('receiver_type', '政府機關') }}
+受文者名稱：{{ intent.get('receiver_display_name', '') }}
+行文類型：{{ intent.get('action_type', '') }}
+行文目的：{{ intent.get('purpose', '') }}
+主旨摘要：{{ intent.get('subject_brief', '') }}
+引述來文：{{ intent.get('reference_doc', '') }}
+附件：{{ intent.get('attachments', []) }}
+
+系統用語：
+  起首語：{{ phrases.get('開頭語', '') }}
+  期望語：{{ phrases.get('期望語', '') }}
+  稱謂：{{ phrases.get('稱謂', '') }}
+  自稱：{{ phrases.get('自稱', '') }}
+  引敘語：{{ phrases.get('引敘語', '') }}
+
+使用者補充的資訊：
+{% for key, value in answers.items() %}
+  {{ answer_labels.get(key, key) }}：{{ value }}
+{% endfor %}
+{% if rag_examples %}
+
+以下是資料庫中類似公文的範例，請參考其措辭風格和內容結構：
+{% for ex in rag_examples[:3] %}
+--- 範例 {{ loop.index }} ---
+{{ ex }}
+{% endfor %}
+{% endif %}

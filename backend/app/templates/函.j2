@@ -1,0 +1,28 @@
+{{ sender }}　函
+
+受文者：{{ receiver }}
+發文日期：{{ doc_date | default("中華民國　　年　　月　　日") }}
+發文字號：{{ doc_number | default("") }}
+速別：{{ speed | default("普通件") }}
+{% if attachment_line -%}
+附件：{{ attachment_line }}
+{% endif %}
+
+主旨：{{ opening }}{{ subject_detail }}，{{ expectation }}。
+{% if explanation_items -%}
+說明：
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+{% if action_items -%}
+辦法：
+{% for item in action_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif %}
+
+正本：{{ recipients_main }}
+{% if recipients_cc -%}
+副本：{{ recipients_cc }}
+{% endif -%}

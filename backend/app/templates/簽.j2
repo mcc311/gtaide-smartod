@@ -1,0 +1,16 @@
+{{ sender }}
+　　　　　　　　　　　　　簽
+
+主旨：{{ opening }}{{ subject_detail }}，簽請{{ memo_expectation }}。
+{% if explanation_items -%}
+說明：
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+{% if action_items -%}
+擬辦：
+{% for item in action_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}

@@ -1,0 +1,17 @@
+{{ sender }}　開會通知單
+
+受文者：{{ receiver }}
+發文日期：{{ doc_date | default("中華民國　　年　　月　　日") }}
+發文字號：{{ doc_number | default("") }}
+
+開會事由：{{ subject_detail }}
+開會時間：{{ meeting_time | default("") }}
+開會地點：{{ meeting_place | default("") }}
+主持人：{{ meeting_chair | default("") }}
+聯絡人及電話：{{ meeting_contact | default("") }} {{ meeting_contact_phone | default("") }}
+
+出席者：{{ attendees }}
+列席者：{{ observers }}
+{% if meeting_notes -%}
+備註：{{ meeting_notes }}
+{% endif -%}

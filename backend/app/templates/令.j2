@@ -1,0 +1,12 @@
+{{ sender }}　令
+
+發文日期：{{ doc_date | default("中華民國　　年　　月　　日") }}
+發文字號：{{ doc_number | default("") }}
+
+主旨：{{ subject_detail }}。
+{% if explanation_items -%}
+說明：
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}

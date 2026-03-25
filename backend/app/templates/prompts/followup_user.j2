@@ -1,0 +1,12 @@
+使用者的需求描述：
+{{ user_input }}
+
+{% if rag_examples %}
+以下是資料庫中類似公文的範例，可參考其內容結構來判斷還需要哪些資訊：
+{% for ex in rag_examples %}
+--- 範例 {{ loop.index }} ---
+{{ ex }}
+{% endfor %}
+{% endif %}
+
+請根據這個需求，提出需要使用者補充的問題。

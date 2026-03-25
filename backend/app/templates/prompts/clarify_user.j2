@@ -1,0 +1,19 @@
+公文類型：{{ doc_type }}
+行文方向：{{ direction }}
+發文機關：{{ intent.get('sender', '') }}
+受文者：{{ intent.get('receiver', '') }}
+受文者類型：{{ intent.get('receiver_type', '政府機關') }}
+受文者名稱：{{ intent.get('receiver_display_name', '') }}
+行文類型：{{ intent.get('action_type', '') }}
+行文目的：{{ intent.get('purpose', '') }}
+主旨摘要：{{ intent.get('subject_brief', '') }}
+引述來文：{{ intent.get('reference_doc', '') }}
+附件：{{ intent.get('attachments', []) }}
+{% if rag_examples %}
+
+以下是資料庫中類似公文的範例，可參考其內容結構來判斷還需要哪些資訊：
+{% for ex in rag_examples[:3] %}
+--- 範例 {{ loop.index }} ---
+{{ ex }}
+{% endfor %}
+{% endif %}

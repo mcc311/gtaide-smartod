@@ -1,0 +1,302 @@
+import { useState, useEffect } from "react"
+import Stepper from "@/components/Stepper"
+import Step1Input from "@/components/Step1Input"
+import Step2Intent from "@/components/Step2Intent"
+import Step3Clarify from "@/components/Step2Clarify"
+import Step4Content from "@/components/Step3Content"
+import Step5Preview from "@/components/Step4Preview"
+import type {
+  IntentResult,
+  PhraseResult,
+  GenerateRequest,
+  DocType,
+  OrganNode,
+  ParsedIntentResponse,
+  GeneratedContentResponse,
+  ReceiverType,
+  ActionType,
+} from "@/types"
+
+function isoToday(): string {
+  const now = new Date()
+  return now.toISOString().slice(0, 10) // YYYY-MM-DD for date input
+}
+
+const defaultIntent: IntentResult = {
+  sender: "",
+  receiver: "",
+  receiver_type: "政府機關",
+  is_internal: false,
+  action_type: "新案",
+  purpose: "",
+  subject_brief: "",
+  reference_doc: undefined,
+  attachments: [],
+  formality: "正式",
+  sender_level: 0,
+  receiver_level: 0,
+  sender_parent: "",
+  receiver_parent: "",
+  receiver_display_name: "",
+}
+
+const defaultForm: GenerateRequest = {
+  intent: defaultIntent,
+  subject_detail: "",
+  explanation_items: [""],
+  action_items: [""],
+  recipients_main: [],
+  recipients_cc: [],
+  doc_date: isoToday(),
+  doc_number: "",
+  speed: "普通件",
+  attachments_text: "",
+}
+
+function inferDocType(
+  intent: IntentResult,
+  phraseResult: PhraseResult | null
+): DocType | null {
+  if (intent.action_type === "會議通知") return "開會通知單"
+  if (intent.action_type === "公布法令") return "令"
+  if (intent.action_type === "報告") return "簽"
+  if (intent.is_internal && !intent.receiver) return "簽"
+  if (phraseResult) {
+    if (phraseResult.direction === "平行文") return "書函"
+  }
+  if (intent.sender && intent.receiver) return "函"
+  return null
+}
+
+const STEPS = [
+  { label: "AI 分析", icon: "1" },
+  { label: "確認意圖", icon: "2" },
+  { label: "補充資訊", icon: "3" },
+  { label: "編輯內容", icon: "4" },
+  { label: "預覽輸出", icon: "5" },
+]
+
+export default function App() {
+  const [currentStep, setCurrentStep] = useState(1)
+  const [intent, setIntent] = useState<IntentResult>(defaultIntent)
+  const [phraseResult, setPhraseResult] = useState<PhraseResult | null>(null)
+  const [form, setForm] = useState<GenerateRequest>(defaultForm)
+  const [organTree, setOrganTree] = useState<OrganNode[]>([])
+  const [docTypeOverride, setDocTypeOverride] = useState<DocType | null>(null)
+
+  useEffect(() => {
+    fetch("/api/organs")
+      .then((r) => r.json())
+      .then((data: OrganNode[]) => setOrganTree(data))
+      .catch(() => {})
+  }, [])
+
+  const docType = docTypeOverride ?? inferDocType(intent, phraseResult)
+
+  const handleIntentChange = (newIntent: IntentResult) => {
+    setIntent(newIntent)
+    setForm((prev) => ({ ...prev, intent: newIntent }))
+  }
+
+  const handleFormChange = (newForm: GenerateRequest) => {
+    setForm(newForm)
+  }
+
+  const handleDocTypeOverride = (dt: DocType) => {
+    setDocTypeOverride(dt)
+  }
+
+  const applyParsedIntent = (result: ParsedIntentResponse) => {
+    const newIntent: IntentResult = {
+      sender: result.sender,
+      receiver: result.receiver,
+      receiver_type: (result.receiver_type as ReceiverType) || "政府機關",
+      is_internal: result.is_internal,
+      action_type: (result.action_type as ActionType) || "新案",
+      purpose: result.purpose,
+      subject_brief: result.subject_brief,
+      reference_doc: result.reference_doc || undefined,
+      attachments: result.attachments ?? [],
+      formality: result.formality || "正式",
+      sender_level: 0,
+      receiver_level: 0,
+      sender_parent: "",
+      receiver_parent: "",
+      receiver_display_name: result.receiver_display_name || "",
+    }
+    setIntent(newIntent)
+    setForm((prev) => ({ ...prev, intent: newIntent }))
+    if (result.doc_type) {
+      setDocTypeOverride(result.doc_type)
+    }
+  }
+
+  // Step 1: AI parse → go to confirm
+  const handleParsed = (result: ParsedIntentResponse) => {
+    applyParsedIntent(result)
+    setCurrentStep(2)
+  }
+
+  const handleSkipToManual = () => {
+    setCurrentStep(2)
+  }
+
+  // Step 2: Confirm intent → go to clarify
+  const handleGoToClarify = () => {
+    setCurrentStep(3)
+  }
+
+  const handleManualContent = () => {
+    setCurrentStep(4)
+  }
+
+  // Step 3: Clarification complete
+  const handleClarifyComplete = (content: GeneratedContentResponse) => {
+    setForm((prev) => ({
+      ...prev,
+      subject_detail: content.subject_detail || prev.subject_detail,
+      explanation_items:
+        content.explanation_items.length > 0
+          ? content.explanation_items
+          : prev.explanation_items,
+      action_items:
+        content.action_items.length > 0
+          ? content.action_items
+          : prev.action_items,
+    }))
+    setCurrentStep(4)
+  }
+
+  const handleClarifySkip = () => {
+    setCurrentStep(4)
+  }
+
+  // Step 4: Content editing
+  const handlePreview = () => {
+    setCurrentStep(5)
+  }
+
+  // Step 5: Preview
+  const handleBackToEdit = () => {
+    setCurrentStep(4)
+  }
+
+  const handleRestart = () => {
+    setIntent(defaultIntent)
+    setPhraseResult(null)
+    setForm({ ...defaultForm, doc_date: isoToday() })
+    setDocTypeOverride(null)
+    setCurrentStep(1)
+  }
+
+  // Build intent dict for clarify API
+  const intentDict = {
+    sender: intent.sender,
+    receiver: intent.receiver,
+    receiver_type: intent.receiver_type,
+    action_type: intent.action_type,
+    purpose: intent.purpose,
+    subject_brief: intent.subject_brief,
+    reference_doc: intent.reference_doc ?? "",
+    attachments: intent.attachments,
+    receiver_display_name: intent.receiver_display_name,
+  }
+
+  const phrasesDict: Record<string, string> = phraseResult?.phrases
+    ? Object.fromEntries(
+        Object.entries(phraseResult.phrases).map(([k, v]) => [k, String(v)])
+      )
+    : {}
+
+  return (
+    <div className="min-h-screen bg-[#F5F1EC] flex flex-col">
+      <header className="border-b border-[#E1E1E1] bg-[#F5F1EC] sticky top-0 z-50">
+        <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
+            <div className="h-5 w-px bg-[#E1E1E1]" />
+            <span className="text-sm font-medium text-[#1B2D6B]">SmartOD</span>
+          </div>
+          {docType && (
+            <div className="text-sm text-[#666]">
+              文別：<span className="font-medium text-[#1B2D6B]">{docType}</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <div className="max-w-2xl mx-auto px-6 py-6">
+        <Stepper currentStep={currentStep} steps={STEPS} />
+      </div>
+
+      <main className="max-w-2xl mx-auto px-6 pb-12 flex-1">
+        {currentStep === 1 && (
+          <Step1Input onParsed={handleParsed} onSkip={handleSkipToManual} />
+        )}
+
+        {currentStep === 2 && (
+          <Step2Intent
+            intent={intent}
+            onIntentChange={handleIntentChange}
+            phraseResult={phraseResult}
+            onPhraseResultChange={setPhraseResult}
+            organTree={organTree}
+            docType={docType}
+            onDocTypeOverride={handleDocTypeOverride}
+            onGenerate={handleGoToClarify}
+            onManual={handleManualContent}
+          />
+        )}
+
+        {currentStep === 3 && (
+          <Step3Clarify
+            intent={intentDict}
+            phrases={phrasesDict}
+            docType={docType ?? "函"}
+            direction={phraseResult?.direction ?? "平行文"}
+            onComplete={handleClarifyComplete}
+            onSkip={handleClarifySkip}
+            onBack={() => setCurrentStep(2)}
+          />
+        )}
+
+        {currentStep === 4 && (
+          <Step4Content
+            docType={docType}
+            form={form}
+            onFormChange={handleFormChange}
+            onPreview={handlePreview}
+            onBack={() => setCurrentStep(3)}
+          />
+        )}
+
+        {currentStep === 5 && (
+          <Step5Preview
+            intent={intent}
+            form={form}
+            onBackToEdit={handleBackToEdit}
+            onRestart={handleRestart}
+          />
+        )}
+      </main>
+
+      <footer className="border-t border-[#E1E1E1] bg-[#F5F1EC] mt-auto py-10">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
+            <div>
+              <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Powered by</p>
+              <img src="/taide_logo.png" alt="TAIDE" className="h-10 object-contain" />
+            </div>
+            <div>
+              <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Supported by</p>
+              <div className="flex items-center gap-8">
+                <img src="/nstc_logo.png" alt="國科會 NSTC" className="h-10 object-contain" />
+                <img src="/niar_logo.png" alt="國研院 NARLabs" className="h-10 object-contain" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}

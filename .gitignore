@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+backend/.env
+
+# Data (too large for git)
+gtaide_data/
+
+# Embedding cache
+*.npy
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+/tmp/

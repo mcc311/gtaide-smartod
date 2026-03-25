@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="zh">
+	
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<!-- artCss_2025/images -->
+	<!-- slider -->
+	<head>
+		<meta charSet="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<link rel="stylesheet" href="/artCss_2025/css/layout-0916.css" data-precedence="next"/>
+		<link rel="preload" href="https://www.googletagmanager.com/gtag/js?id=G-PYNQDHHXCT" as="script"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+		<meta http-equiv="Content-Language" content="zh-tw"/>
+		<meta name="format-detection" content="telephone=no"/>
+		<link rel="apple-touch-icon" href="/artCss_2025/favicon/apple-touch-icon-1.png" sizes="152x152"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/artCss_2025/favicon/favicon-32x32-1.png"/>
+		<link rel="icon" type="image/png" sizes="16x16" href="/artCss_2025/favicon/favicon-16x16-1.png"/>
+		<link rel="mask-icon" href="/artCss_2025/favicon/safari-pinned-tab-1.svg" color="#5bbad5"/>
+		<meta name="msapplication-TileColor" content="#f5f1ec"/>
+		<link rel="stylesheet" href="/artCss_2025/css/all.min.html"/> <!-- 這什麼 -->
+		
+		<title>TAIDE - 推動臺灣可信任生成式AI發展計畫</title>
+		<meta name="description" content="深入了解TAIDE計畫的背後策略、目標和里程碑。臺灣如何透過生成式AI技術，開創新的科技未來。"/>
+		<link rel="manifest" href="/artCss_2025/favicon/site.webmanifest"/>	<!-- 這什麼 -->
+		<meta property="og:title" content="TAIDE"/>
+		<meta property="og:description" content="深入了解TAIDE計畫的背後策略、目標和里程碑。臺灣如何透過生成式AI技術，開創新的科技未來。"/>
+		<meta property="og:url" content="https://taide.tw"/>
+		<meta property="og:site_name" content="TAIDE"/>
+		<meta property="og:locale" content="zh-TW"/>
+		<meta property="og:image" content="https://taide.tw/index/ogimg.png"/>
+		<meta property="og:type" content="website"/>
+		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:title" content="TAIDE"/>
+		<meta name="twitter:description" content="深入了解TAIDE計畫的背後策略、目標和里程碑。臺灣如何透過生成式AI技術，開創新的科技未來。"/>
+		<meta name="twitter:image" content="https://taide.tw/index/ogimg.png"/>
+		<link rel="icon" href="/artCss_2025/favicon/favicon.ico"/>
+		<link rel="apple-touch-icon" href="/artCss_2025/favicon/apple-touch-icon-1.png" sizes="152x152"/>
+		<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+		
+		<!-- 以下3訓練資料 -->
+		<link rel="stylesheet" href="/artCss_2025/css/layout-0916.css" data-precedence="next"/>
+		<link rel="stylesheet" href="/artCss_2025/css/slider.css" data-precedence="next"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"
+							      integrity="sha512-yHknP1/AwR+yx26cB1y0cjvQUMvEa2PFzt1c9LlS4pRQ5NOTZFWbhBig+X9G9eYW/8m0/4OXNx8pxJ6z57x0dw=="
+							      crossorigin="anonymous"/>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+		      integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+		      crossorigin="anonymous"
+		    ></script>
+		
+		<!--  tag滑動的js
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js" integrity="sha512-XtmMtDEcNz2j7ekrtHvOVR4iwwaD6o/FUJe6+Zq+HgcCsk3kj4uSQQR8weQ2QVj1o0Pk6PwYLohm206ZzNfubg==" crossorigin="anonymous"></script>
+		-->
+		<script type="text/javascript" src="/artCss_2025/js/menu.js"></script>
+		
+		
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYNQDHHXCT"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+		
+		  gtag('config', 'G-PYNQDHHXCT');
+		</script>
+		<meta charset="UTF-8">
+	</head>
+	
+	<body>
+		<section class="wrapper">
+			<div>
+	  <h4 class="menu" id="MENU"></h4>
+	  <div id="SUBMENU">
+	    <ul id="sidebar">
+	    	<!-- <li class="btnSubNav "><a style="cursor:pointer">研發團隊</a></li> -->
+	      <li class=""><a href="/public/teamList">研發團隊</a></li>
+	      <li class=""><a href="/public/resourcesList">學習資源</a></li>
+	      <li class=""><a href="/public/showcaseList">成果展現</a></li>
+	      <li class=""><a href="/public/latest-updates">最新動態</a></li>
+	      <li class=""><a href="/public/training-data">訓練資料</a></li>
+	      <li class="btnDownload"><a href="/public/download-model">TAIDE模型</a></li>
+	      <li class="language">
+	      	<a href="/" class="active">中文</a>
+	      	<a href="/en" rel="noopener noreferrer" target="_blank">EN</a>
+	      </li>
+	    </ul>
+	  </div>
+	  
+	  <header class="header">
+	    <div class="header__body">
+	      <div class="logo">
+	      	<a href="/"><img alt="" src="/artCss_2025/images/logo.png"/></a>
+	      </div>
+	      <!--  <div class="menuBtn mobile"><a>≡</a></div> -->
+	      <ul class="navigation">
+	      <li class="nobg"><img src="/artCss_2025/images/nav_bar-1.png"></li>
+	      <li><a href="/public/teamList" id="menu_1">研發團隊</a></li> <!-- /public/teamList?type=0 -->
+	      <li><a href="/public/resourcesList" id="menu_2">學習資源</a></li>
+	      <li><a href="/public/showcaseList" id="menu_3">成果展現</a></li>
+	      <li><a href="/public/latest-updates" id="menu_4">最新動態</a></li>
+	      <li><a href="/public/training-data" id="menu_5">訓練資料</a></li>
+	      <li class="nobg"><img src="/artCss_2025/images/nav_bar-3.png"></li>
+	      <li class="btnDownload" id="menu_6">
+	      	<a href="/public/download-model" >TAIDE模型</a>
+	      </li>
+	      <li class="language"><a href="/" class="click">中文</a></li>
+	      <li class="language"><a href="/en">EN</a></li>
+	      </ul>
+	    </div>
+	  </header>
+	</div>
+			
+			<body>
+	<!-- 
+	.planList .planSwiper .swiper-slide.slide1 {
+	background-color: #6c6635
+}
+.planList .planSwiper .swiper-slide.slide2 {
+	background-color: #ca824d
+}
+.planList .planSwiper .swiper-slide.slide3 {
+	background-color: #6254a8
+}
+.planList .planSwiper .swiper-slide.slide4 {
+	background-color: #419f83
+}
+.planList .planSwiper .swiper-slide.slide5 {
+	background-color: #d5705d
+}
+	 -->
+	<main class="main" itemType="https://schema.org/Organization">
+		<!-- mp4影片 -->
+	    <article class="bannerUnit">
+	      <div class="bannerUnit__body">
+	        <div class="bannerUnit__wrap">
+	          <div class="bannerUnit__left">
+	            <video width="320" height="240" autoplay loop muted="" playsinline="">
+	              <source src="/artCss_2025/video/banner.mp4" type="video/mp4">
+	            </video>
+	          </div>
+	        </div>
+	      </div>
+	    </article>
+	    
+	    <!-- 重點研發與活動歷程，自己後台的資料，呈現前4筆 -->
+	     <article class="courseUnit">
+	      <div class="courseUnit__body">
+	        <h2>重點研發與活動歷程</h2>
+	        <div class="courseUnit__list">
+	          
+	          	
+	          		<div class="courseUnit__item" style="background-color:#f5f1ec">
+			            <div class="date">
+			            	<span class="year">115</span>
+			            	<span class="month">
+			            		02
+			            		<u>/</u>
+			            		13
+			            	</span>
+			            </div>
+			            <div class="con">
+			              <h3>Gemma-3-TAIDE-12b-Chat-2602釋出</h3>
+			              <p>於TAIDE官網與TAIDE huggingface釋出Gemma-3-TAIDE-12b-Chat-2602模型，相較於前期釋出的Gemma 3 TAIDE 12b Chat，增加導入中期訓練（midtraining）技術，透過高品質臺灣資料提升對台灣文化、地理、歷史及社會現象的理解，並修正翻譯腔，使其更符合台灣使用者的日常用語與專業術語習慣。
+</p>
+			            </div>
+			      	</div>
+	          	
+	          
+	          	
+	          		<div class="courseUnit__item" style="background-color:transparent">
+			            <div class="date">
+			            	<span class="year">114</span>
+			            	<span class="month">
+			            		08
+			            		<u>/</u>
+			            		22
+			            	</span>
+			            </div>
+			            <div class="con">
+			              <h3>Gemma-3-TAIDE-12b-Chat釋出</h3>
+			              <p>於TAIDE官網與TAIDE huggingface釋出Gemma-3-TAIDE-12b-Chat模型，相較於前期釋出的Llama3.1-TAIDE-LX-8B-Chat，以Gemma-3-12b模型的進行訓練，並強化辦公室常用任務與多輪問答對話能力，適合聊天對話後任務協助的使用情境。</p>
+			            </div>
+			      	</div>
+	          	
+	          
+	          	
+	          		<div class="courseUnit__item" style="background-color:#f5f1ec">
+			            <div class="date">
+			            	<span class="year">114</span>
+			            	<span class="month">
+			            		02
+			            		<u>/</u>
+			            		11
+			            	</span>
+			            </div>
+			            <div class="con">
+			              <h3>Llama3.1-TAIDE-LX-8B-Chat釋出</h3>
+			              <p>於TAIDE官網與TAIDE huggingface釋出Llama3.1-TAIDE-LX-8B-Chat模型，相較於前期釋出的Llama3-TAIDE-LX-8B-Chat-Alpha1，加強對於長文處理的能力與正體中文的解碼速度，以及模型的上下文長度(Context Length)由8K增加至131K。</p>
+			            </div>
+			      	</div>
+	          	
+	          
+	          	
+	          		<div class="courseUnit__item" style="background-color:transparent">
+			            <div class="date">
+			            	<span class="year">113</span>
+			            	<span class="month">
+			            		08
+			            		<u>/</u>
+			            		01
+			            	</span>
+			            </div>
+			            <div class="con">
+			              <h3>公部門應用說明會</h3>
+			              <p>結合專家演講及實體工作坊，讓參與者現場體驗TAIDE並進行應用發想，期望未來將其融入現有工作場域，提升工作效率與創新能力。</p>
+			            </div>
+			      	</div>
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          	
+	          
+	          
+	          
+	          	<div class="expand-section">
+		            <button class="toggle-btn" onclick="this.style.display='none';"><span>更多歷程</span><img src="/artCss_2025/images/btn_nextArrow.svg"/></button>
+		            <div class="expand-content">
+		            	 
+                    		
+						 
+                    		
+						 
+                    		
+						 
+                    		
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:#f5f1ec">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		07
+						            		<u>/</u>
+						            		18
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>公私部門女性人才交流研習工作坊</h3>
+			              				<p>邀請公部門分享TAIDE應用落地，包含交通部中央氣象署、經濟部水利規劃署與科技辦公室等單位，期望透過生成式AI技術的導入，提升公部門行政效率與優化數據應用，促進智慧治理與創新發展。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:transparent">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		05
+						            		<u>/</u>
+						            		10
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>TAIDE計畫持續精進</h3>
+			              				<p>TAIDE接續計畫啟動，將透過資料平台、模型鑄造與應用服務推廣，持續蒐集多元資料、增加多模態的模型訓練，並進行教育、醫療和法律等應用之發展與示範，持續加值模型價值。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:#f5f1ec">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		05
+						            		<u>/</u>
+						            		03
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>TAIDE成果發表會</h3>
+			              				<p>TAIDE計畫歷經一年，開發出基於Llama2的可商用TAIDE LX-7B模型、可學研用的TAIDE LX-13B模型，以及可商用的Llama 3-TAIDE-LX-8B-Chat-Alpha1等三種版本，特舉辦成果發表會，並邀請合作夥伴展示各種TAIDE應用成果。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:transparent">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		04
+						            		<u>/</u>
+						            		29
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>Llama3-TAIDE-LX-8B釋出</h3>
+			              				<p>113/4/19 Meta 公布 Llama3，TAIDE團隊僅花四天時間完成模型之訓練及經過基本驗測，並循程序獲得國科會同意後於公開釋出以Llama3為基底的Llama 3-TAIDE-LX-8B-Chat-Alpha1模型搶先版。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:#f5f1ec">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		04
+						            		<u>/</u>
+						            		15
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>TAIDE-LX-7B釋出</h3>
+			              				<p>於TAIDE官網與TAIDE huggingface釋出TAIDE-LX-7B模型，其強項在協助自動摘要、寫信、寫文章、中翻英、英翻中等辦公室日常任務。訓練模型所使用的文本資料係經由TAIDE團隊與政府單位和民間出版社洽商，合法取得授權之資料。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:transparent">
+						            <div class="date">
+						            	<span class="year">113</span>
+						            	<span class="month">
+						            		02
+						            		<u>/</u>
+						            		02
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>人人都是AI導師合作宣傳活動</h3>
+			              				<p>與社團法人臺灣跨界共創協會合作，讓教師透過資料平台上傳資料與應用工作坊，期望未來結合教學進行擴散，成為結合教育應用推廣的基礎。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:#f5f1ec">
+						            <div class="date">
+						            	<span class="year">112</span>
+						            	<span class="month">
+						            		10
+						            		<u>/</u>
+						            		30
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>TAIDE公部門應用工作坊</h3>
+			              				<p>結合專家演講及實體工作坊，邀請中央部會了解生成式AI之技術特點與應用情境，及導入TAIDE需做什麼準備、發想應用可能性與嘗試提案。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:transparent">
+						            <div class="date">
+						            	<span class="year">112</span>
+						            	<span class="month">
+						            		08
+						            		<u>/</u>
+						            		18
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>參與LLM產學技術交流會</h3>
+			              				<p>TAIDE 團隊在國立陽明交通大學舉辦的LLM 產學技術交流會與外界交流，參與技術攤位展示，介紹有關TAIDE發展和應用的主題。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:#f5f1ec">
+						            <div class="date">
+						            	<span class="year">112</span>
+						            	<span class="month">
+						            		06
+						            		<u>/</u>
+						            		14
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>第一次成果展現</h3>
+			              				<p>以Meta Llama2為基底，加入繁中語料進行模型訓練，召開「TAIDE計畫第一階段成果說明記者會」，對外說明計畫架構與方向，並展示TAIDE 7B模型。</p>
+						            </div>
+						      	</div>
+					         
+						 
+                    		
+					          	<div class="courseUnit__item" style="background-color:transparent">
+						            <div class="date">
+						            	<span class="year">112</span>
+						            	<span class="month">
+						            		04
+						            		<u>/</u>
+						            		27
+						            	</span>
+						            </div>
+						            <div class="con">
+						            	<h3>TAIDE啟動</h3>
+			              				<p>國科會正式啟動可信任生成式AI發展先期計畫(TAIDE)。</p>
+						            </div>
+						      	</div>
+					         
+						
+		            </div>
+		      	</div>
+	          
+	        </div>
+	      </div>
+	    </article>
+	    
+	    
+	    
+	    <!-- 重點研發與活動歷程(靜態資料)
+	    <article class="courseUnit">
+	      <div class="courseUnit__body">
+	        <h2>重點研發與活動歷程</h2>
+	        <div class="courseUnit__list">
+	          <div class="courseUnit__item" style="background-color:#f5f1ec">
+	            <div class="date"><span class="year">114</span><span class="month">8<u>/</u>22</span></div>
+	            <div class="con">
+	              <h3>Gemma-3-TAIDE-12b-Chat</h3>
+	              <p>於TAIDE官網與TAIDE huggingface釋出Gemma-3-TAIDE-12b-Chat模型，相較於前期釋出的Llama3.1-TAIDE-LX-8B-Chat，以Gemma-3-12b模型的進行訓練，並強化辦公室常用任務與多輪問答對話能力，適合聊天對話後任務協助的使用情境。</p>
+	            </div>
+	          </div>
+	          <div class="courseUnit__item" style="background-color:transparent">
+	            <div class="date"><span class="year">114</span><span class="month">2<u>/</u>11</span></div>
+	            <div class="con">
+	              <h3>Llama3.1-TAIDE-LX-8B-Chat釋出</h3>
+	              <p>於TAIDE官網與TAIDE huggingface釋出Llama3.1-TAIDE-LX-8B-Chat模型，相較於前期釋出的Llama3-TAIDE-LX-8B-Chat-Alpha1，加強對於長文處理的能力與正體中文的解碼速度，以及模型的上下文長度(Context Length)由8K增加至131K。</p>
+	            </div>
+	          </div>
+	          <div class="courseUnit__item" style="background-color:#f5f1ec">
+	            <div class="date"><span class="year">113</span><span class="month">8<u>/</u>01</span></div>
+	            <div class="con">
+	              <h3>公部門應用說明會</h3>
+	              <p>結合專家演講及實體工作坊，讓參與者現場體驗TAIDE並進行應用發想，期望未來將其融入現有工作場域，提升工作效率與創新能力。</p>
+	            </div>
+	          </div>
+	          <div class="courseUnit__item" style="background-color:transparent">
+	            <div class="date"><span class="year">113</span><span class="month">7<u>/</u>18</span></div>
+	            <div class="con">
+	              <h3>公私部門女性人才交流研習工作坊</h3>
+	              <p>邀請公部門分享TAIDE應用落地，包含交通部中央氣象署、經濟部水利規劃署與科技辦公室等單位，期望透過生成式AI技術的導入，提升公部門行政效率與優化數據應用，促進智慧治理與創新發展。</p>
+	            </div>
+	          </div>
+	          
+	          更多歷程，一開始是隱藏的 
+	          
+	          <div class="expand-section">
+	            <button class="toggle-btn" onclick="this.style.display='none';"><span>更多歷程</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></button>
+	            <div class="expand-content">
+	              <div class="courseUnit__item" style="background-color:#f5f1ec">
+	                <div class="date"><span class="year">113</span><span class="month">5<u>/</u>10</span></div>
+	                <div class="con">
+	                  <h3>TAIDE計畫持續精進</h3>
+	                  <p>TAIDE接續計畫啟動，將透過資料平台、模型鑄造與應用服務推廣，持續蒐集多元資料、增加多模態的模型訓練，並進行教育、醫療和法律等應用之發展與示範，持續加值模型價值。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:transparent">
+	                <div class="date"><span class="year">113</span><span class="month">5<u>/</u>03</span></div>
+	                <div class="con">
+	                  <h3>TAIDE成果發表會</h3>
+	                  <p>TAIDE計畫歷經一年，開發出基於Llama2的可商用TAIDE LX-7B模型、可學研用的TAIDE LX-13B模型，以及可商用的Llama 3-TAIDE-LX-8B-Chat-Alpha1等三種版本，特舉辦成果發表會，並邀請合作夥伴展示各種TAIDE應用成果。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:#f5f1ec">
+	                <div class="date"><span class="year">113</span><span class="month">4<u>/</u>29</span></div>
+	                <div class="con">
+	                  <h3>Llama3-TAIDE-LX-8B釋出</h3>
+	                  <p>113/4/19 Meta 公布 Llama3，TAIDE團隊僅花四天時間完成模型之訓練及經過基本驗測，並循程序獲得國科會同意後於公開釋出以Llama3為基底的Llama 3-TAIDE-LX-8B-Chat-Alpha1模型搶先版。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:transparent">
+	                <div class="date"><span class="year">113</span><span class="month">4<u>/</u>15</span></div>
+	                <div class="con">
+	                  <h3>TAIDE-LX-7B釋出</h3>
+	                  <p>於TAIDE官網與TAIDE huggingface釋出TAIDE-LX-7B模型，其強項在協助自動摘要、寫信、寫文章、中翻英、英翻中等辦公室日常任務。訓練模型所使用的文本資料係經由TAIDE團隊與政府單位和民間出版社洽商，合法取得授權之資料。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:#f5f1ec">
+	                <div class="date"><span class="year">113</span><span class="month">2<u>/</u>02</span></div>
+	                <div class="con">
+	                  <h3>人人都是AI導師合作宣傳活動</h3>
+	                  <p>與社團法人臺灣跨界共創協會合作，讓教師透過資料平台上傳資料與應用工作坊，期望未來結合教學進行擴散，成為結合教育應用推廣的基礎。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:transparent">
+	                <div class="date"><span class="year">112</span><span class="month">10<u>/</u>30</span></div>
+	                <div class="con">
+	                  <h3>TAIDE公部門應用工作坊</h3>
+	                  <p>結合專家演講及實體工作坊，邀請中央部會了解生成式AI之技術特點與應用情境，及導入TAIDE需做什麼準備、發想應用可能性與嘗試提案。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:#f5f1ec">
+	                <div class="date"><span class="year">112</span><span class="month">8<u>/</u>18</span></div>
+	                <div class="con">
+	                  <h3>參與LLM產學技術交流會</h3>
+	                  <p>TAIDE 團隊在國立陽明交通大學舉辦的LLM 產學技術交流會與外界交流，參與技術攤位展示，介紹有關TAIDE發展和應用的主題。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:transparent">
+	                <div class="date"><span class="year">112</span><span class="month">6<u>/</u>14</span></div>
+	                <div class="con">
+	                  <h3>第一次成果展現</h3>
+	                  <p>以Meta Llama2為基底，加入繁中語料進行模型訓練，召開「TAIDE計畫第一階段成果說明記者會」，對外說明計畫架構與方向，並展示TAIDE 7B模型。</p>
+	                </div>
+	              </div>
+	              <div class="courseUnit__item" style="background-color:#f5f1ec">
+	                <div class="date"><span class="year">112</span><span class="month">4<u>/</u>27</span></div>
+	                <div class="con">
+	                  <h3>TAIDE啟動</h3>
+	                  <p>國科會正式啟動可信任生成式AI發展先期計畫(TAIDE)。</p>
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </article>
+	    -->
+	    
+	    <!-- 歷屆模型比較表，自己後台的資料 -->
+	    <article class="comparisonUnit">
+	      <div class="comparisonUnit__body">
+	        <h2>歷屆模型比較表</h2>
+	        <div class="comparisonUnit__reel">
+	          <div class="comparisonUnit__list">
+	          	
+	             	<div class="comparisonUnit__item ">
+		              <h3>Gemma-3-TAIDE-12b-Chat-2602</h3>
+		              <ul>
+		        		
+                        	<li>以高品質台灣資料進行中期訓練，加強模型對台灣特有知識的掌握</li>
+                        
+                        	<li>
+提升對台灣文化、地理、歷史及社會現象的理解</li>
+                        
+                        	<li>
+修正翻譯腔，使其更符合台灣使用者的日常用語與專業術語習慣</li>
+                        
+                        	<li>
+增強模型對於複雜指令的理解與執行能力</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>Gemma-3-TAIDE-12b-Chat</h3>
+		              <ul>
+		        		
+                        	<li>以Gemma-3-12b為基礎</li>
+                        
+                        	<li>
+強化辦公室常用任務和多輪問答對話能力</li>
+                        
+                        	<li>
+適合聊天對話或任務協助的使用情境</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>Llama-3.1-TAIDE-LX-8B-Chat</h3>
+		              <ul>
+		        		
+                        	<li>以 LLaMA3.1-8b 為基礎</li>
+                        
+                        	<li>
+提高最大內容長度 (context length)至131K</li>
+                        
+                        	<li>
+提升長文處理能力</li>
+                        
+                        	<li>
+正體中文的解碼(decoding)速度快 20%</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>Llama3-TAIDE-LX-8B-Chat-Alpha1-4bit</h3>
+		              <ul>
+		        		
+                        	<li>以Llama3-TAIDE-LX-8B-Chat-Alpha1 為基礎研發 4 bit 量化模型</li>
+                        
+                        	<li>
+不顯著降低精度的前提下，提高模型的計算效率、減少資源需求</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>Llama3-TAIDE-LX-8B-Chat-Alpha1</h3>
+		              <ul>
+		        		
+                        	<li>以 LLaMA3-8b 為基礎</li>
+                        
+                        	<li>
+META於2024年4月19日公開釋出Llama3系列模型</li>
+                        
+                        	<li>
+提高最大內容長度 (context length)至8K</li>
+                        
+                        	<li>
+透過基底模型強化，提升自動摘要、寫信、寫文章、中翻英、英翻中等辦公室日常任務能力</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>TAIDE-LX-7B-Chat-4bit</h3>
+		              <ul>
+		        		
+                        	<li>以 TAIDE-LX-7B-Chat 為基礎，研發 4 bit 量化模型</li>
+                        
+                        	<li>
+不顯著降低精度的前提下，提高模型的計算效率、減少資源需求</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>TAIDE-LX-7B-Chat</h3>
+		              <ul>
+		        		
+                        	<li>強化辦公室常用任務和多輪問答對話能力</li>
+                        
+                        	<li>
+適合聊天對話或任務協助的使用情境</li>
+                        
+		              </ul>
+		            </div>
+	            
+	             	<div class="comparisonUnit__item ">
+		              <h3>TAIDE-LX-7B</h3>
+		              <ul>
+		        		
+                        	<li>以 LLaMA2-7b 為基礎</li>
+                        
+                        	<li>
+額外擴充24720個中文字元、字詞，強化模型處理繁體中文的能力</li>
+                        
+                        	<li>
+嚴格把關模型的訓練資料，提升模型生成資料的可信任性和適用性</li>
+                        
+                        	<li>
+加強自動摘要、寫信、寫文章、中翻英、英翻中等辦公室常用任務</li>
+                        
+                        	<li>
+加強台灣在地文化、用語、國情等知識</li>
+                        
+                        	<li>
+具備多輪問答對話能力</li>
+                        
+		              </ul>
+		            </div>
+	            
+	          </div>
+	        </div>
+	      </div>
+	    </article>
+	    
+	    
+	    
+	    <!-- 歷屆模型比較表 (靜態資料)
+	    <article class="comparisonUnit">
+	      <div class="comparisonUnit__body">
+	        <h2>歷屆模型比較表</h2>
+	        <div class="comparisonUnit__reel">
+	          <div class="comparisonUnit__list">
+	            <div class="comparisonUnit__item ">
+	              <h3>Gemma-3-TAIDE-12b-Chat</h3>
+	              <ul>
+	                <li>以Gemma-3-12b為基礎</li>
+	                <li>強化辦公室常用任務和多輪問答對話能力</li>
+	                <li>適合聊天對話或任務協助的使用情境</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item ">
+	              <h3>Llama-3.1-TAIDE-LX-8B-Chat</h3>
+	              <ul>
+	                <li>以 LLaMA3.1-8b 為基礎</li>
+	                <li>提高最大內容長度 (context length)至131K</li>
+	                <li>提升長文處理能力</li>
+	                <li>正體中文的解碼(decoding)速度快 20%</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item ">
+	              <h3>Llama3-TAIDE-LX-8B-Chat-Alpha1-4bit</h3>
+	              <ul>
+	                <li>以Llama3-TAIDE-LX-8B-Chat-Alpha1 為基礎研發 4 bit 量化模型</li>
+	                <li>不顯著降低精度的前提下，提高模型的計算效率、減少資源需求</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item ">
+	              <h3>Llama3-TAIDE-LX-8B-Chat-Alpha1</h3>
+	              <ul>
+	                <li>以 LLaMA3-8b 為基礎</li>
+	                <li>META於2024年4月19日公開釋出Llama3系列模型</li>
+	                <li>提高最大內容長度 (context length)至8K</li>
+	                <li>透過基底模型強化，提升自動摘要、寫信、寫文章、中翻英、英翻中等辦公室日常任務能力</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item ">
+	              <h3>TAIDE-LX-7B-Chat-4bit</h3>
+	              <ul>
+	                <li>以 TAIDE-LX-7B-Chat 為基礎，研發 4 bit 量化模型</li>
+	                <li>不顯著降低精度的前提下，提高模型的計算效率、減少資源需求</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item ">
+	              <h3>TAIDE-LX-7B-Chat</h3>
+	              <ul>
+	                <li>強化辦公室常用任務和多輪問答對話能力</li>
+	                <li>適合聊天對話或任務協助的使用情境</li>
+	              </ul>
+	            </div>
+	            <div class="comparisonUnit__item last">
+	              <h3>TAIDE-LX-7B</h3>
+	              <ul>
+	                <li>以 LLaMA2-7b 為基礎</li>
+	                <li>額外擴充24720個中文字元、字詞，強化模型處理繁體中文的能力</li>
+	                <li>嚴格把關模型的訓練資料，提升模型生成資料的可信任性和適用性</li>
+	                <li>加強自動摘要、寫信、寫文章、中翻英、英翻中等辦公室常用任務</li>
+	                <li>加強台灣在地文化、用語、國情等知識</li>
+	                <li>具備多輪問答對話能力</li>
+	              </ul>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </article>
+	    -->
+	    
+	    <!--  原先 (stat.count - 1) % 5 + 1，但若資料筆數剛好是6，11，就是5的倍數+1，這樣頭尾的顏色會是一樣的。
+	    所以問了gpt，發現不管如何，都會有頭尾相同的顏色，我思考後，就是第二輪的循環，不要用到slide1，而是slide2~slide5，這樣不管幾筆就一定頭尾顏色不會相同-->
+	    <!-- TAIDE 可以做什麼，自己後台的資料。(發現3筆不會動)。以下 (stat.count - 1) % 5 + 1，是為了讓slide保持在1~5的數字，因為美工在layout-0916.css有設定底部顏色 -->
+	    <!--   -->
+	    <article class="planList">
+	      <div class="planList__hd">
+	        <h2>TAIDE 可以做什麼？</h2>
+	      </div>
+	      <div class="swiper planSwiper">
+	        <div class="swiper-wrapper">
+	        	
+	        		<div class="swiper-slide slide1">
+			            <div class="infoCon">
+			              <h3><span>自動摘要</span></h3>
+			              <div class="text">快速提取文章摘要，協助用戶快速掌握關鍵資訊，提升閱讀和理解效率。</div>
+			              <div class="icon"><img src="/myImg/show/TAIDE_EFFECT/4b1141869ab4121f019ab515f9170018"/></div>
+			            </div>
+			        </div>
+	        	
+	        		<div class="swiper-slide slide2">
+			            <div class="infoCon">
+			              <h3><span>英翻中</span></h3>
+			              <div class="text">提供英文翻譯成中文的功能，讓用戶能快速閱讀和理解英文文件。</div>
+			              <div class="icon"><img src="/myImg/show/TAIDE_EFFECT/4b1141869ab4121f019ab515a8cf0017"/></div>
+			            </div>
+			        </div>
+	        	
+	        		<div class="swiper-slide slide3">
+			            <div class="infoCon">
+			              <h3><span>中翻英</span></h3>
+			              <div class="text">提供中文翻譯成英文的功能，協助用戶輕鬆應對跨語言交流。</div>
+			              <div class="icon"><img src="/myImg/show/TAIDE_EFFECT/4b1141869ab4121f019ab515620d0016"/></div>
+			            </div>
+			        </div>
+	        	
+	        		<div class="swiper-slide slide4">
+			            <div class="infoCon">
+			              <h3><span>寫文章</span></h3>
+			              <div class="text">從主題選擇到內容編寫，讓用戶輕鬆完成各類寫作任務。</div>
+			              <div class="icon"><img src="/myImg/show/TAIDE_EFFECT/4b1141869ab4121f019ab514f15f0015"/></div>
+			            </div>
+			        </div>
+	        	
+	        		<div class="swiper-slide slide5">
+			            <div class="infoCon">
+			              <h3><span>寫信</span></h3>
+			              <div class="text">自動撰寫電子郵件內容，滿足不同情境下的溝通需求，提升業務效率。</div>
+			              <div class="icon"><img src="/myImg/show/TAIDE_EFFECT/4b1141869ab4121f019ab514a19c0014"/></div>
+			            </div>
+			        </div>
+	        	
+	        </div>
+	      </div>
+	    </article>
+	  
+	    
+	    
+	    <!-- TAIDE 可以做什麼 (靜態資料)
+	    <article class="planList">
+	      <div class="planList__hd">
+	        <h2>TAIDE 可以做什麼？</h2>
+	      </div>
+	      <div class="swiper planSwiper">
+	        <div class="swiper-wrapper">
+	          <div class="swiper-slide slide1">
+	            <div class="infoCon">
+	              <h3><span>自動摘要</span></h3>
+	              <div class="text">快速提取文章摘要，協助用戶快速掌握關鍵資訊，提升閱讀和理解效率。</div>
+	              <div class="icon"><img th:src="@{/artCss_2025/images/icon_anything_1.svg}"/></div>
+	            </div>
+	          </div>
+	          <div class="swiper-slide slide2">
+	            <div class="infoCon">
+	              <h3><span>寫信</span></h3>
+	              <div class="text">自動撰寫電子郵件內容，滿足不同情境下的溝通需求，提升業務效率。</div>
+	              <div class="icon"><img th:src="@{/artCss_2025/images/icon_anything_2.svg}"/></div>
+	            </div>
+	          </div>
+	          <div class="swiper-slide slide3">
+	            <div class="infoCon">
+	              <h3><span>寫文章</span></h3>
+	              <div class="text">從主題選擇到內容編寫，讓用戶輕鬆完成各類寫作任務。</div>
+	              <div class="icon"><img th:src="@{/artCss_2025/images/icon_anything_3.svg}"/></div>
+	            </div>
+	          </div>
+	          <div class="swiper-slide slide4">
+	            <div class="infoCon">
+	              <h3><span>中翻英</span></h3>
+	              <div class="text">提供中文翻譯成英文的功能，協助用戶輕鬆應對跨語言交流。</div>
+	              <div class="icon"><img th:src="@{/artCss_2025/images/icon_anything_4.svg}"/></div>
+	            </div>
+	          </div>
+	          <div class="swiper-slide slide5">
+	            <div class="infoCon">
+	              <h3><span>英翻中</span></h3>
+	              <div class="text">提供英文翻譯成中文的功能，讓用戶能快速閱讀和理解英文文件。</div>
+	              <div class="icon"><img th:src="@{/artCss_2025/images/icon_anything_5.svg}"/></div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </article>
+	    -->
+	    
+	    
+	    
+	    
+	      <!-- TAIDE研發團隊 (無卷軸) class="carousel-item noscroll"
+	    <article class="teamUnit">
+	      <div class="teamUnit__body">
+	        <h2>TAIDE研發團隊</h2>
+		    <div class="carousel">
+	            <div class="carousel-item noscroll">
+	              <div class="cardTeam__item odd">
+	                <h3>模型研發</h3>
+	                <div class="text">Basic Model Build Team</div> 
+	                <div class="btn"><a th:href="@{/public/teamList?type=1}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item noscroll">
+	              <div class="cardTeam__item odd">
+	                <h3>應用推廣</h3>
+	                <div class="text">Application Field Team</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=2}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item noscroll">
+	              <div class="cardTeam__item even">
+	                <h3>其他</h3>
+	                <div class="text">Others</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=3}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item noscroll">
+	              <div class="cardTeam__item even">
+	                <h3>前期參與</h3>
+	                <div class="text">Early Participation</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=4}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	        </div>
+	    </div>
+	  </article>
+	   -->
+	   
+	    
+	    <!-- TAIDE研發團隊 (有卷軸)，要開啟這有卷軸功能，要把上面無卷軸的註解掉，不然卷軸無效，有兩個卷軸衝突。技安告知'因為中間排列的CSS會有影響'
+	    <article class="teamUnit">
+	      <div class="teamUnit__body">
+	        <h2>TAIDE研發團隊(有卷軸)</h2>
+	        <div class="carousel a1">
+	          <div class="carousel-inner">
+	            <div class="carousel-item">
+	              <div class="cardTeam__item odd">
+	                <h3>模型研發</h3>
+	                <div class="text">Basic Model Build Team</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=1}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item">
+	              <div class="cardTeam__item odd">
+	                <h3>應用推廣</h3>
+	                <div class="text">Basic Model Build Team</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=2}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item">
+	              <div class="cardTeam__item even">
+	                <h3>其他</h3>
+	                <div class="text">Others</div>
+	                <div class="btn"><a  th:href="@{/public/teamList?type=3}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            <div class="carousel-item">
+	              <div class="cardTeam__item even">
+	                <h3>前期參與</h3>
+	                <div class="text">Basic Model Build Team</div>
+	                <div class="btn"><a th:href="@{/public/teamList?type=4}"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	            
+	            <div class="carousel-item">
+	              <div class="cardTeam__item even">
+	                <h3>測試</h3>
+	                <div class="text">Basic Model Build Team</div>
+	                <div class="btn"><a href="#"><span>了解更多</span><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></a></div>
+	              </div>
+	            </div>
+	          </div>
+	          <button class="carousel-control prev">&#10094;</button>
+	          <button class="carousel-control next">&#10095;</button>
+	          <div class="carousel-dots" style="visibility:hidden;"></div>
+	        </div>
+	      </div>
+	    </article>
+	    --> 
+	    
+	    
+	    <!-- TAIDE研發團隊，自己後台的資料 -->
+	    <article class="teamUnit">
+	      <div class="teamUnit__body">
+	        <h2>TAIDE研發團隊</h2>
+		    <div class="carousel">
+		    	
+		    		<div class="carousel-item noscroll">
+		              <div class="cardTeam__item odd">
+		                <h3>模型研發</h3>
+		                <div class="text">Basic Model Build Team</div>  
+		                <div class="btn">
+		                	<a href="/public/teamList_2?type=4b1141869b878361019b8d1f625a0014">
+			                	<span>了解更多</span>
+			                	<img src="/artCss_2025/images/btn_nextArrow.svg"/>
+			                </a>
+			            </div>
+		              </div>
+		            </div>
+		    	
+		    		<div class="carousel-item noscroll">
+		              <div class="cardTeam__item odd">
+		                <h3>應用推廣</h3>
+		                <div class="text">Application Field Team</div>  
+		                <div class="btn">
+		                	<a href="/public/teamList_2?type=4b1141869b878361019b8d1fc9bd0015">
+			                	<span>了解更多</span>
+			                	<img src="/artCss_2025/images/btn_nextArrow.svg"/>
+			                </a>
+			            </div>
+		              </div>
+		            </div>
+		    	
+		    		<div class="carousel-item noscroll">
+		              <div class="cardTeam__item even">
+		                <h3>其他</h3>
+		                <div class="text">Others</div>  
+		                <div class="btn">
+		                	<a href="/public/teamList_2?type=4b1141869b878361019b8d2004310016">
+			                	<span>了解更多</span>
+			                	<img src="/artCss_2025/images/btn_nextArrow.svg"/>
+			                </a>
+			            </div>
+		              </div>
+		            </div>
+		    	
+		    		<div class="carousel-item noscroll">
+		              <div class="cardTeam__item even">
+		                <h3>前期參與</h3>
+		                <div class="text">Early Participation</div>  
+		                <div class="btn">
+		                	<a href="/public/teamList_2?type=4b1141869b878361019b8d203fc10017">
+			                	<span>了解更多</span>
+			                	<img src="/artCss_2025/images/btn_nextArrow.svg"/>
+			                </a>
+			            </div>
+		              </div>
+		            </div>
+		    	
+	        </div>
+	    </div>
+	  </article>
+	    
+	    
+	    <!-- TAIDE最新動態 -->
+	    <article class="newsListUnit">
+	      <div class="newsListUnit__body">
+	        <h2>TAIDE最新動態</h2>
+	        <div class="newsListUnit__wrap">
+	          <div class="newsListUnit__item max"> 
+	            <div class="carousel a2">
+	              <!-- 動態的2則 -->
+	              <div class="carousel-inner">
+	              
+		              
+		                <div class="carousel-item active">
+		                  <div class="photo">
+		                  	<a href="/public/latest-updates_show?id=4b1141869c45c11c019c4b261966001b"></a>
+		                  	<img src="/myImg/show/ISSUE_PLAN/4b1141869c45c11c019c4b261966001b"/>
+		                    <div class="btn"><img src="/artCss_2025/images/btn_nextArrow.svg"/></div>
+		                  </div>
+		                  <div class="infoCon">
+		                    <h3>
+		                    	<a href="/public/latest-updates_show?id=4b1141869c45c11c019c4b261966001b">
+		                    		TAIDE團隊釋出Gemma-3-TAIDE-12b-Chat-2602模型，強化臺灣在地化知識與用語習慣等能力
+		                    	</a>
+		                    </h3>
+		                    <div class="date">
+		                    	<span>2026.02.13</span>
+		                    </div>
+		                    <div class="tagUnit secondary">
+		                    	
+							 	<span>TAIDE新聞</span>
+							 	
+							 	
+		                    </div>
+		                  </div>
+		                </div>
+		              
+		                <div class="carousel-item active">
+		                  <div class="photo">
+		                  	<a href="/public/latest-updates_show?id=4b11418199799101019a759cb88b3f1f"></a>
+		                  	<img src="/myImg/show/ISSUE_PLAN/4b11418199799101019a759cb88b3f1f"/>
+		                    <div class="btn"><img src="/artCss_2025/images/btn_nextArrow.svg"/></div>
+		                  </div>
+		                  <div class="infoCon">
+		                    <h3>
+		                    	<a href="/public/latest-updates_show?id=4b11418199799101019a759cb88b3f1f">
+		                    		主權AI驅動革新，百業共創智慧臺灣 TAIWAN AI RAP與TAIDE展現應用成果
+		                    	</a>
+		                    </h3>
+		                    <div class="date">
+		                    	<span>2025.11.11</span>
+		                    </div>
+		                    <div class="tagUnit secondary">
+		                    	
+							 	<span>TAIDE新聞</span>
+							 	
+							 	
+		                    </div>
+		                  </div>
+		                </div>
+		              
+	                
+	                <!--  
+	                <div class="carousel-item">
+	                  <div class="photo"><a href="#"></a><img th:src="@{/artCss_2025/images/4b114181951853cb0195268c8ee544ed.jpg}"/>
+	                    <div class="btn"><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></div>
+	                  </div>
+	                  <div class="infoCon">
+	                    <h3><a href="#">TAIDE團隊釋出Llama 3.1-TAIDE-LX-8B-Chat模型，提升長文處理擴大上下文長度至131K，以及強化臺灣文化文本資料</a></h3>
+	                    <div class="date">2025.02.11</div>
+	                    <div class="tagUnit secondary">TAIDE新聞</div>
+	                  </div>
+	                </div>
+	                -->
+	              </div>
+	              <div class="carousel-dots"></div>
+	            </div>
+	          </div>
+	          
+	          <!-- 固定的3則 -->
+	          
+	          	<div class="newsListUnit__item">
+		            <div class="photo">
+		            	<a href="/public/latest-updates_show?id=4b1141819753f54d01990eed56453135"></a>
+		            	<img src="/myImg/show/ISSUE_PLAN/4b1141819753f54d01990eed56453135"/>
+		              	<div class="btn"><img src="/artCss_2025/images/btn_nextArrow.svg"/></div>
+		            </div>
+		            <div class="infoCon">
+		              <h3>
+		              	<a href="/public/latest-updates_show?id=4b1141819753f54d01990eed56453135">
+		              		TAIDE團隊釋出Gemma-3-TAIDE-12b-Chat模型，以Gemma3-12B為基礎，並強化臺灣文化文本資料
+		              	</a>
+		              </h3>
+		              <div class="date">
+		              	  <span>2025.08.22</span>
+		              </div>
+		              <div class="tagUnit secondary">
+		              	 
+						 <span>TAIDE新聞</span>
+						 
+						 
+		              </div>
+		            </div>
+	          	</div>
+	          
+	          	<div class="newsListUnit__item">
+		            <div class="photo">
+		            	<a href="/public/latest-updates_show?id=4b114181951853cb0195268c8ee544ed"></a>
+		            	<img src="/myImg/show/ISSUE_PLAN/4b114181951853cb0195268c8ee544ed"/>
+		              	<div class="btn"><img src="/artCss_2025/images/btn_nextArrow.svg"/></div>
+		            </div>
+		            <div class="infoCon">
+		              <h3>
+		              	<a href="/public/latest-updates_show?id=4b114181951853cb0195268c8ee544ed">
+		              		TAIDE團隊釋出Llama 3.1-TAIDE-LX-8B-Chat模型，提升長文處理擴大上下文長度至131K，以及強化臺灣文化文本資料
+		              	</a>
+		              </h3>
+		              <div class="date">
+		              	  <span>2025.02.11</span>
+		              </div>
+		              <div class="tagUnit secondary">
+		              	 
+						 <span>TAIDE新聞</span>
+						 
+						 
+		              </div>
+		            </div>
+	          	</div>
+	          
+	          	<div class="newsListUnit__item">
+		            <div class="photo">
+		            	<a href="/public/latest-updates_show?id=4b1141818f1a6445018f3d4f72bc4324"></a>
+		            	<img src="/myImg/show/ISSUE_PLAN/4b1141818f1a6445018f3d4f72bc4324"/>
+		              	<div class="btn"><img src="/artCss_2025/images/btn_nextArrow.svg"/></div>
+		            </div>
+		            <div class="infoCon">
+		              <h3>
+		              	<a href="/public/latest-updates_show?id=4b1141818f1a6445018f3d4f72bc4324">
+		              		TAIDE團隊舉辦成果發表會，公私協力共同推進具臺灣特色之大型語言模型
+		              	</a>
+		              </h3>
+		              <div class="date">
+		              	  <span>2024.05.03</span>
+		              </div>
+		              <div class="tagUnit secondary">
+		              	 
+						 <span>TAIDE新聞</span>
+						 
+						 
+		              </div>
+		            </div>
+	          	</div>
+	          
+	          
+	          
+	          <!-- 
+	          <div class="newsListUnit__item">
+	            <div class="photo"><a href="#"></a><img th:src="@{/artCss_2025/images/4b1141818f1a6445018f3d4f72bc4324.jpg}"/>
+	              <div class="btn"><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></div>
+	            </div>
+	            <div class="infoCon">
+	              <h3><a href="#">TAIDE團隊舉辦成果發表會，公私協力共同推進具臺灣特色之大型語言模型</a></h3>
+	              <div class="date">2024.05.03</div>
+	              <div class="tagUnit secondary">TAIDE新聞</div>
+	            </div>
+	          </div>
+	          <div class="newsListUnit__item">
+	            <div class="photo"><a href="#"></a><img th:src="@{/artCss_2025/images/4b1141818f1a6445018f36d6b8227666.html}"/>
+	              <div class="btn"><img th:src="@{/artCss_2025/images/btn_nextArrow.svg}"/></div>
+	            </div>
+	            <div class="infoCon">
+	              <h3><a href="#">「防止中國AI文化侵略」台灣第一個繁體中文大語言模型TAIDE，能做什麼？</a></h3>
+	              <div class="date">2024.01.22</div>
+	              <div class="tagUnit secondary">TAIDE新聞</div>
+	            </div>
+	          </div>
+	          -->
+	        </div>
+	      </div>
+	    </article>
+		
+		
+		<!-- frontContact -->
+		<div>
+		<!-- 歡迎與我們聯絡 -->
+	    <article class="contactUnit home">
+	      <article class="contactUnit__body">
+	        <h2><span>有任何想法？</span><span>歡迎與我們聯絡</span></h2>
+	        <div class="btn"><a href="mailto:TAIDE@niar.org.tw"><span>Contact TAIDE</span><img src="/artCss_2025/images/btn_nextArrow.svg"/></a></div>
+	      </article>
+	    </article>
+	    <!-- 
+	    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"TAIDE推動臺灣可信任生成式AI發展計畫","additionalName":"TAIDE推動臺灣可信任生成式AI發展計畫","url":"https://taide.tw","datePublished":"2023-03-02"}</script>
+		 -->
+	</div>
+		
+		<!-- 這邊是'更多歷程'在使用(點看更多那拉高畫面)。我測試後一開始無法，後來在frontLayout.html也需要加入以下，才能正確點更多 -->
+		<!-- 20251108，發現只要加在需要用點看'更多'的html這就好，所以在frontLayout.html那我隱藏了 -->
+		<script>
+		    document.addEventListener('DOMContentLoaded', () => {
+		      document.querySelectorAll('.toggle-btn').forEach(button => {
+		        button.addEventListener('click', () => {
+		          const content = button.nextElementSibling;
+		          if (!content || !content.classList.contains('expand-content')) return;
+		          content.classList.toggle('show');
+		        });
+		      });
+		    });
+		    
+		    $(document).ready(function() {
+				//alert("【停機公告】\n為配合本中心資訊機房年度歲休作業，將於 1/23(五) PM 5:00 ~ 1/25(日) PM 10:00 暫停所有服務，如有不便，敬請見諒，謝謝。");
+			});
+		</script> 
+		<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"TAIDE推動臺灣可信任生成式AI發展計畫","additionalName":"TAIDE推動臺灣可信任生成式AI發展計畫","url":"https://taide.tw","datePublished":"2023-03-02"}</script>
+	 </main>
+</body>
+			
+			<div>
+		<footer class="footer">
+		    <article class="footer__body">
+		      <div class="logo"><a style="cursor:pointer"><img src="/artCss_2025/images/logo_w.svg"/></a></div>
+		      <div class="sitemapUnit desktop">
+		        <div class="sitemapUnit__body">
+		          <div class="sitemapUnit__item">
+		            <h3><a href="/public/teamList">研發團隊</a></h3>
+		             
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d1f625a0014">模型研發</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d1fc9bd0015">應用推廣</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d2004310016">其他</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d203fc10017">前期參與</a></p>
+		          	
+		            <!-- 
+		            <p><a th:href="@{/public/teamList_2(type=1)}">模型研發</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=2)}">應用推廣</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=3)}">其他</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=4)}">前期參與</a></p>
+		             -->
+		          </div>
+		          <div class="sitemapUnit__item">
+		            <h3><a href="/public/resourcesList">學習資源</a></h3>
+		            <h3><a href="/public/showcaseList">成果展現</a></h3>
+		            <h3><a href="/public/latest-updates">最新動態</a></h3>
+		          </div>
+		          <div class="sitemapUnit__item">
+		            <h3><a href="/public/training-data">訓練資料</a></h3>
+		            <h3><a href="/public/download-model">TAIDE模型</a></h3>
+		            <p><a href="/public/download-model">條款與許可協議</a></p>
+		          </div>
+		        </div>
+		      </div>
+		      
+		      
+		      <div class="sitemapUnit mobile">
+		        <div class="sitemapUnit__body">
+		          <div class="sitemapUnit__item">
+		            <h3><a href="/public/teamList">研發團隊</a></h3>
+		            
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d1f625a0014">模型研發</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d1fc9bd0015">應用推廣</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d2004310016">其他</a></p>
+		          	
+		            	<p><a href="/public/teamList?type=4b1141869b878361019b8d203fc10017">前期參與</a></p>
+		          	
+		            <!--  
+		            <p><a th:href="@{/public/teamList_2(type=1)}">模型研發</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=2)}">應用推廣</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=3)}">其他</a></p>
+		            <p><a th:href="@{/public/teamList_2(type=4)}">前期參與</a></p>
+		            -->
+		            <h3><a href="/public/resourcesList">學習資源</a></h3>
+		          </div>
+		          <div class="sitemapUnit__item">
+		          	<h3><a href="/public/showcaseList">成果展現</a></h3>
+		            <h3><a href="/public/latest-updates">最新動態</a></h3>
+		            <h3><a href="/public/training-data">訓練資料</a></h3>
+		            <h3><a href="/public/download-model">TAIDE模型</a></h3>
+		            <p><a href="/public/download-model">條款與許可協議</a></p>
+		          </div>
+		        </div>
+		      </div>
+		      <div class="partnerUnit">
+		        <div class="partnerUnit__item">
+		          <h3>指導單位</h3>
+		          <div>
+		            <div class="NSTC">
+		            	<a href="https://www.nstc.gov.tw/" rel="noopener noreferrer">
+		            		<img alt="國科會" src="/artCss_2025/images/logo_NSTC.png"/>
+		            	</a>
+		            </div>
+		          </div>
+		        </div>
+		        <div class="partnerUnit__item">
+		          <h3>執行單位</h3>
+		          <div>
+		          	<a href="https://www.niar.org.tw/" rel="noopener noreferrer">
+		          		<img alt="NARlabs" src="/artCss_2025/images/logo_NIAR.png"/>
+		          	</a>
+		          </div>
+		        </div>
+		      </div>
+		      <div class="copyright"><span>©財團法人國家實驗研究院 <!-- -->2025<!-- --> All Rights Reserved.</span></div>
+		    </article>
+	  	</footer>
+	</div>
+		</section>
+		 
+		<!-- 20251108，我先隱藏此，有需要點看'更多'的html，我就直接加在該頁，不然js會重複(雖然沒有錯誤)，但我若只有加這邊，這樣該頁的點更多效果沒有出現，如index.html -->
+		<!-- 
+		<script>
+		    document.addEventListener('DOMContentLoaded', () => {
+		      document.querySelectorAll('.toggle-btn').forEach(button => {
+		        button.addEventListener('click', () => {
+		          const content = button.nextElementSibling;
+		          if (!content || !content.classList.contains('expand-content')) return;
+		          content.classList.toggle('show');
+		        });
+		      });
+		    });
+		</script> 
+		 -->
+		 
+		<!-- 20251108，我先隱藏此，有需要點看'更多'的html，我就直接加在該頁，不然js會重複(雖然沒有錯誤)，但我若只有加這邊，這樣該頁的點更多效果沒有出現，如resourcesList.html -->
+		<!-- 這邊是'學習資源'在使用(點看更多那拉高畫面)。我測試後一開始無法，後來在resourcesList.html也需要加入以下，才能正確點更多
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+			  document.querySelectorAll('.toggle-btn').forEach(button => {
+			    button.addEventListener('click', () => {
+			      const content = button.nextElementSibling;
+			      if (!content || !content.classList.contains('expand-content')) return;
+			
+			      // 展開／收合內容
+			      content.classList.toggle('show');
+			      button.style.display = 'none'; // 保留你的原本設定
+			
+			      // ⭐ 通知 slick 重新計算高度（關鍵修正）
+			      $('.bookmark-content-1').slick('setPosition');
+			      $('.bookmark-content-2').slick('setPosition');
+			      $('.bookmark-content-3').slick('setPosition');
+			      $('.bookmark-content-4').slick('setPosition');
+			      $('.bookmark-content-6').slick('setPosition');
+			    });
+			  });
+			});
+  		</script>
+		 -->
+		 
+		<script src="/artCss_2025/js/slider.js"></script> 
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollTrigger/0.3.6/ScrollTrigger.min.js"></script> 
+		<!-- 引入 Swiper JS --> 
+		<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> 
+		<script>
+			<!--這邊是用在首頁的輪播(TAIDE 可以做什麼) -->
+		    const swiper = new Swiper(".planSwiper", {
+		      loop: true, // 無限循環
+		      slidesPerView: 1, // 每次顯示一張，可改成多張
+		      spaceBetween: 15,
+		      centeredSlides: true,
+		
+		      autoplay: {
+		        delay: 3000, // 每3秒自動切換
+		        disableOnInteraction: false, // 使用者手動切換後仍繼續自動播放
+		      },
+		
+		      pagination: {
+		        el: ".swiper-pagination",
+		        clickable: true,
+		      },
+		
+		      navigation: {
+		        nextEl: ".swiper-button-next",
+		        prevEl: ".swiper-button-prev",
+		      },
+		
+		      breakpoints: {
+		        768: {
+		          slidesPerView: 2,
+		        },
+		        1024: {
+		          slidesPerView: 3,
+		        },
+		      },
+		    });
+		  </script> 
+		<script src="/artCss_2025/js/carousel.js"></script>
+		<!-- model模型使用，半透明遮罩層 -->
+		<script type="text/javascript" src="/artCss_2025/js/overlay.js"></script>
+	</body>
+</html>

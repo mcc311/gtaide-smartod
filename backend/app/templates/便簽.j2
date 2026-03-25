@@ -1,0 +1,5 @@
+便簽
+
+{% for item in all_items -%}
+{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}

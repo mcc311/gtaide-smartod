@@ -1,0 +1,12 @@
+使用者的原始需求：
+{{ user_input }}
+
+{% if followup_questions and followup_answers %}
+AI 追問與使用者回答：
+{% for q in followup_questions %}
+問：{{ q }}
+答：{{ followup_answers[loop.index0] if loop.index0 < followup_answers | length else "（未回答）" }}
+{% endfor %}
+{% endif %}
+
+請從以上所有對話內容中，抽取完整的結構化公文意圖。
