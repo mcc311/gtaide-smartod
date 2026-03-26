@@ -225,7 +225,7 @@ export default function Step2Clarify({
 
       <div className="space-y-1">
           {/* Question tabs */}
-          <div className="flex gap-1 mb-4 border-b border-[#E1E1E1]">
+          <div className="flex gap-1 mb-4 border-b border-[#E1E1E1] overflow-x-auto flex-nowrap whitespace-nowrap">
             {questions.map((q, i) => (
               <button
                 key={q.field_key}
@@ -383,21 +383,21 @@ export default function Step2Clarify({
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={onBack} className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
-          返回上一步
-        </Button>
-        <div className="flex-1" />
-        <Button variant="outline" onClick={onSkip} className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
-          跳過，手動填寫
-        </Button>
+      <div className="flex flex-col sm:flex-row items-center gap-3">
         <Button
           onClick={handleGenerate}
           disabled={!allAnswered}
-          className="bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
+          className="w-full sm:w-auto bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium order-first sm:order-last"
         >
           <ChevronRight className="h-4 w-4" />
           生成公文內容
+        </Button>
+        <Button variant="outline" onClick={onSkip} className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
+          跳過，手動填寫
+        </Button>
+        <div className="hidden sm:block flex-1" />
+        <Button variant="outline" onClick={onBack} className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium sm:order-first">
+          返回上一步
         </Button>
       </div>
     </div>

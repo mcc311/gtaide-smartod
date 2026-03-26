@@ -338,7 +338,7 @@ export default function Step2Intent({
               <Separator className="bg-[#E1E1E1]" />
               <div className="space-y-3">
                 <Label className="text-[#222] font-medium text-sm">自動選用公文用語</Label>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   {Object.entries(phraseResult.phrases).map(([key, val]) => (
                     <div key={key} className="flex items-center gap-1.5">
                       <span className="text-[#666] shrink-0">{key}：</span>
@@ -364,11 +364,11 @@ export default function Step2Intent({
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
         <Button
           onClick={handleNext}
           disabled={!intent.sender || !intent.receiver}
-          className="flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
+          className="w-full sm:w-auto sm:flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
           size="lg"
         >
           <Sparkles className="h-4 w-4" />
@@ -378,7 +378,7 @@ export default function Step2Intent({
           variant="outline"
           onClick={onManual}
           size="lg"
-          className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium"
+          className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium"
         >
           <PenLine className="h-4 w-4" />
           手動填寫

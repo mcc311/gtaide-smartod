@@ -211,25 +211,25 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F1EC] flex flex-col">
       <header className="border-b border-[#E1E1E1] bg-[#F5F1EC] sticky top-0 z-50">
-        <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
-            <div className="h-5 w-px bg-[#E1E1E1]" />
-            <span className="text-sm font-medium text-[#1B2D6B]">SmartOD 智慧公文系統</span>
+            <div className="hidden sm:block h-5 w-px bg-[#E1E1E1]" />
+            <span className="hidden sm:inline text-sm font-medium text-[#1B2D6B]">SmartOD 智慧公文系統</span>
           </div>
           {docType && (
-            <div className="text-sm text-[#666]">
+            <div className="hidden sm:block text-sm text-[#666]">
               文別：<span className="font-medium text-[#1B2D6B]">{docType}</span>
             </div>
           )}
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-6">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <Stepper currentStep={currentStep} steps={STEPS} />
       </div>
 
-      <main className="max-w-2xl mx-auto px-6 pb-12 flex-1">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 pb-12 flex-1">
         {currentStep === 1 && (
           <Step1Input onParsed={handleParsed} onSkip={handleSkipToManual} />
         )}
@@ -281,7 +281,7 @@ export default function App() {
       </main>
 
       <footer className="border-t border-[#E1E1E1] bg-[#F5F1EC] mt-auto py-10">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
             <div>
               <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Powered by</p>

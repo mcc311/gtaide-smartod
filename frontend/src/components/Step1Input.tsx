@@ -65,7 +65,7 @@ export default function Step1Input({ onParsed, onSkip }: Step1InputProps) {
 
       {/* Example cards - always outside the form flow */}
       {!userInput && !loading && (
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {EXAMPLES.map((ex) => (
             <button
               key={ex.title}
@@ -102,11 +102,11 @@ export default function Step1Input({ onParsed, onSkip }: Step1InputProps) {
         )}
       </div>
 
-      <div className="flex items-center gap-3 mt-6">
+      <div className="flex flex-col sm:flex-row items-center gap-3 mt-6">
         <Button
           onClick={handleAnalyze}
           disabled={!userInput.trim() || loading}
-          className="flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full h-11 text-sm font-medium"
+          className="w-full sm:w-auto sm:flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full h-11 text-sm font-medium"
           size="lg"
         >
           {loading ? (
@@ -125,7 +125,7 @@ export default function Step1Input({ onParsed, onSkip }: Step1InputProps) {
           variant="outline"
           onClick={onSkip}
           disabled={loading}
-          className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full h-11 text-sm font-medium"
+          className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full h-11 text-sm font-medium"
           size="lg"
         >
           <PenLine className="h-4 w-4" />

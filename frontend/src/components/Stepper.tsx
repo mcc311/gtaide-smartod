@@ -7,7 +7,7 @@ interface StepperProps {
 
 export default function Stepper({ currentStep, steps }: StepperProps) {
   return (
-    <nav className="flex items-center justify-center gap-0 w-full max-w-2xl mx-auto">
+    <nav className="flex items-center justify-center gap-0 w-full max-w-2xl mx-auto px-2 sm:px-0">
       {steps.map((step, i) => {
         const stepNum = i + 1
         const isActive = stepNum === currentStep
@@ -18,7 +18,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
             <div className="flex flex-col items-center gap-1.5 min-w-0">
               <div
                 className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors
+                  w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors
                   ${isCompleted
                     ? "bg-[#1B2D6B] text-white"
                     : isActive
@@ -30,7 +30,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
                 {isCompleted ? <Check className="h-3.5 w-3.5" /> : step.icon}
               </div>
               <span
-                className={`text-[11px] whitespace-nowrap transition-colors ${
+                className={`hidden sm:inline text-[11px] whitespace-nowrap transition-colors ${
                   isActive
                     ? "text-[#F5922A] font-medium"
                     : isCompleted
@@ -43,7 +43,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
             </div>
             {i < steps.length - 1 && (
               <div
-                className={`h-0.5 flex-1 mx-2 mt-[-1.25rem] rounded-full transition-colors ${
+                className={`h-0.5 flex-1 mx-1 sm:mx-2 sm:mt-[-1.25rem] rounded-full transition-colors ${
                   stepNum < currentStep ? "bg-[#1B2D6B]" : "bg-[#E1E1E1]"
                 }`}
               />

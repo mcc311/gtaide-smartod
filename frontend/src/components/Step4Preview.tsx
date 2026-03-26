@@ -118,13 +118,13 @@ export default function Step4Preview({
 
           {!loading && result?.rendered && (
             <div
-              className="bg-white border border-[#d1d1d1] rounded-lg p-8 mx-auto"
+              className="bg-white border border-[#d1d1d1] rounded-lg p-5 sm:p-8 mx-auto"
               style={{
                 fontFamily: "'Noto Serif TC', serif",
                 maxWidth: "640px",
               }}
             >
-              <pre className="whitespace-pre-wrap text-sm leading-[1.8] tracking-[0.03em] text-[#222]">
+              <pre className="whitespace-pre-wrap text-sm sm:text-[15px] leading-[1.8] tracking-[0.03em] text-[#222]">
                 {result.rendered}
               </pre>
             </div>
@@ -166,20 +166,11 @@ export default function Step4Preview({
           </>
         )}
 
-      <div className="flex items-center gap-3 mt-6">
-        <Button variant="outline" onClick={onBackToEdit} className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
-          <ArrowLeft className="h-4 w-4" />
-          返回編輯
-        </Button>
-        <Button variant="outline" onClick={onRestart} className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
-          <RotateCcw className="h-4 w-4" />
-          重新開始
-        </Button>
-        <div className="flex-1" />
+      <div className="flex flex-col sm:flex-row items-center gap-3 mt-6">
         <Button
           onClick={handleCopy}
           disabled={!result?.rendered}
-          className="bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
+          className="w-full sm:w-auto bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium order-first sm:order-last"
         >
           {copied ? (
             <>
@@ -192,6 +183,15 @@ export default function Step4Preview({
               複製公文內容
             </>
           )}
+        </Button>
+        <div className="hidden sm:block flex-1" />
+        <Button variant="outline" onClick={onBackToEdit} className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
+          <ArrowLeft className="h-4 w-4" />
+          返回編輯
+        </Button>
+        <Button variant="outline" onClick={onRestart} className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
+          <RotateCcw className="h-4 w-4" />
+          重新開始
         </Button>
       </div>
     </div>

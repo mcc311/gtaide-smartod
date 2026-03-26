@@ -239,7 +239,7 @@ export default function Step3Content({
                   className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="meeting_contact" className="text-[#222] font-medium text-sm">聯絡人</Label>
                   <Input
@@ -318,7 +318,7 @@ export default function Step3Content({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label className="text-[#222] font-medium text-sm">速別</Label>
               <Select
@@ -349,14 +349,14 @@ export default function Step3Content({
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={onBack} size="lg" className="border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
-          <ArrowLeft className="h-4 w-4" />
-          返回上一步
-        </Button>
-        <Button onClick={onPreview} className="flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium" size="lg">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <Button onClick={onPreview} className="w-full sm:w-auto sm:flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium" size="lg">
           <Eye className="h-4 w-4" />
           預覽公文
+        </Button>
+        <Button variant="outline" onClick={onBack} size="lg" className="w-full sm:w-auto border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium">
+          <ArrowLeft className="h-4 w-4" />
+          返回上一步
         </Button>
       </div>
     </div>

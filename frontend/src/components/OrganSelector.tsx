@@ -204,7 +204,7 @@ export default function OrganSelector({
       </div>
 
       {open && organTree.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg max-h-72 overflow-hidden flex flex-col">
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg max-h-72 sm:max-h-80 overflow-hidden flex flex-col">
           {/* Breadcrumbs */}
           {path.length > 0 && !isSearching && (
             <div className="flex items-center gap-1 px-3 py-2 border-b bg-gray-50 text-xs text-muted-foreground flex-shrink-0 overflow-x-auto">
@@ -279,7 +279,7 @@ export default function OrganSelector({
                   <button
                     key={node.name}
                     type="button"
-                    className="flex items-center justify-between w-full px-3 py-2 text-sm text-left hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between w-full px-3 py-2 min-h-[44px] text-sm text-left hover:bg-gray-100 transition-colors"
                     onClick={() => {
                       onChange({
                         name: node.name,
@@ -311,7 +311,7 @@ export default function OrganSelector({
                 <button
                   key={node.name}
                   type="button"
-                  className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left transition-colors ${
+                  className={`flex items-center justify-between w-full px-3 py-2 min-h-[44px] text-sm text-left transition-colors ${
                     node.is_custom
                       ? "bg-yellow-50 hover:bg-yellow-100 text-amber-700 border-t border-yellow-100"
                       : getCategoryColor(node.name)
