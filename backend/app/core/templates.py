@@ -84,9 +84,19 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
     explanation_items = [i for i in req.explanation_items if i.strip()]
     action_items = [i for i in req.action_items if i.strip()]
 
+    # Subtype (default to empty)
+    subtype = getattr(req.intent, "subtype", "") or ""
+
+    # 陳情回函 special fields
+    receiver_name = req.intent.receiver_display_name or ""
+
+    # 函 doc type label (函 or 書函)
+    doc_type_label = "函"
+
     return {
         "sender": req.intent.sender,
         "receiver": receiver_for_doc,
+        "receiver_name": receiver_name,
         "doc_date": _to_roc_date(req.doc_date),
         "doc_number": req.doc_number,
         "speed": req.speed,
@@ -99,11 +109,16 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
         "action_items": action_items,
         "recipients_main": recipients_main,
         "recipients_cc": recipients_cc,
+        "subtype": subtype,
+        "doc_type_label": doc_type_label,
+        "signer": "",  # for 令 templates
+        "items": explanation_items,  # alias for 令/人事令
         # 便簽
         "all_items": all_items,
         # 公告
         "basis": basis,
         "announcement_items": announcement_items,
+        "contact": None,  # TODO: pass contact info for 公告
         # 開會通知單
         "meeting_time": req.meeting_time,
         "meeting_place": req.meeting_place,

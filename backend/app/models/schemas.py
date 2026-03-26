@@ -49,6 +49,7 @@ class IntentResult(BaseModel):
     receiver_type: str = "政府機關"
     is_internal: bool = False
     action_type: ActionType
+    subtype: str = ""
     purpose: str = ""
     subject_brief: str = ""
     reference_doc: Optional[str] = None

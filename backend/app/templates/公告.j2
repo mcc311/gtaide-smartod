@@ -1,15 +1,79 @@
 {{ sender }}　公告
 
 發文日期：{{ doc_date | default("中華民國　　年　　月　　日") }}
-發文字號：{{ doc_number | default("") }}
+{% if doc_number -%}
+發文字號：{{ doc_number }}
+{% endif %}
 
-主旨：{{ subject_detail }}。
+主旨：{{ subject_detail | trim_period }}。
 {% if basis -%}
-依據：{{ basis }}。
+依據：{{ basis | trim_period }}。
 {% endif -%}
+{% if subtype == "預告修法" or subtype == "徵案補助" or subtype == "一般公告" -%}
+{# === 預告修法/徵案/一般：分項公告事項 === #}
 {% if announcement_items -%}
 公告事項：
 {% for item in announcement_items -%}
 　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
 {% endfor -%}
+{% endif -%}
+
+{% elif subtype == "證照公告" -%}
+{# === 證照公告：key-value 格式 === #}
+公告事項：
+{% if announcement_items -%}
+{% for item in announcement_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}
+{% endfor -%}
+{% endif -%}
+
+{% elif subtype == "公示送達" -%}
+{# === 公示送達格式 === #}
+{% if announcement_items -%}
+公告事項：
+{% for item in announcement_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+
+{% elif subtype == "疫區公告" or subtype == "命令解散" -%}
+{# === 疫區/命令解散：同一般公告 === #}
+{% if announcement_items -%}
+公告事項：
+{% for item in announcement_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+
+{% else -%}
+{# === 預設 === #}
+{% if announcement_items -%}
+公告事項：
+{% for item in announcement_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+{% endif -%}
+
+{% if contact -%}
+
+意見陳述：
+{% if contact.unit -%}
+　（一）承辦單位：{{ contact.unit }}
+{% endif -%}
+{% if contact.address -%}
+　（二）地址：{{ contact.address }}
+{% endif -%}
+{% if contact.phone -%}
+　（三）電話：{{ contact.phone }}
+{% endif -%}
+{% if contact.fax -%}
+　（四）傳真：{{ contact.fax }}
+{% endif -%}
+{% if contact.email -%}
+　（五）電子郵件：{{ contact.email }}
+{% endif -%}
+{% if contact.person -%}
+　（六）聯絡人：{{ contact.person }}
+{% endif -%}
 {% endif -%}

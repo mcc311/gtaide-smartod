@@ -1,12 +1,61 @@
 {{ sender }}　令
 
 發文日期：{{ doc_date | default("中華民國　　年　　月　　日") }}
-發文字號：{{ doc_number | default("") }}
+{% if doc_number -%}
+發文字號：{{ doc_number }}
+{% endif %}
 
-主旨：{{ subject_detail }}。
+{% if subtype == "人事令" or subtype == "派任令" -%}
+{# === 人事令格式 === #}
+主旨：核定{{ personnel_name | default("○○○") }}1員派任如下：
+{{ personnel_name | default("○○○") }}({{ personnel_id | default("○○○○○○****") }})
+{% for item in items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
 {% if explanation_items -%}
 說明：
 {% for item in explanation_items -%}
 　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
 {% endfor -%}
+{% endif -%}
+
+{% if recipients_main -%}
+正本：{{ recipients_main | trim_period }}
+{% endif -%}
+{% if recipients_cc -%}
+副本：{{ recipients_cc | trim_period }}
+{% endif -%}
+
+{% elif subtype == "行政令" -%}
+{# === 行政令格式 === #}
+{{ subject_detail | trim_period }}。
+
+{% elif subtype == "法規修正" or subtype == "法規訂定" or subtype == "法規廢止" -%}
+{# === 法規令格式 === #}
+{% if subtype == "法規修正" -%}
+修正{{ subject_detail | trim_period }}。
+{% elif subtype == "法規訂定" -%}
+訂定{{ subject_detail | trim_period }}。
+{% elif subtype == "法規廢止" -%}
+廢止{{ subject_detail | trim_period }}。
+{% endif -%}
+{% if items -%}
+{% for item in items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+
+{% if signer -%}
+{{ signer }}
+{% endif -%}
+
+{% else -%}
+{# === 預設格式 === #}
+{{ opening }}{{ subject_detail | trim_period }}。
+{% if explanation_items -%}
+說明：
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
 {% endif -%}

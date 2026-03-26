@@ -1,7 +1,27 @@
 {{ sender }}
 　　　　　　　　　　　　　簽
 
-主旨：{{ opening }}{{ subject_detail }}，簽請{{ memo_expectation }}。
+{% if subtype == "出國簽" -%}
+{# === 出國簽格式 === #}
+主旨：{{ opening }}{{ subject_detail | trim_period }}，簽請{{ memo_expectation }}。
+說明：
+{% if explanation_items -%}
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+擬辦：
+{% if action_items -%}
+{% for item in action_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% else -%}
+　一、奉核後，出國人員依相關規定辦理差假及出國事宜。
+{% endif -%}
+
+{% else -%}
+{# === 標準簽格式 === #}
+主旨：{{ opening }}{{ subject_detail | trim_period }}，簽請{{ memo_expectation }}。
 {% if explanation_items -%}
 說明：
 {% for item in explanation_items -%}
@@ -13,4 +33,5 @@
 {% for item in action_items -%}
 　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
 {% endfor -%}
+{% endif -%}
 {% endif -%}
