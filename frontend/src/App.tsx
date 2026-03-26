@@ -38,6 +38,7 @@ const defaultIntent: IntentResult = {
   sender_parent: "",
   receiver_parent: "",
   receiver_display_name: "",
+  subtype: "",
 }
 
 const defaultForm: GenerateRequest = {
@@ -123,6 +124,7 @@ export default function App() {
       sender_parent: "",
       receiver_parent: "",
       receiver_display_name: result.receiver_display_name || "",
+      subtype: result.subtype || "",
     }
     setIntent(newIntent)
     setForm((prev) => ({ ...prev, intent: newIntent }))
@@ -254,6 +256,7 @@ export default function App() {
             phrases={phrasesDict}
             docType={docType ?? "函"}
             direction={phraseResult?.direction ?? "平行文"}
+            subtype={intent.subtype}
             onComplete={handleClarifyComplete}
             onSkip={handleClarifySkip}
             onBack={() => setCurrentStep(2)}

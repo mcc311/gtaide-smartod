@@ -30,6 +30,7 @@ interface Step2ClarifyProps {
   phrases: Record<string, string>
   docType: string
   direction: string
+  subtype: string
   onComplete: (content: { subject_detail: string; explanation_items: string[]; action_items: string[] }) => void
   onSkip: () => void
   onBack: () => void
@@ -40,6 +41,7 @@ export default function Step2Clarify({
   phrases,
   docType,
   direction,
+  subtype,
   onComplete,
   onSkip,
   onBack,
@@ -67,7 +69,7 @@ export default function Step2Clarify({
         const res = await fetch("/api/clarify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ intent, phrases, doc_type: docType, direction }),
+          body: JSON.stringify({ intent, phrases, doc_type: docType, direction, subtype }),
         })
         if (cancelled) return
         if (!res.ok) throw new Error(`API error ${res.status}`)
@@ -140,6 +142,7 @@ export default function Step2Clarify({
           phrases,
           doc_type: docType,
           direction,
+          subtype,
           answers: {
             ...answers,
             ...(additionalNotes.trim() ? { additional_notes: additionalNotes.trim() } : {}),

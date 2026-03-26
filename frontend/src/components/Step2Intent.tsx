@@ -16,6 +16,9 @@ import {
 import { Sparkles, PenLine } from "lucide-react"
 import OrganSelector from "@/components/OrganSelector"
 import type { OrganSelectInfo } from "@/components/OrganSelector"
+import {
+  SUBTYPE_OPTIONS,
+} from "@/types"
 import type {
   ActionType,
   DocType,
@@ -78,6 +81,7 @@ export default function Step2Intent({
             receiver_level: current.receiver_level,
             sender_parent: current.sender_parent,
             receiver_parent: current.receiver_parent,
+            subtype: current.subtype,
           }),
         })
         if (res.ok) {
@@ -263,6 +267,28 @@ export default function Step2Intent({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Subtype selector */}
+          {docType && (SUBTYPE_OPTIONS[docType] || []).length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-[#222] font-medium text-sm">子類型</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {(SUBTYPE_OPTIONS[docType] || []).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => updateField("subtype", st)}
+                    className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
+                      intent.subtype === st
+                        ? "bg-[#F5922A]/10 text-[#F5922A] border-[#F5922A]/30"
+                        : "bg-white text-[#666] border-[#E1E1E1] hover:border-[#F5922A]/30"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Direction and internal/external badges */}
           <div className="flex items-center gap-3 flex-wrap">

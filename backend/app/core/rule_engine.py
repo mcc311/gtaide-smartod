@@ -80,8 +80,20 @@ _NEED_REPLY_ACTIONS = {
 }
 
 
-def select_opening(action_type: ActionType) -> str:
-    """Select the opening phrase based on action type."""
+def select_opening(action_type: ActionType, subtype: str = "") -> str:
+    """Select the opening phrase based on action type and subtype."""
+    # Subtype-specific overrides
+    if subtype:
+        subtype_openings = {
+            "復函": "復",
+            "轉函": "函轉",
+            "陳情回函": "",
+            "法規修正": "修正",
+            "法規訂定": "訂定",
+            "法規廢止": "廢止",
+        }
+        if subtype in subtype_openings:
+            return subtype_openings[subtype]
     return OPENING_PHRASES.get(action_type.value, "有關")
 
 
@@ -89,8 +101,15 @@ def select_expectation(
     direction: Direction,
     action_type: ActionType,
     is_internal: bool = False,
+    subtype: str = "",
 ) -> str:
     """Pick the most appropriate expectation phrase."""
+    # Subtype-specific overrides
+    if subtype == "陳情回函":
+        return ""  # 書信體 doesn't use 期望語
+    if subtype == "出國簽":
+        return "請核示"
+
     table = INTERNAL_PHRASE_TABLE if is_internal else PHRASE_TABLE
     options = table[direction.value]["期望語"]
 
@@ -124,6 +143,7 @@ def select_phrases(
     action_type: ActionType,
     receiver_type: str = "政府機關",
     is_internal: bool = False,
+    subtype: str = "",
 ) -> dict:
     """Return all selected phrases with organ names filled in."""
     table = INTERNAL_PHRASE_TABLE if is_internal else PHRASE_TABLE
@@ -159,10 +179,10 @@ def select_phrases(
         "稱謂": honorific,
         "自稱": dir_table["自稱"].format(self_short=self_short),
         "引敘語": dir_table["引敘語"],
-        "期望語": select_expectation(direction, action_type, is_internal),
+        "期望語": select_expectation(direction, action_type, is_internal, subtype),
         "附送語": dir_table["附送語"][0],
         "經辦語": dir_table["經辦語"][0],
-        "開頭語": select_opening(action_type),
+        "開頭語": select_opening(action_type, subtype),
         "行文性質": "內部行文" if is_internal else "對外行文",
     }
 

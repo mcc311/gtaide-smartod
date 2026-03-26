@@ -98,6 +98,7 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     doc_type: DocType
     direction: Direction
+    subtype: str = ""
     rendered: str  # Full rendered document text
     phrases_used: dict  # Which phrases were applied
     validation_warnings: list[str] = []
@@ -139,6 +140,7 @@ class PhrasesRequest(BaseModel):
     receiver: str
     action_type: ActionType
     receiver_type: str = "政府機關"
+    subtype: str = ""
     sender_level: int = 0
     receiver_level: int = 0
     sender_parent: str = ""
@@ -148,6 +150,7 @@ class PhrasesRequest(BaseModel):
 class PhrasesResponse(BaseModel):
     direction: Direction
     is_internal: bool
+    subtype: str = ""
     phrases: dict
     opening: str
     expectation: str

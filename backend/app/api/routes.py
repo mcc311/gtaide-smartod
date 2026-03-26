@@ -90,13 +90,14 @@ def get_phrases(req: PhrasesRequest):
                               req.sender_level, req.receiver_level)
     internal = is_internal(req.sender, req.receiver,
                            req.sender_parent, req.receiver_parent)
-    phrases = select_phrases(direction, req.sender, req.receiver, req.action_type, req.receiver_type, internal)
-    opening = select_opening(req.action_type)
-    expectation = select_expectation(direction, req.action_type, internal)
+    phrases = select_phrases(direction, req.sender, req.receiver, req.action_type, req.receiver_type, internal, req.subtype)
+    opening = select_opening(req.action_type, req.subtype)
+    expectation = select_expectation(direction, req.action_type, internal, req.subtype)
 
     return PhrasesResponse(
         direction=direction,
         is_internal=internal,
+        subtype=req.subtype,
         phrases=phrases,
         opening=opening,
         expectation=expectation,
@@ -123,7 +124,8 @@ def generate_document(req: GenerateRequest):
         req.intent.action_type, internal, direction,
         req.intent.receiver_type, req.intent.formality,
     )
-    phrases = select_phrases(direction, req.intent.sender, req.intent.receiver, req.intent.action_type, req.intent.receiver_type, internal)
+    subtype = req.intent.subtype or ""
+    phrases = select_phrases(direction, req.intent.sender, req.intent.receiver, req.intent.action_type, req.intent.receiver_type, internal, subtype)
 
     rendered = render_document(doc_type, phrases, req)
 
@@ -138,6 +140,7 @@ def generate_document(req: GenerateRequest):
     return GenerateResponse(
         doc_type=doc_type,
         direction=direction,
+        subtype=subtype,
         rendered=rendered,
         phrases_used=phrases,
         validation_warnings=warnings,
@@ -200,9 +203,10 @@ def api_retrieve(req: dict):
     """Retrieve similar documents from the NCHC corpus."""
     query = req.get("query", "")
     doc_type = req.get("doc_type", "")
+    subtype = req.get("subtype", "")
     top_k = req.get("top_k", 5)
 
-    docs = retrieve(query, doc_type=doc_type, top_k=top_k)
+    docs = retrieve(query, doc_type=doc_type, subtype=subtype, top_k=top_k)
     examples = format_examples(docs)
     return {"documents": docs, "examples": examples}
 
@@ -217,9 +221,11 @@ def api_clarify(req: dict):
     doc_type = req.get("doc_type", "函")
     direction = req.get("direction", "平行文")
 
+    subtype = req.get("subtype", intent.get("subtype", ""))
+
     # RAG: retrieve related documents
     query = f"{intent.get('purpose', '')} {intent.get('subject_brief', '')}"
-    rag_docs = retrieve(query, doc_type=doc_type, top_k=3)
+    rag_docs = retrieve(query, doc_type=doc_type, subtype=subtype, top_k=3)
     rag_examples = format_examples(rag_docs)
 
     result = ask_clarification(intent, phrases, doc_type, direction, rag_examples)
@@ -242,10 +248,12 @@ def api_generate_with_answers(req: dict):
     previous_questions = req.get("previous_questions", None)
     rag_examples = req.get("rag_examples", None)
 
+    subtype = req.get("subtype", intent.get("subtype", ""))
+
     # If no rag_examples passed from frontend, retrieve fresh
     if not rag_examples:
         query = f"{intent.get('purpose', '')} {intent.get('subject_brief', '')}"
-        rag_docs = retrieve(query, doc_type=doc_type, top_k=3)
+        rag_docs = retrieve(query, doc_type=doc_type, subtype=subtype, top_k=3)
         rag_examples = format_examples(rag_docs)
 
     result = generate_with_answers(

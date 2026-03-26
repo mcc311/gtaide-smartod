@@ -13,6 +13,7 @@ class ParsedIntent(BaseModel):
     receiver_type: str = Field(description="受文者類型：政府機關、人民、企業/公司、團體/協會、學校、公眾")
     action_type: str = Field(description="行文類型：新案、復函、轉函、檢送文件、會議通知、公布法令、人事命令、報告")
     doc_type: str = Field(description="建議公文類型：函、書函、簽、便簽、公告、令、開會通知單")
+    subtype: str = Field(default="", description="公文子類型。令：法規修正|法規訂定|法規廢止|行政令|人事令|派任令；公告：預告修法|證照公告|疫區公告|公示送達|徵案補助|命令解散|一般公告；函：檢送文件|復函|轉函|新案|通知|委辦|密等變更|陳情回函；書函：聯繫|徵詢|通報|催辦；簽：政策建議|人事簽|經費簽|法規研修|出國簽|一般簽；便簽：存查|會辦|副知|一般便簽；開會通知單：委員會議|工作會議|審查會議|一般會議")
     purpose: str = Field(description="行文目的簡述")
     subject_brief: str = Field(description="主旨摘要，50字以內")
     reference_doc: str = Field(default="", description="引述來文字號，無則留空")

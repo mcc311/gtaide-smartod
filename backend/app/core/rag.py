@@ -185,10 +185,12 @@ def _rrf_fusion(
     return sorted_indices[:top_n]
 
 
-def retrieve(query: str, doc_type: str = "", top_k: int = 5) -> list[dict]:
+def retrieve(query: str, doc_type: str = "", subtype: str = "", top_k: int = 5) -> list[dict]:
     """Hybrid retrieve: BM25 + embedding with RRF fusion.
 
     If doc_type is specified, results are filtered to only include that type.
+    If subtype is specified, documents with a matching subtype field are preferred,
+    but documents without a subtype field are kept (graceful degradation).
     Falls back to BM25-only if embeddings aren't loaded yet.
     """
     if not _loaded:
@@ -202,6 +204,19 @@ def retrieve(query: str, doc_type: str = "", top_k: int = 5) -> list[dict]:
         allowed_indices = {i for i, d in enumerate(_documents) if d.get("type", "") == doc_type}
     else:
         allowed_indices = None
+
+    # Subtype filter: exclude docs that have a different subtype value,
+    # but keep docs that don't have the subtype field at all.
+    if subtype and allowed_indices is not None:
+        allowed_indices = {
+            i for i in allowed_indices
+            if "subtype" not in _documents[i] or _documents[i].get("subtype", "") == subtype
+        }
+    elif subtype:
+        allowed_indices = {
+            i for i, d in enumerate(_documents)
+            if "subtype" not in d or d.get("subtype", "") == subtype
+        }
 
     # BM25 ranking
     bm25_results = _bm25_search(query, top_k=200)
