@@ -182,6 +182,7 @@ def _rrf_fusion(
 def retrieve(query: str, doc_type: str = "", top_k: int = 5) -> list[dict]:
     """Hybrid retrieve: BM25 + embedding with RRF fusion.
 
+    If doc_type is specified, results are filtered to only include that type.
     Falls back to BM25-only if embeddings aren't loaded yet.
     """
     if not _loaded:
@@ -190,19 +191,25 @@ def retrieve(query: str, doc_type: str = "", top_k: int = 5) -> list[dict]:
     if not _documents:
         return []
 
-    search_query = f"{doc_type} {query}" if doc_type else query
+    # Build type filter index if needed
+    if doc_type:
+        allowed_indices = {i for i, d in enumerate(_documents) if d.get("type", "") == doc_type}
+    else:
+        allowed_indices = None
 
     # BM25 ranking
-    bm25_results = _bm25_search(search_query, top_k=50)
-    bm25_ranked = [idx for idx, _ in bm25_results]
+    bm25_results = _bm25_search(query, top_k=200)
+    bm25_ranked = [idx for idx, _ in bm25_results
+                   if allowed_indices is None or idx in allowed_indices]
 
     # Embedding ranking (if available)
     if _embeddings_loaded and _embeddings is not None:
-        emb_results = _embedding_search(search_query, top_k=50)
-        emb_ranked = [idx for idx, _ in emb_results]
+        emb_results = _embedding_search(query, top_k=200)
+        emb_ranked = [idx for idx, _ in emb_results
+                      if allowed_indices is None or idx in allowed_indices]
 
         # RRF fusion
-        fused = _rrf_fusion([bm25_ranked, emb_ranked], k=60, top_n=top_k)
+        fused = _rrf_fusion([bm25_ranked[:50], emb_ranked[:50]], k=60, top_n=top_k)
     else:
         # Fallback to BM25 only
         fused = bm25_ranked[:top_k]
