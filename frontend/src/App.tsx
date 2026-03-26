@@ -290,7 +290,7 @@ export default function App() {
             <div>
               <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Supported by</p>
               <div className="flex items-center gap-8">
-                <img src="/nstc_logo.png" alt="國科會 NSTC" className="h-10 object-contain" />
+                <img src="/nstc_logo.svg" alt="國科會 NSTC" className="h-10 object-contain" />
                 <img src="/niar_logo.png" alt="國研院 NARLabs" className="h-10 object-contain" />
               </div>
             </div>

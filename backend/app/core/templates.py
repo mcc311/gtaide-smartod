@@ -63,8 +63,8 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
     recipients_main = "、".join(req.recipients_main) if req.recipients_main else receiver_for_doc
     recipients_cc = "、".join(req.recipients_cc) if req.recipients_cc else ""
 
-    # 便簽: combine all items
-    all_items = [f"本件係{req.subject_detail}案"] + list(req.explanation_items) + list(req.action_items)
+    # 便簽: combine all items (filtered)
+    all_items = [f"本件係{req.subject_detail}案"] + [i for i in req.explanation_items if i.strip()] + [i for i in req.action_items if i.strip()]
 
     # 公告
     basis = req.intent.reference_doc or ""
@@ -74,6 +74,16 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
     attendees = "、".join(req.meeting_attendees) if req.meeting_attendees else ""
     observers = "、".join(req.meeting_observers) if req.meeting_observers else ""
 
+    # Deduplicate opening from subject_detail
+    opening = phrases.get("開頭語", "")
+    subject_detail = req.subject_detail
+    if opening and subject_detail.startswith(opening):
+        subject_detail = subject_detail[len(opening):].lstrip()
+
+    # Filter out empty items
+    explanation_items = [i for i in req.explanation_items if i.strip()]
+    action_items = [i for i in req.action_items if i.strip()]
+
     return {
         "sender": req.intent.sender,
         "receiver": receiver_for_doc,
@@ -81,12 +91,12 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
         "doc_number": req.doc_number,
         "speed": req.speed,
         "attachment_line": req.attachments_text,
-        "opening": phrases.get("開頭語", ""),
-        "subject_detail": req.subject_detail,
+        "opening": opening,
+        "subject_detail": subject_detail,
         "expectation": expectation,
         "memo_expectation": memo_expectation,
-        "explanation_items": list(req.explanation_items),
-        "action_items": list(req.action_items),
+        "explanation_items": explanation_items,
+        "action_items": action_items,
         "recipients_main": recipients_main,
         "recipients_cc": recipients_cc,
         # 便簽

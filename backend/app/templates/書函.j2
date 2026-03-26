@@ -22,7 +22,7 @@
 {% endfor -%}
 {% endif %}
 
-正本：{{ recipients_main }}
+正本：{{ recipients_main | trim_period }}
 {% if recipients_cc -%}
-副本：{{ recipients_cc }}
+副本：{{ recipients_cc | trim_period }}
 {% endif -%}
