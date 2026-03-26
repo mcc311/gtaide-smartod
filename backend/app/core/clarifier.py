@@ -1,8 +1,9 @@
 """Agentic clarification: identify missing info and generate questions."""
 
 from pydantic import BaseModel, Field
-from app.core.llm import chat_structured
+from app.core.llm import chat_structured, chat_with_tools_then_structured
 from app.core import prompts
+from app.core.law_search import TOOLS as LAW_TOOLS, TOOL_HANDLERS as LAW_TOOL_HANDLERS
 
 
 class QuestionOption(BaseModel):
@@ -80,7 +81,15 @@ def generate_with_answers(
         )},
     ]
 
-    result = chat_structured(messages, ContentWithAnswers, temperature=0.3)
+    # Use tool calling to let LLM look up law citations
+    result = chat_with_tools_then_structured(
+        messages=messages,
+        tools=LAW_TOOLS,
+        tool_handlers=LAW_TOOL_HANDLERS,
+        response_model=ContentWithAnswers,
+        temperature=0.3,
+        max_rounds=5,
+    )
 
     # Clean items
     def clean(item: str) -> str:

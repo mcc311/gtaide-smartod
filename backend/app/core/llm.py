@@ -72,6 +72,55 @@ def chat_with_tools(
     return kwargs["messages"][-1].get("content", "")
 
 
+def chat_with_tools_then_structured[T: BaseModel](
+    messages: list[dict],
+    tools: list[dict],
+    tool_handlers: dict,
+    response_model: type[T],
+    temperature: float = 0.3,
+    max_rounds: int = 5,
+) -> T:
+    """Two-phase: tool calling first, then structured output.
+
+    Phase 1: LLM uses tools (search_law, get_article, etc.)
+    Phase 2: LLM produces structured JSON with the gathered info.
+    """
+    # Phase 1: Tool calling
+    tool_messages = list(messages)
+    for _ in range(max_rounds):
+        resp = _client.chat.completions.create(
+            model=MODEL,
+            messages=tool_messages,
+            temperature=temperature,
+            tools=tools,
+        )
+        msg = resp.choices[0].message
+
+        if not msg.tool_calls:
+            # No more tools needed, msg.content has the analysis
+            break
+
+        tool_messages.append(msg.model_dump())
+        for tc in msg.tool_calls:
+            fn_name = tc.function.name
+            fn_args = json.loads(tc.function.arguments)
+            handler = tool_handlers.get(fn_name)
+            result = handler(**fn_args) if handler else f"Unknown tool: {fn_name}"
+            tool_messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps(result, ensure_ascii=False) if not isinstance(result, str) else result,
+            })
+
+    # Phase 2: Structured output (no tools, just JSON)
+    tool_messages.append({
+        "role": "user",
+        "content": "根據以上資訊和工具查詢結果，請輸出最終的結構化 JSON。",
+    })
+
+    return chat_structured(tool_messages, response_model, temperature=temperature)
+
+
 def chat_structured[T: BaseModel](
     messages: list[dict],
     response_model: type[T],
