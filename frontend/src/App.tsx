@@ -215,7 +215,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
             <div className="h-5 w-px bg-[#E1E1E1]" />
-            <span className="text-sm font-medium text-[#1B2D6B]">SmartOD</span>
+            <span className="text-sm font-medium text-[#1B2D6B]">SmartOD 智慧公文系統</span>
           </div>
           {docType && (
             <div className="text-sm text-[#666]">

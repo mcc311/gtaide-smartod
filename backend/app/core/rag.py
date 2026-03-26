@@ -223,11 +223,13 @@ def retrieve(query: str, doc_type: str = "", top_k: int = 5) -> list[dict]:
     return results
 
 
-def format_examples(docs: list[dict]) -> list[str]:
-    """Format retrieved docs as text examples for LLM context. Full text, no truncation."""
+def format_examples(docs: list[dict], max_chars: int = 2000) -> list[str]:
+    """Format retrieved docs as text examples for LLM context."""
     examples = []
     for doc in docs:
         text = doc.get("text", "")
+        if len(text) > max_chars:
+            text = text[:max_chars] + "..."
         organ = doc.get("organ", "")
         doc_type = doc.get("type", "")
         header = f"[{organ}　{doc_type}]\n" if organ else ""
