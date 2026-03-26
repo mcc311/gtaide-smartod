@@ -1,0 +1,276 @@
+"""Local law database search for tool calling.
+
+Loads 全國法規資料庫 (law.moj.gov.tw) JSON data and provides
+fast keyword search for law names and article content.
+"""
+
+import json
+import logging
+import re
+from pathlib import Path
+
+import jieba
+
+logger = logging.getLogger(__name__)
+
+_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data" / "laws"
+_LAW_FILES = ["ChLaw.json", "ChOrder.json"]
+
+# In-memory index
+_laws: list[dict] = []  # {name, level, category, articles: [{no, content}]}
+_loaded = False
+
+
+def load_laws():
+    """Load law database into memory."""
+    global _laws, _loaded
+
+    if _loaded:
+        return
+
+    for filename in _LAW_FILES:
+        filepath = _DATA_DIR / filename
+        if not filepath.exists():
+            logger.warning(f"Law file not found: {filepath}")
+            continue
+
+        logger.info(f"Loading {filepath.name}...")
+        with open(filepath, encoding="utf-8-sig") as f:
+            data = json.load(f)
+
+        for law in data.get("Laws", []):
+            articles = []
+            for art in law.get("LawArticles", []):
+                no = art.get("ArticleNo", "").strip()
+                content = art.get("ArticleContent", "").strip()
+                if content:
+                    articles.append({"no": no, "content": content})
+
+            _laws.append({
+                "name": law.get("LawName", ""),
+                "level": law.get("LawLevel", ""),
+                "category": law.get("LawCategory", ""),
+                "articles": articles,
+            })
+
+        logger.info(f"  Loaded {len(data.get('Laws', []))} from {filepath.name}")
+
+    _loaded = True
+    logger.info(f"Total laws loaded: {len(_laws)}")
+
+
+def search_law(query: str, top_k: int = 5) -> list[dict]:
+    """Search laws by name keyword matching.
+
+    Returns list of {name, level, category, article_count, relevance}.
+    """
+    if not _loaded:
+        load_laws()
+
+    query_lower = query.lower()
+    query_tokens = set(jieba.cut(query))
+
+    results = []
+    for law in _laws:
+        name = law["name"]
+        name_lower = name.lower()
+
+        # Exact substring match in name
+        if query in name:
+            score = 100
+        elif query_lower in name_lower:
+            score = 90
+        else:
+            # Token overlap
+            name_tokens = set(jieba.cut(name))
+            overlap = len(query_tokens & name_tokens)
+            if overlap == 0:
+                continue
+            score = overlap * 10
+
+        results.append({
+            "name": name,
+            "level": law["level"],
+            "category": law["category"],
+            "article_count": len(law["articles"]),
+            "relevance": score,
+        })
+
+    results.sort(key=lambda x: x["relevance"], reverse=True)
+    return results[:top_k]
+
+
+def get_article(law_name: str, article_no: str = "") -> dict:
+    """Get specific article(s) from a law.
+
+    If article_no is empty, returns all articles.
+    article_no can be like "第5條", "5", "第5條第2項".
+    """
+    if not _loaded:
+        load_laws()
+
+    # Find the law
+    law = None
+    for l in _laws:
+        if l["name"] == law_name or law_name in l["name"]:
+            law = l
+            break
+
+    if not law:
+        return {"found": False, "error": f"找不到法規「{law_name}」"}
+
+    articles = law["articles"]
+
+    if not article_no:
+        # Return first 5 articles as preview
+        return {
+            "found": True,
+            "law_name": law["name"],
+            "total_articles": len(articles),
+            "articles": [
+                {"no": a["no"], "content": a["content"][:200]}
+                for a in articles[:5]
+            ],
+        }
+
+    # Normalize article number: "第5條" → "5", "第10條" → "10"
+    normalized = re.sub(r"第\s*(\d+)\s*條.*", r"\1", article_no)
+    if not normalized.isdigit():
+        normalized = re.sub(r"\D", "", article_no)
+
+    # Search for matching article
+    for a in articles:
+        a_num = re.sub(r"\D", "", a["no"])
+        if a_num == normalized or a["no"].strip() == article_no.strip():
+            return {
+                "found": True,
+                "law_name": law["name"],
+                "article_no": a["no"],
+                "content": a["content"],
+            }
+
+    return {
+        "found": False,
+        "law_name": law["name"],
+        "error": f"找不到第{article_no}條",
+        "available_articles": [a["no"] for a in articles[:10]],
+    }
+
+
+def verify_citation(citation: str) -> dict:
+    """Verify if a law citation like "勞工保險條例第20條" is valid.
+
+    Returns {valid, law_name, article_no, content} or {valid: False, suggestion}.
+    """
+    if not _loaded:
+        load_laws()
+
+    # Parse citation: "○○法第○條"
+    match = re.match(r"(.+?)(第\s*\d+\s*條.*)?$", citation)
+    if not match:
+        return {"valid": False, "error": "無法解析引用格式"}
+
+    law_name_part = match.group(1).strip()
+    article_part = match.group(2) or ""
+    article_part = article_part.strip()
+
+    # Find matching law
+    candidates = search_law(law_name_part, top_k=3)
+    if not candidates:
+        return {"valid": False, "error": f"找不到法規「{law_name_part}」"}
+
+    best = candidates[0]
+    if best["relevance"] < 50:
+        return {
+            "valid": False,
+            "error": f"找不到完全匹配的法規",
+            "suggestions": [c["name"] for c in candidates],
+        }
+
+    if article_part:
+        result = get_article(best["name"], article_part)
+        if result.get("found"):
+            return {
+                "valid": True,
+                "law_name": result["law_name"],
+                "article_no": result.get("article_no", article_part),
+                "content": result.get("content", "")[:300],
+            }
+        else:
+            return {
+                "valid": False,
+                "law_name": best["name"],
+                "error": f"法規存在但{result.get('error', '條文不存在')}",
+            }
+    else:
+        return {
+            "valid": True,
+            "law_name": best["name"],
+            "article_count": best["article_count"],
+        }
+
+
+# Tool definitions for LLM
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_law",
+            "description": "搜尋台灣法規資料庫。輸入關鍵字，回傳相關法規名稱和基本資訊。引用法條前務必先用此工具確認法規名稱正確。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "法規關鍵字，例如「勞工保險」「職業安全衛生」「行政程序」"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_article",
+            "description": "取得特定法規的條文內容。先用 search_law 找到正確法規名稱後，再用此工具查詢具體條文。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "law_name": {
+                        "type": "string",
+                        "description": "法規全名，例如「勞工保險條例」"
+                    },
+                    "article_no": {
+                        "type": "string",
+                        "description": "條號，例如「第20條」。留空則回傳前5條預覽。"
+                    }
+                },
+                "required": ["law_name"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "verify_citation",
+            "description": "驗證法規引用是否正確。輸入完整引用文字，回傳是否有效及條文內容。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "citation": {
+                        "type": "string",
+                        "description": "完整法規引用，例如「勞工保險條例第20條」「行政程序法第154條第1項」"
+                    }
+                },
+                "required": ["citation"]
+            }
+        }
+    },
+]
+
+TOOL_HANDLERS = {
+    "search_law": lambda **kwargs: json.dumps(search_law(**kwargs), ensure_ascii=False),
+    "get_article": lambda **kwargs: json.dumps(get_article(**kwargs), ensure_ascii=False),
+    "verify_citation": lambda **kwargs: json.dumps(verify_citation(**kwargs), ensure_ascii=False),
+}
