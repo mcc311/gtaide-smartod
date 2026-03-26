@@ -17,7 +17,11 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data" / "datasets_from_NCHC" / "od_doc_v2.jsonl"
+_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data"
+DATA_PATHS = [
+    _DATA_DIR / "datasets_from_NCHC" / "od_doc_v2.jsonl",
+    _DATA_DIR / "gazette" / "gazette_docs.jsonl",
+]
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 EMBED_MODEL = "qwen/qwen3-embedding-8b"
@@ -70,32 +74,34 @@ def _search_text(doc: dict) -> str:
 
 
 def load_index():
-    """Load documents and build BM25 index. Called once at startup."""
+    """Load documents from all data sources and build BM25 index."""
     global _documents, _corpus_tokens, _bm25, _loaded
 
     if _loaded:
         return
 
-    if not DATA_PATH.exists():
-        logger.warning(f"NCHC data not found at {DATA_PATH}")
-        _loaded = True
-        return
-
-    logger.info(f"Loading NCHC documents from {DATA_PATH}...")
-
     docs = []
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                doc = json.loads(line)
-                text = doc.get("text", "")
-                if len(text) > 20:
-                    docs.append(doc)
-            except json.JSONDecodeError:
-                continue
+    for data_path in DATA_PATHS:
+        if not data_path.exists():
+            logger.warning(f"Data not found at {data_path}, skipping")
+            continue
+
+        logger.info(f"Loading documents from {data_path}...")
+        count = 0
+        with open(data_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    doc = json.loads(line)
+                    text = doc.get("text", "")
+                    if len(text) > 20:
+                        docs.append(doc)
+                        count += 1
+                except json.JSONDecodeError:
+                    continue
+        logger.info(f"  Loaded {count} documents from {data_path.name}")
 
     _documents = docs
     logger.info(f"Loaded {len(_documents)} documents, building BM25 index...")
@@ -120,7 +126,7 @@ def load_embeddings():
         _embeddings_loaded = True
         return
 
-    cache_path = DATA_PATH.parent / "embeddings_cache.npy"
+    cache_path = _DATA_DIR / "embeddings_cache.npy"
 
     if cache_path.exists():
         logger.info(f"Loading cached embeddings from {cache_path}")
