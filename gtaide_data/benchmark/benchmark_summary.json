@@ -1,20 +1,20 @@
 {
   "total": 55,
-  "valid": 55,
-  "errors": 0,
-  "elapsed_sec": 31.3,
-  "type_accuracy": 0.8,
-  "subtype_accuracy": 0.691,
+  "valid": 53,
+  "errors": 2,
+  "elapsed_sec": 60.4,
+  "type_accuracy": 0.774,
+  "subtype_accuracy": 0.717,
   "judge_avg_scores": {
-    "type_match": 4.0,
-    "subtype_match": 3.9,
-    "organ_match": 3.73,
-    "subject_quality": 3.37
+    "type_match": 3.89,
+    "subtype_match": 4.06,
+    "organ_match": 3.44,
+    "subject_quality": 3.44
   },
   "format_compliance": {
-    "令_verb_first": "22/24",
-    "date_roc_format": "44/55",
-    "signer_has_title": "48/55",
-    "items_no_numbering": "49/49"
+    "令_verb_first": "20/22",
+    "date_roc_format": "43/53",
+    "signer_has_title": "46/53",
+    "items_no_numbering": "47/47"
   }
 }

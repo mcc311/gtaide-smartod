@@ -114,11 +114,42 @@
 
 ---
 
-## Exp-003: (待執行)
+## Exp-003: Bool confident + 謹慎判斷 (2026-03-27)
 
-**計畫**
-- 分析 ambiguous 題的 confidence calibration（判錯時 confidence 是否也高？）
-- 進一步改善行政令/法規訂定/證照公告的區分
+**改動**
+- confidence float → confident bool（LLM 用 float 永遠給高分，改 bool 後誠實多了）
+- Prompt 強調「寧可不確定也不要猜錯」，列出必須 confident=false 的情況
+- 人事令加「編制表」「員額」關鍵字
+
+**結果**
+
+| 指標 | Exp-001 | Exp-002 | Exp-003 |
+|------|---------|---------|---------|
+| Type accuracy | 74.5% | 80.0% | 77.4% |
+| Subtype accuracy | 60.0% | 69.1% | **71.7%** |
+| Judge subtype_match | 3.39 | 3.90 | **4.06** |
+| Mismatches | 22 | 18 | 17 |
+
+**Confidence Calibration（重點改善）**
+
+| | Exp-002 (float 0-1) | Exp-003 (bool) |
+|--|---------------------|----------------|
+| 判錯 + overconfident | 10/10 (100%) | **5/12 (42%)** |
+| 判錯 + 標 not confident | 0/10 (0%) | **7/12 (58%)** |
+
+Type 判錯時，58% 會正確標 confident=false，tooltip 會跳出提醒 user。
+
+**剩餘 5 個 overconfident 錯誤**
+
+| idx | 錯誤 | LLM 理由 |
+|-----|------|---------|
+| 22 | 令→公告 | 「向公眾宣布」誤判公告 |
+| 25 | 公告→令 | 「修正規定」誤判令 |
+| 46,47,48 | 函→公告 | 「刊登公報」= 以為是公告（實際是函/檢送文件請求刊登）|
+
+**改進方向**
+- [ ] 「檢送+刊登公報」應判函/檢送文件，不是公告（3 題都是這個 pattern）
+- [ ] 考慮在 prompt 加例外規則
 
 ---
 

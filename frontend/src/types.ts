@@ -43,7 +43,7 @@ export interface IntentResult {
   receiver_parent: string
   receiver_display_name: string  // actual name for non-gov receivers
   subtype: string
-  confidence?: number
+  confident?: boolean
   reasoning?: string
 }
 

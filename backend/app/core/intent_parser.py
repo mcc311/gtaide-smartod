@@ -21,8 +21,8 @@ class ParsedIntent(BaseModel):
     formality: str = Field(default="正式", description="正式 或 非正式")
     receiver_display_name: str = Field(default="", description="受文者具體名稱（公司名、人名、校名等），政府機關留空")
     is_internal: bool = Field(default=False, description="是否為同機關內部行文")
-    confidence: float = Field(default=1.0, description="對 doc_type/subtype 判斷的信心度 0.0-1.0，不確定時給低分")
-    reasoning: str = Field(default="", description="判斷 doc_type/subtype 的理由，尤其在不確定時說明可能的替代選項")
+    confident: bool = Field(default=True, description="你對 doc_type/subtype 的判斷有把握嗎？如果有任何猶豫或歧義，必須設為 false")
+    reasoning: str = Field(default="", description="判斷理由。confident=false 時必須說明不確定的原因和可能的替代選項")
 
 
 def _build_organ_list() -> str:

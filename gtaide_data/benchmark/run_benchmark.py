@@ -159,6 +159,8 @@ async def run_one(idx: int, query: dict, gold: dict) -> dict:
         result["sys_subtype"] = intent.get("subtype", "")
         result["sys_sender"] = intent.get("sender", "")
         result["sys_subject"] = intent.get("subject_brief", "")
+        result["sys_confident"] = intent.get("confident", None)
+        result["sys_reasoning"] = intent.get("reasoning", "")
     except Exception as e:
         result["error"] = str(e)[:100]
         return result

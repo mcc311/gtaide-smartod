@@ -240,12 +240,11 @@ export default function Step2Intent({
                 </SelectContent>
               </Select>
             </div>
-            {intent.confidence !== undefined && intent.confidence < 0.7 && intent.reasoning && (
+            {intent.confident === false && intent.reasoning && (
               <div className="flex items-start gap-2 p-2.5 rounded-lg bg-[#FEF3C7] border border-[#F59E0B]/20 text-sm">
                 <span className="shrink-0 mt-0.5">💡</span>
                 <div className="text-[#92400E]">
-                  <span className="font-medium">AI 判斷為「{docType}」</span>
-                  <span className="text-[#A16207]">（信心度 {Math.round((intent.confidence ?? 0) * 100)}%）</span>
+                  <span className="font-medium">AI 判斷為「{docType}」，但不太確定</span>
                   <p className="mt-0.5 text-xs text-[#A16207]">{intent.reasoning}</p>
                 </div>
               </div>
