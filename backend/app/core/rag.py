@@ -19,10 +19,8 @@ logger = logging.getLogger(__name__)
 
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data"
 DATA_PATHS = [
-    _DATA_DIR / "datasets_from_NCHC" / "od_doc_v2.jsonl",
-    _DATA_DIR / "gazette" / "gazette_normalized_llm.jsonl",
-    # Full normalized data (when available):
-    # _DATA_DIR / "gazette" / "gazette_normalized_nchc.jsonl",
+    # _DATA_DIR / "datasets_from_NCHC" / "od_doc_v2.jsonl",
+    _DATA_DIR / "gazette" / "gazette_normalized_nchc.jsonl",
 ]
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -81,7 +79,8 @@ def _normalize_doc(doc: dict) -> dict:
         if doc.get("basis"):
             parts.append(f"依據：{doc['basis']}")
         for item in doc.get("items", []):
-            parts.append(item)
+            if isinstance(item, str):
+                parts.append(item)
         if doc.get("signer"):
             parts.append(doc["signer"])
         return {
