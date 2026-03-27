@@ -20,7 +20,9 @@ logger = logging.getLogger(__name__)
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data"
 DATA_PATHS = [
     _DATA_DIR / "datasets_from_NCHC" / "od_doc_v2.jsonl",
-    _DATA_DIR / "gazette" / "gazette_docs.jsonl",
+    _DATA_DIR / "gazette" / "gazette_normalized_llm.jsonl",
+    # Full normalized data (when available):
+    # _DATA_DIR / "gazette" / "gazette_normalized_nchc.jsonl",
 ]
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -64,8 +66,52 @@ def _get_embeddings_batch(texts: list[str], batch_size: int = 256) -> np.ndarray
     return np.array(all_embs, dtype=np.float32)
 
 
+def _normalize_doc(doc: dict) -> dict:
+    """Normalize a document from any source into a unified format."""
+    if "doc_type" in doc or ("subject" in doc and "items" in doc):
+        # Normalized gazette data
+        doc_type = doc.get("doc_type", "") or doc.get("type", "")
+        parts = [f"{doc.get('organ', '')} {doc_type}"]
+        if doc.get("date"):
+            parts.append(doc["date"])
+        if doc.get("doc_number"):
+            parts.append(doc["doc_number"])
+        if doc.get("subject"):
+            parts.append(f"主旨：{doc['subject']}")
+        if doc.get("basis"):
+            parts.append(f"依據：{doc['basis']}")
+        for item in doc.get("items", []):
+            parts.append(item)
+        if doc.get("signer"):
+            parts.append(doc["signer"])
+        return {
+            "ID": doc.get("id", doc.get("ID", "")),
+            "text": "\n".join(parts),
+            "type": doc_type,
+            "subtype": doc.get("subtype", ""),
+            "organ": doc.get("organ", ""),
+            "subject": doc.get("subject", ""),
+            "title": doc.get("subject", ""),
+            "header": doc.get("doc_number", ""),
+            "footer": "",
+            "filename": "",
+            "category": doc.get("source_category", ""),
+        }
+    return doc
+
+
 def _search_text(doc: dict) -> str:
-    """Build searchable text for a document (capped for indexing)."""
+    """Build searchable text for a document."""
+    if "subject" in doc:
+        # Structured: use subject (boosted) + items + basis
+        return " ".join(filter(None, [
+            doc.get("subject", ""),
+            doc.get("subject", ""),
+            doc.get("organ", ""),
+            doc.get("basis", ""),
+            " ".join(doc.get("items", [])) if isinstance(doc.get("items"), list) else "",
+        ]))
+    # Legacy raw text
     return " ".join([
         doc.get("type", ""),
         doc.get("organ", ""),
@@ -95,6 +141,7 @@ def load_index():
                     continue
                 try:
                     doc = json.loads(line)
+                    doc = _normalize_doc(doc)
                     text = doc.get("text", "")
                     if len(text) > 20:
                         docs.append(doc)
@@ -240,13 +287,17 @@ def retrieve(query: str, doc_type: str = "", subtype: str = "", top_k: int = 5) 
         if idx >= len(_documents):
             continue
         doc = _documents[idx]
-        results.append({
+        result = {
             "type": doc.get("type", ""),
+            "subtype": doc.get("subtype", ""),
             "organ": doc.get("organ", ""),
             "text": doc.get("text", ""),
             "header": doc.get("header", ""),
             "footer": doc.get("footer", ""),
-        })
+        }
+        if "subject" in doc:
+            result["subject"] = doc["subject"]
+        results.append(result)
 
     return results
 

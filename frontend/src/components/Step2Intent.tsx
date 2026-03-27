@@ -20,17 +20,12 @@ import {
   SUBTYPE_OPTIONS,
 } from "@/types"
 import type {
-  ActionType,
   DocType,
   IntentResult,
   PhraseResult,
   OrganNode,
   ReceiverType,
 } from "@/types"
-
-const ACTION_TYPES: ActionType[] = [
-  "新案", "復函", "轉函", "檢送文件", "會議通知", "公布法令", "人事命令", "報告",
-]
 
 const DOC_TYPES: DocType[] = [
   "函", "書函", "簽", "便簽", "公告", "令", "開會通知單",
@@ -227,38 +222,15 @@ export default function Step2Intent({
             </div>
           )}
 
-          {/* Action type */}
-          <div className="space-y-2">
-            <Label className="text-[#222] font-medium text-sm">行文類型</Label>
-            <Select
-              value={intent.action_type}
-              onValueChange={(v) => updateField("action_type", v as ActionType)}
-            >
-              <SelectTrigger className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                <SelectValue placeholder="選擇行文類型" />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTION_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Doc type */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Label className="shrink-0 text-[#222] font-medium text-sm">建議公文類型：</Label>
-            {docType && (
-              <Badge variant="outline" className="bg-[#F5922A]/10 text-[#F5922A] border-[#F5922A]/30 rounded-md">
-                {docType}
-              </Badge>
-            )}
+            <Label className="shrink-0 text-[#222] font-medium text-sm">公文類型</Label>
             <Select
               value={docType ?? ""}
               onValueChange={(v) => onDocTypeOverride(v as DocType)}
             >
               <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                <SelectValue placeholder="變更類型" />
+                <SelectValue placeholder="選擇類型" />
               </SelectTrigger>
               <SelectContent>
                 {DOC_TYPES.map((dt) => (
@@ -276,7 +248,7 @@ export default function Step2Intent({
                 {(SUBTYPE_OPTIONS[docType] || []).map((st) => (
                   <button
                     key={st}
-                    onClick={() => updateField("subtype", st)}
+                    onClick={() => updateField("subtype", intent.subtype === st ? "" : st)}
                     className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
                       intent.subtype === st
                         ? "bg-[#F5922A]/10 text-[#F5922A] border-[#F5922A]/30"
