@@ -1,55 +1,55 @@
-{"idx": 0, "doc_type": "令", "subtype": "人事令", "user_query": "經濟部要修正駐外經濟商務機構的編制表，請幫我擬令"}
-{"idx": 1, "doc_type": "令", "subtype": "人事令", "user_query": "教育部要發布允許外籍教師兼任公立大專校院學術主管職務的規定"}
-{"idx": 2, "doc_type": "令", "subtype": "人事令", "user_query": "國科會修正中部科學工業園區開發籌備處編制表，請擬人事令"}
-{"idx": 3, "doc_type": "令", "subtype": "法規修正", "user_query": "環保署要修正中小型廢棄物焚化爐戴奧辛管制及排放標準的第七條跟第十條"}
-{"idx": 4, "doc_type": "令", "subtype": "法規修正", "user_query": "環保署修正噪音管制標準第三條和第七條，幫我擬修正令"}
-{"idx": 5, "doc_type": "令", "subtype": "法規修正", "user_query": "臺灣高等法院檢察署要修正各級法院檢察署處理人民聲請案件時限一覽表的部分規定"}
-{"idx": 6, "doc_type": "令", "subtype": "法規修正", "user_query": "關稅總局修正免稅商店年度盤存作業規定第二點和第三點，請擬令"}
-{"idx": 7, "doc_type": "令", "subtype": "法規修正", "user_query": "交通部要修正航空噪音防制經費分配及使用辦法的部分條文"}
-{"idx": 8, "doc_type": "令", "subtype": "法規廢止", "user_query": "內政部要廢止鑿井技工考驗辦法，幫我擬廢止令"}
-{"idx": 9, "doc_type": "令", "subtype": "法規廢止", "user_query": "行政院廢止山坡地開發基金收支保管及運用辦法"}
-{"idx": 10, "doc_type": "令", "subtype": "法規廢止", "user_query": "國科會要廢止精密儀器發展中心的暫行組織規程跟員額編制表"}
-{"idx": 11, "doc_type": "令", "subtype": "法規廢止", "user_query": "教育部廢止九年一貫課程師資職前教育研習會的補助原則"}
-{"idx": 12, "doc_type": "令", "subtype": "法規廢止", "user_query": "農委會要廢止臺灣省各級農會設置員額及提撥用人費計算要點"}
-{"idx": 13, "doc_type": "令", "subtype": "法規訂定", "user_query": "行政院要依警察人員管理條例訂定警察因公傷殘殉職慰問金、暴力危害致殘廢照護、殉職人員子女教養三項辦法"}
-{"idx": 14, "doc_type": "令", "subtype": "法規訂定", "user_query": "教育部訂定補助師資培育大學辦理中小學及幼稚園教師英語研習活動的經費作業要點，同時廢止舊的相關要點"}
-{"idx": 15, "doc_type": "令", "subtype": "法規訂定", "user_query": "新聞局訂定衛星廣播電視事業及境外衛星廣播電視事業的證照換發申請須知"}
-{"idx": 16, "doc_type": "令", "subtype": "法規訂定", "user_query": "衛生署要訂定醫療器材管理辦法和醫療器材查驗登記審查準則兩項法規"}
-{"idx": 17, "doc_type": "令", "subtype": "法規訂定", "user_query": "防檢局訂定紐西蘭產食用馬鈴薯輸入檢疫處理要點，依植物防疫檢疫法規定辦理"}
-{"idx": 18, "doc_type": "令", "subtype": "行政令", "user_query": "金管會發布允許股票公開發行公司在併購案中可以折價發行新股的行政令"}
-{"idx": 19, "doc_type": "令", "subtype": "行政令", "user_query": "財政部核定94年度營利事業借款利率最高標準跟員工薪資通常水準"}
-{"idx": 20, "doc_type": "令", "subtype": "行政令", "user_query": "金管會要發一個令，規定上市櫃公司依企業併購法第31條用百分之百股份轉換方式新設投資控股公司的上市櫃程序"}
-{"idx": 21, "doc_type": "令", "subtype": "行政令", "user_query": "金管會發令規定公開發行公司選任獨立董事及獨立監察人的資格條件與聲明書相關事項"}
-{"idx": 22, "doc_type": "令", "subtype": "行政令", "user_query": "農委會要補充規定漁業執照換發事宜，針對長期滯留國外未換照的漁船開放限期申請"}
-{"idx": 23, "doc_type": "公告", "subtype": "一般公告", "user_query": "經濟部公告局部變更大甲溪松鶴吊橋左岸至上游河段的河川區域範圍"}
-{"idx": 24, "doc_type": "公告", "subtype": "一般公告", "user_query": "工程會修正促進民間參與公共建設法施行細則部分條文，涉及觀光遊憩、運動設施、農業設施等定義"}
-{"idx": 25, "doc_type": "公告", "subtype": "一般公告", "user_query": "農委會修正涉案走私或偷渡或流用漁船用油漁船必須裝設船位回報器的規定事項"}
-{"idx": 26, "doc_type": "公告", "subtype": "一般公告", "user_query": "工程會更正之前公告中執業機構名稱誤植，楊長壽水土保持技師事務所被寫錯要更正"}
-{"idx": 27, "doc_type": "公告", "subtype": "一般公告", "user_query": "衛生署公告SARS密切接觸者自主健康管理通知單及居家隔離通知單與指引，並廢止舊公告"}
-{"idx": 28, "doc_type": "公告", "subtype": "公示送達", "user_query": "電信總局公示送達宇立雅科技公司，因逾期未繳第二類電信事業許可費，依行政程序法辦理"}
-{"idx": 29, "doc_type": "公告", "subtype": "公示送達", "user_query": "金管會公示送達楊勝富君違反證券交易法的行政罰鍰處分書，郵務投遞無法送達改公告送達"}
-{"idx": 30, "doc_type": "公告", "subtype": "公示送達", "user_query": "交通部電信總局要公示送達大台南科技股份有限公司的催繳許可費函件，因公司遷移地址不明"}
-{"idx": 31, "doc_type": "公告", "subtype": "公示送達", "user_query": "農委會要公示送達韓文濱違反漁港法訴願案的駁回決定書，郵寄無法投遞"}
-{"idx": 32, "doc_type": "公告", "subtype": "公示送達", "user_query": "新聞局要公示送達富進多媒體有限公司負責人李恩國的行政處分書，郵寄送達不到"}
-{"idx": 33, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准陳孝順換發土木工程科技師執業執照，執業機構是大豐工程顧問公司"}
-{"idx": 34, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准陳正德換發土木工程科技師執業執照，在太宇工程顧問有限公司執業"}
-{"idx": 35, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會要註銷陳世玉的土木工程科技師執業執照，依技師法第11條辦理"}
-{"idx": 36, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會要註銷梁光燦的土木工程科技師執業執照"}
-{"idx": 37, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准王建超換發電機工程科技師執業執照，以自行執業方式執行業務"}
-{"idx": 38, "doc_type": "公告", "subtype": "預告修法", "user_query": "財政部要預告訂定記帳士法第三十五條規定之管理辦法"}
-{"idx": 39, "doc_type": "公告", "subtype": "預告修法", "user_query": "經濟部工業局預告訂定冷凍空調業製造或安裝經歷能力及專任技術士技師資歷認定辦法"}
-{"idx": 40, "doc_type": "公告", "subtype": "預告修法", "user_query": "交通部要預告航業法修正草案"}
-{"idx": 41, "doc_type": "公告", "subtype": "預告修法", "user_query": "教育部預告修正國民小學與國民中學班級編制及教職員員額編制標準"}
-{"idx": 42, "doc_type": "公告", "subtype": "預告修法", "user_query": "內政部預告訂定營造業承攬工程造價限額及淨值認定辦法"}
-{"idx": 43, "doc_type": "函", "subtype": "復函", "user_query": "公平交易委員會回覆電力電纜業者聯合行為延展申請案，許可延展"}
-{"idx": 44, "doc_type": "函", "subtype": "復函", "user_query": "行政院自由貿易港區協調委員會回覆自由貿易港區設置管理條例第十七條第二項關於自由港區與課稅區保稅區間貨物輸出入規定的釋示"}
-{"idx": 45, "doc_type": "函", "subtype": "檢送文件", "user_query": "二二八事件紀念基金會檢送第四屆董事會通過的二二八事件受難案件處理報告書，請刊登行政院公報"}
-{"idx": 46, "doc_type": "函", "subtype": "檢送文件", "user_query": "國立編譯館檢送94年1到2月主動公開資訊目錄，依行政資訊公開辦法刊登公報"}
-{"idx": 47, "doc_type": "函", "subtype": "檢送文件", "user_query": "勞委會職訓局檢送雇主僱用身心障礙者初期補助試辦計畫，94年1月10日起實施"}
-{"idx": 48, "doc_type": "函", "subtype": "檢送文件", "user_query": "財政部檢送94年2月主動公開資訊目錄，依行政資訊公開辦法刊登公報"}
-{"idx": 49, "doc_type": "函", "subtype": "檢送文件", "user_query": "財政部檢送國庫集中支付作業要點並通知生效實施，請轉知所屬機關"}
-{"idx": 50, "doc_type": "函", "subtype": "通知", "user_query": "自由貿易港區協調委員會要發函釐清自由貿易港區設置管理條例第21條第1項「供營運」的定義，請各機關查照轉知"}
-{"idx": 51, "doc_type": "函", "subtype": "通知", "user_query": "行政院發函通知「中央政府總決算編製要點」九十二年版停止適用，請各機關查照轉知所屬"}
-{"idx": 52, "doc_type": "函", "subtype": "通知", "user_query": "工程會要發函修正「工程告示牌及竣工銘牌設置要點」第八點及第九點，增列英文對照及網路通報網址"}
-{"idx": 53, "doc_type": "函", "subtype": "通知", "user_query": "公平會要函覆聯合信用卡處理中心，准予備查富邦銀行退出信用卡業務聯合行為案"}
-{"idx": 54, "doc_type": "函", "subtype": "通知", "user_query": "自由貿易港區協調委員會要發函釐清自由貿易港區設置管理條例第七章罰則各條文的裁罰機關權屬分工"}
+{"idx": 0, "doc_type": "令", "subtype": "人事令", "user_query": "經濟部要修正駐外經濟商務機構的編制表，請幫我擬令", "ambiguous": false}
+{"idx": 1, "doc_type": "令", "subtype": "行政令", "user_query": "教育部要發布允許外籍教師兼任公立大專校院學術主管職務的規定", "ambiguous": false}
+{"idx": 2, "doc_type": "令", "subtype": "人事令", "user_query": "國科會修正中部科學工業園區開發籌備處編制表，請擬人事令", "ambiguous": false}
+{"idx": 3, "doc_type": "令", "subtype": "法規修正", "user_query": "環保署要修正中小型廢棄物焚化爐戴奧辛管制及排放標準的第七條跟第十條", "ambiguous": true}
+{"idx": 4, "doc_type": "令", "subtype": "法規修正", "user_query": "環保署修正噪音管制標準第三條和第七條，幫我擬修正令", "ambiguous": false}
+{"idx": 5, "doc_type": "令", "subtype": "法規修正", "user_query": "臺灣高等法院檢察署要修正各級法院檢察署處理人民聲請案件時限一覽表的部分規定", "ambiguous": true}
+{"idx": 6, "doc_type": "令", "subtype": "法規修正", "user_query": "關稅總局修正免稅商店年度盤存作業規定第二點和第三點，請擬令", "ambiguous": false}
+{"idx": 7, "doc_type": "令", "subtype": "法規修正", "user_query": "交通部要修正航空噪音防制經費分配及使用辦法的部分條文", "ambiguous": true}
+{"idx": 8, "doc_type": "令", "subtype": "法規廢止", "user_query": "內政部要廢止鑿井技工考驗辦法，幫我擬廢止令", "ambiguous": false}
+{"idx": 9, "doc_type": "令", "subtype": "法規廢止", "user_query": "行政院廢止山坡地開發基金收支保管及運用辦法", "ambiguous": false}
+{"idx": 10, "doc_type": "令", "subtype": "法規廢止", "user_query": "國科會要廢止精密儀器發展中心的暫行組織規程跟員額編制表", "ambiguous": false}
+{"idx": 11, "doc_type": "令", "subtype": "法規廢止", "user_query": "教育部廢止九年一貫課程師資職前教育研習會的補助原則", "ambiguous": false}
+{"idx": 12, "doc_type": "令", "subtype": "法規廢止", "user_query": "農委會要廢止臺灣省各級農會設置員額及提撥用人費計算要點", "ambiguous": false}
+{"idx": 13, "doc_type": "令", "subtype": "法規訂定", "user_query": "行政院要依警察人員管理條例訂定警察因公傷殘殉職慰問金、暴力危害致殘廢照護、殉職人員子女教養三項辦法", "ambiguous": false}
+{"idx": 14, "doc_type": "令", "subtype": "法規訂定", "user_query": "教育部訂定補助師資培育大學辦理中小學及幼稚園教師英語研習活動的經費作業要點，同時廢止舊的相關要點", "ambiguous": true}
+{"idx": 15, "doc_type": "令", "subtype": "法規訂定", "user_query": "新聞局訂定衛星廣播電視事業及境外衛星廣播電視事業的證照換發申請須知", "ambiguous": false}
+{"idx": 16, "doc_type": "令", "subtype": "法規訂定", "user_query": "衛生署要訂定醫療器材管理辦法和醫療器材查驗登記審查準則兩項法規", "ambiguous": false}
+{"idx": 17, "doc_type": "令", "subtype": "法規訂定", "user_query": "防檢局訂定紐西蘭產食用馬鈴薯輸入檢疫處理要點", "ambiguous": false}
+{"idx": 18, "doc_type": "令", "subtype": "行政令", "user_query": "金管會要發布允許股票公開發行公司在併購案中可以折價發行新股的規定", "ambiguous": false}
+{"idx": 19, "doc_type": "令", "subtype": "行政令", "user_query": "財政部核定94年度營利事業借款利率最高標準跟員工薪資通常水準", "ambiguous": false}
+{"idx": 20, "doc_type": "令", "subtype": "行政令", "user_query": "金管會要規定上市櫃公司用股份轉換方式新設投控公司的上市櫃程序", "ambiguous": false}
+{"idx": 21, "doc_type": "令", "subtype": "行政令", "user_query": "金管會發令規定公開發行公司選任獨立董事及獨立監察人的資格條件與聲明書相關事項", "ambiguous": false}
+{"idx": 22, "doc_type": "令", "subtype": "行政令", "user_query": "農委會要補充規定漁業執照換發事宜，針對長期滯留國外未換照的漁船開放限期申請", "ambiguous": false}
+{"idx": 23, "doc_type": "公告", "subtype": "一般公告", "user_query": "經濟部公告局部變更大甲溪松鶴吊橋左岸至上游河段的河川區域範圍", "ambiguous": false}
+{"idx": 24, "doc_type": "令", "subtype": "法規修正", "user_query": "工程會修正促進民間參與公共建設法施行細則部分條文，涉及觀光遊憩、運動設施、農業設施等定義", "ambiguous": false}
+{"idx": 25, "doc_type": "公告", "subtype": "一般公告", "user_query": "農委會修正涉案走私或偷渡或流用漁船用油漁船必須裝設船位回報器的規定事項", "ambiguous": false}
+{"idx": 26, "doc_type": "公告", "subtype": "一般公告", "user_query": "工程會更正之前公告中執業機構名稱誤植，楊長壽水土保持技師事務所被寫錯要更正", "ambiguous": false}
+{"idx": 27, "doc_type": "公告", "subtype": "一般公告", "user_query": "衛生署公告SARS密切接觸者自主健康管理通知單及居家隔離通知單與指引，並廢止舊公告", "ambiguous": false}
+{"idx": 28, "doc_type": "公告", "subtype": "公示送達", "user_query": "電信總局公示送達宇立雅科技公司，因逾期未繳第二類電信事業許可費，依行政程序法辦理", "ambiguous": false}
+{"idx": 29, "doc_type": "公告", "subtype": "公示送達", "user_query": "金管會公示送達楊勝富君違反證券交易法的行政罰鍰處分書，郵務投遞無法送達改公告送達", "ambiguous": false}
+{"idx": 30, "doc_type": "公告", "subtype": "公示送達", "user_query": "交通部電信總局要公示送達大台南科技股份有限公司的催繳許可費函件，因公司遷移地址不明", "ambiguous": false}
+{"idx": 31, "doc_type": "公告", "subtype": "公示送達", "user_query": "農委會要公示送達韓文濱違反漁港法訴願案的駁回決定書，郵寄無法投遞", "ambiguous": false}
+{"idx": 32, "doc_type": "公告", "subtype": "公示送達", "user_query": "新聞局要公示送達富進多媒體有限公司負責人李恩國的行政處分書，郵寄送達不到", "ambiguous": false}
+{"idx": 33, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准陳孝順換發土木工程科技師執業執照，執業機構是大豐工程顧問公司", "ambiguous": false}
+{"idx": 34, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准陳正德換發土木工程科技師執業執照，在太宇工程顧問有限公司執業", "ambiguous": false}
+{"idx": 35, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會要註銷陳世玉的土木工程科技師執業執照，依技師法第11條辦理", "ambiguous": false}
+{"idx": 36, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會要註銷梁光燦的土木工程科技師執業執照", "ambiguous": false}
+{"idx": 37, "doc_type": "公告", "subtype": "證照公告", "user_query": "工程會核准王建超換發電機工程科技師執業執照，以自行執業方式執行業務", "ambiguous": false}
+{"idx": 38, "doc_type": "公告", "subtype": "預告法規", "user_query": "財政部要預告訂定記帳士法第三十五條規定之管理辦法", "ambiguous": false}
+{"idx": 39, "doc_type": "公告", "subtype": "預告法規", "user_query": "經濟部工業局預告訂定冷凍空調業製造或安裝經歷能力及專任技術士技師資歷認定辦法", "ambiguous": false}
+{"idx": 40, "doc_type": "公告", "subtype": "預告法規", "user_query": "交通部要預告航業法修正草案", "ambiguous": false}
+{"idx": 41, "doc_type": "公告", "subtype": "預告法規", "user_query": "教育部預告修正國民小學與國民中學班級編制及教職員員額編制標準", "ambiguous": false}
+{"idx": 42, "doc_type": "公告", "subtype": "預告法規", "user_query": "內政部預告訂定營造業承攬工程造價限額及淨值認定辦法", "ambiguous": false}
+{"idx": 43, "doc_type": "函", "subtype": "復函", "user_query": "公平交易委員會回覆電力電纜業者聯合行為延展申請案，許可延展", "ambiguous": true}
+{"idx": 44, "doc_type": "函", "subtype": "復函", "user_query": "行政院自由貿易港區協調委員會回覆自由貿易港區設置管理條例第十七條第二項關於自由港區與課稅區保稅區間貨物輸出入規定的釋示", "ambiguous": true}
+{"idx": 45, "doc_type": "函", "subtype": "檢送文件", "user_query": "二二八事件紀念基金會檢送第四屆董事會通過的二二八事件受難案件處理報告書，請刊登行政院公報", "ambiguous": false}
+{"idx": 46, "doc_type": "函", "subtype": "檢送文件", "user_query": "國立編譯館檢送94年1到2月主動公開資訊目錄，依行政資訊公開辦法刊登公報", "ambiguous": false}
+{"idx": 47, "doc_type": "函", "subtype": "檢送文件", "user_query": "勞委會職訓局檢送雇主僱用身心障礙者初期補助試辦計畫，94年1月10日起實施", "ambiguous": false}
+{"idx": 48, "doc_type": "函", "subtype": "檢送文件", "user_query": "財政部檢送94年2月主動公開資訊目錄，依行政資訊公開辦法刊登公報", "ambiguous": false}
+{"idx": 49, "doc_type": "函", "subtype": "檢送文件", "user_query": "財政部檢送國庫集中支付作業要點並通知生效實施，請轉知所屬機關", "ambiguous": true}
+{"idx": 50, "doc_type": "函", "subtype": "通知", "user_query": "自由貿易港區協調委員會要發函釐清自由貿易港區設置管理條例第21條第1項「供營運」的定義，請各機關查照轉知", "ambiguous": true}
+{"idx": 51, "doc_type": "函", "subtype": "通知", "user_query": "行政院發函通知「中央政府總決算編製要點」九十二年版停止適用，請各機關查照轉知所屬", "ambiguous": false}
+{"idx": 52, "doc_type": "函", "subtype": "通知", "user_query": "工程會要發函修正「工程告示牌及竣工銘牌設置要點」第八點及第九點，增列英文對照及網路通報網址", "ambiguous": true}
+{"idx": 53, "doc_type": "函", "subtype": "復函", "user_query": "公平會要函覆聯合信用卡處理中心，准予備查富邦銀行退出信用卡業務聯合行為案", "ambiguous": false}
+{"idx": 54, "doc_type": "函", "subtype": "通知", "user_query": "自由貿易港區協調委員會要發函釐清自由貿易港區設置管理條例第七章罰則各條文的裁罰機關權屬分工", "ambiguous": false}

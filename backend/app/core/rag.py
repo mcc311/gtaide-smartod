@@ -69,6 +69,7 @@ def _normalize_doc(doc: dict) -> dict:
     if "doc_type" in doc or ("subject" in doc and "items" in doc):
         # Normalized gazette data
         doc_type = doc.get("doc_type", "") or doc.get("type", "")
+        subtype = doc.get("subtype", "").replace("預告修法", "預告法規")
         parts = [f"{doc.get('organ', '')} {doc_type}"]
         if doc.get("date"):
             parts.append(doc["date"])
@@ -87,7 +88,7 @@ def _normalize_doc(doc: dict) -> dict:
             "ID": doc.get("id", doc.get("ID", "")),
             "text": "\n".join(parts),
             "type": doc_type,
-            "subtype": doc.get("subtype", ""),
+            "subtype": subtype,
             "organ": doc.get("organ", ""),
             "subject": doc.get("subject", ""),
             "title": doc.get("subject", ""),

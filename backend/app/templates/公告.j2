@@ -9,8 +9,8 @@
 {% if basis -%}
 依據：{{ basis | trim_period }}。
 {% endif -%}
-{% if subtype == "預告修法" or subtype == "徵案補助" or subtype == "一般公告" -%}
-{# === 預告修法/徵案/一般：分項公告事項 === #}
+{% if subtype in ("預告法規", "預告修法", "徵案補助", "一般公告") -%}
+{# === 預告法規/徵案/一般：分項公告事項 === #}
 {% if announcement_items -%}
 公告事項：
 {% for item in announcement_items -%}

@@ -16,7 +16,7 @@ export type DocType = "函" | "書函" | "簽" | "便簽" | "公告" | "令" | "
 
 export const SUBTYPE_OPTIONS: Record<string, string[]> = {
   "令": ["法規修正", "法規訂定", "法規廢止", "行政令", "人事令", "派任令"],
-  "公告": ["預告修法", "證照公告", "疫區公告", "公示送達", "徵案補助", "命令解散", "一般公告"],
+  "公告": ["預告法規", "證照公告", "疫區公告", "公示送達", "徵案補助", "命令解散", "一般公告"],
   "函": ["檢送文件", "復函", "轉函", "新案", "通知", "委辦", "密等變更", "陳情回函"],
   "書函": ["聯繫", "徵詢", "通報", "催辦"],
   "簽": ["政策建議", "人事簽", "經費簽", "法規研修", "出國簽", "一般簽"],
@@ -43,6 +43,8 @@ export interface IntentResult {
   receiver_parent: string
   receiver_display_name: string  // actual name for non-gov receivers
   subtype: string
+  confidence?: number
+  reasoning?: string
 }
 
 export interface PhraseResult {
