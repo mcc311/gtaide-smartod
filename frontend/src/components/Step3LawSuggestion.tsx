@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ChevronRight, ChevronLeft, X, Sparkles, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
@@ -56,6 +56,7 @@ export default function Step3LawSuggestion({
   const [expandedLaw, setExpandedLaw] = useState<string | null>(null)
   const [expandedArticles, setExpandedArticles] = useState<LawArticle[]>([])
   const [loadingArticles, setLoadingArticles] = useState(false)
+  const expandedRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const initial = suggestions
@@ -137,6 +138,10 @@ export default function Step3LawSuggestion({
       }
     } catch { /* ignore */ }
     setLoadingArticles(false)
+    // Scroll to expanded law after render
+    setTimeout(() => {
+      expandedRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    }, 100)
   }
 
   const handleExpandLaw = (lawName: string) => {
@@ -357,7 +362,7 @@ export default function Step3LawSuggestion({
                         </div>
                         <ChevronRight className={`h-3 w-3 text-[#999] shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                       </button>
-                      {isExpanded && renderArticleList(law.law_name)}
+                      {isExpanded && <div ref={expandedRef}>{renderArticleList(law.law_name)}</div>}
                     </div>
                   )
                 })
