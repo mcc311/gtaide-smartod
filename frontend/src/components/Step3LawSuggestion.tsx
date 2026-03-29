@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ChevronRight, ChevronLeft, X, Sparkles, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
@@ -52,11 +52,10 @@ export default function Step3LawSuggestion({
   const [catLaws, setCatLaws] = useState<LawSuggestion[]>([])
   const [showingLaws, setShowingLaws] = useState(false)
 
-  // Expanded law articles in category view
-  const [expandedLaw, setExpandedLaw] = useState<string | null>(null)
-  const [expandedArticles, setExpandedArticles] = useState<LawArticle[]>([])
+  // Dialog for viewing/selecting articles
+  const [dialogLaw, setDialogLaw] = useState<string | null>(null)
+  const [dialogArticles, setDialogArticles] = useState<LawArticle[]>([])
   const [loadingArticles, setLoadingArticles] = useState(false)
-  const expandedRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const initial = suggestions
@@ -96,27 +95,7 @@ export default function Step3LawSuggestion({
     setSearching(false)
   }, [searchText])
 
-  // Navigate to a law in the category tree (from search or right panel)
-  const navigateToLawByName = async (lawName: string) => {
-    // First get the law's category via suggest-laws
-    try {
-      const res = await fetch("/api/suggest-laws", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent: { subject_brief: lawName }, doc_type: "", subtype: "" }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const found = (data.suggestions || []).find((s: LawSuggestion) => s.law_name === lawName)
-        if (found) {
-          navigateToLaw(found)
-          return
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  // Navigate to a law's category in the tree
+  // Navigate to a law's category in the tree (from search results)
   const navigateToLaw = (law: LawSuggestion) => {
     const cat = law.category || ""
     const parts = cat.split("＞").filter(Boolean)
@@ -134,9 +113,8 @@ export default function Step3LawSuggestion({
         .then((data) => {
           setCatLaws(data.laws || [])
           setShowingLaws(true)
-          // Auto-expand the target law
-          setExpandedLaw(law.law_name)
-          loadArticles(law.law_name)
+          // Auto-open the target law dialog
+          openLawDialog(law.law_name)
         })
         .catch(() => {})
     }
@@ -144,7 +122,9 @@ export default function Step3LawSuggestion({
     setSearchText("")
   }
 
-  const loadArticles = async (lawName: string) => {
+  const openLawDialog = async (lawName: string) => {
+    setDialogLaw(lawName)
+    setDialogArticles([])
     setLoadingArticles(true)
     try {
       const res = await fetch("/api/law-articles", {
@@ -154,30 +134,17 @@ export default function Step3LawSuggestion({
       })
       if (res.ok) {
         const data = await res.json()
-        setExpandedArticles(data.articles || [])
+        setDialogArticles(data.articles || [])
       }
     } catch { /* ignore */ }
     setLoadingArticles(false)
-    // Scroll to expanded law after render
-    setTimeout(() => {
-      expandedRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
-    }, 100)
-  }
-
-  const handleExpandLaw = (lawName: string) => {
-    if (expandedLaw === lawName) {
-      setExpandedLaw(null)
-      return
-    }
-    setExpandedLaw(lawName)
-    loadArticles(lawName)
   }
 
   const browseCategorySection = async (catName: string) => {
     const newPath = [...catPath, catName]
     setCatPath(newPath)
     const prefix = newPath.join("＞")
-    setExpandedLaw(null)
+    
     try {
       const res = await fetch("/api/browse-laws", {
         method: "POST",
@@ -239,41 +206,27 @@ export default function Step3LawSuggestion({
     return node
   })()
 
-  const renderArticleList = (lawName: string) => (
-    <div className="bg-[#FAFAFA] border-t border-[#E1E1E1] max-h-60 overflow-y-auto">
-      {loadingArticles && expandedLaw === lawName ? (
-        <div className="flex items-center justify-center py-4 text-sm text-[#999]">
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />載入條文...
+  // Render a law item in the list
+  const renderLawItem = (law: LawSuggestion, i: number) => {
+    const selectedCount = selectedLaws.find((s) => s.law_name === law.law_name)?.articles.length ?? 0
+    return (
+      <button
+        key={i}
+        onClick={() => openLawDialog(law.law_name)}
+        className="w-full text-left px-3 py-2 text-sm border-t border-[#E1E1E1] hover:bg-[#F5F1EC] transition-colors flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="truncate">{law.law_name}</span>
+          {selectedCount > 0 && (
+            <span className="shrink-0 text-xs text-[#F5922A] bg-[#F5922A]/10 px-1.5 py-0.5 rounded">
+              {selectedCount}條
+            </span>
+          )}
         </div>
-      ) : expandedArticles.length === 0 ? (
-        <div className="px-3 py-3 text-xs text-[#999]">無條文資料</div>
-      ) : (
-        expandedArticles.map((a, ai) => {
-          if (!a.no) return null
-          const checked = isArticleSelected(lawName, a.no)
-          return (
-            <label
-              key={ai}
-              className={`flex items-start gap-2 px-3 py-1.5 cursor-pointer hover:bg-white transition-colors ${
-                checked ? "bg-[#F5922A]/5" : ""
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() => toggleArticleSelection(lawName, a)}
-                className="mt-0.5 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
-              />
-              <span className="text-xs leading-relaxed">
-                <span className="font-medium text-[#444]">{a.no}</span>
-                <span className="text-[#666]">：{a.content.slice(0, 80)}{a.content.length > 80 ? "..." : ""}</span>
-              </span>
-            </label>
-          )
-        })
-      )}
-    </div>
-  )
+        <ChevronRight className="h-3 w-3 text-[#999] shrink-0" />
+      </button>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -350,7 +303,7 @@ export default function Step3LawSuggestion({
                   setCatPath((prev) => prev.slice(0, -1))
                   setCatLaws([])
                   setShowingLaws(false)
-                  setExpandedLaw(null)
+                  
                 }}
                 className="flex items-center gap-1 w-full px-3 py-1.5 text-xs text-[#666] hover:bg-[#F5F1EC] border-t border-[#E1E1E1]"
               >
@@ -360,32 +313,7 @@ export default function Step3LawSuggestion({
 
             <div className="max-h-80 overflow-y-auto">
               {showingLaws && catLaws.length > 0 ? (
-                /* Law list with expandable articles */
-                catLaws.map((law, i) => {
-                  const isExpanded = expandedLaw === law.law_name
-                  const selectedCount = selectedLaws.find((s) => s.law_name === law.law_name)?.articles.length ?? 0
-                  return (
-                    <div key={i} className="border-t border-[#E1E1E1]">
-                      <button
-                        onClick={() => handleExpandLaw(law.law_name)}
-                        className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
-                          isExpanded ? "bg-[#1B2D6B]/5 font-medium" : "hover:bg-[#F5F1EC]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="truncate">{law.law_name}</span>
-                          {selectedCount > 0 && (
-                            <span className="shrink-0 text-xs text-[#F5922A] bg-[#F5922A]/10 px-1.5 py-0.5 rounded">
-                              {selectedCount}條
-                            </span>
-                          )}
-                        </div>
-                        <ChevronRight className={`h-3 w-3 text-[#999] shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
-                      </button>
-                      {isExpanded && <div ref={expandedRef}>{renderArticleList(law.law_name)}</div>}
-                    </div>
-                  )
-                })
+                catLaws.map((law, i) => renderLawItem(law, i))
               ) : (
                 /* Category tree */
                 currentCatChildren.map((cat, i) => (
@@ -396,7 +324,7 @@ export default function Step3LawSuggestion({
                         setCatPath((prev) => [...prev, cat.name])
                         setShowingLaws(false)
                         setCatLaws([])
-                        setExpandedLaw(null)
+                        
                       } else {
                         browseCategorySection(cat.name)
                       }
@@ -435,7 +363,7 @@ export default function Step3LawSuggestion({
                   <div key={i} className="px-3 py-2">
                     <div className="flex items-center justify-between">
                       <button
-                        onClick={() => navigateToLawByName(law.law_name)}
+                        onClick={() => openLawDialog(law.law_name)}
                         className="text-sm font-medium text-[#222] hover:text-[#1B2D6B] text-left truncate"
                       >
                         {law.law_name}
@@ -458,6 +386,65 @@ export default function Step3LawSuggestion({
           </div>
         </div>
       </div>
+
+      {/* Article selection dialog */}
+      {dialogLaw && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDialogLaw(null)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 py-3 border-b border-[#E1E1E1] flex items-center justify-between shrink-0">
+              <h3 className="font-medium text-[#1B2D6B] truncate pr-4">{dialogLaw}</h3>
+              <button onClick={() => setDialogLaw(null)} className="p-1 hover:bg-[#F5F1EC] rounded shrink-0">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {loadingArticles ? (
+                <div className="flex items-center justify-center py-12 text-sm text-[#999]">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />載入條文中...
+                </div>
+              ) : dialogArticles.length === 0 ? (
+                <div className="px-5 py-12 text-sm text-[#999] text-center">無條文資料</div>
+              ) : (
+                <div className="divide-y divide-[#F0F0F0]">
+                  {dialogArticles.map((a, ai) => {
+                    if (!a.no) return null
+                    const checked = isArticleSelected(dialogLaw, a.no)
+                    return (
+                      <label
+                        key={ai}
+                        className={`flex items-start gap-3 px-5 py-3 cursor-pointer hover:bg-[#FAFAFA] transition-colors ${
+                          checked ? "bg-[#F5922A]/5" : ""
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleArticleSelection(dialogLaw, a)}
+                          className="mt-1 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-[#1B2D6B]">{a.no}</div>
+                          <div className="text-sm text-[#444] mt-0.5 leading-relaxed">{a.content}</div>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="px-5 py-3 border-t border-[#E1E1E1] flex items-center justify-between shrink-0 bg-[#FAFAFA]">
+              <span className="text-sm text-[#666]">
+                已選 {selectedLaws.find((s) => s.law_name === dialogLaw)?.articles.length ?? 0} 條
+              </span>
+              <Button onClick={() => setDialogLaw(null)} size="sm" className="bg-[#1B2D6B] text-white rounded-lg">
+                完成
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex items-center gap-3 pt-2">
