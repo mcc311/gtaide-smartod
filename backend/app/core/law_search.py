@@ -152,10 +152,38 @@ def get_article(law_name: str, article_no: str = "") -> dict:
             ],
         }
 
-    # Normalize article number: "第5條" → "5", "第10條" → "10"
+    # Convert Chinese numbers to Arabic: 五十一 → 51
+    def _cn_to_num(s: str) -> str:
+        cn_map = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10, "百": 100, "零": 0}
+        # Simple conversion for common patterns
+        s = s.strip()
+        if not s:
+            return ""
+        total = 0
+        current = 0
+        for ch in s:
+            if ch in cn_map:
+                val = cn_map[ch]
+                if val >= 10:
+                    current = current or 1
+                    total += current * val
+                    current = 0
+                else:
+                    current = val
+            elif ch.isdigit():
+                return re.sub(r"\D", "", s)  # Already has Arabic digits
+        total += current
+        return str(total) if total > 0 else ""
+
+    # Normalize article number: "第5條" → "5", "第五十一條" → "51"
     normalized = re.sub(r"第\s*(\d+)\s*條.*", r"\1", article_no)
     if not normalized.isdigit():
-        normalized = re.sub(r"\D", "", article_no)
+        # Try Chinese number
+        cn_match = re.search(r"第\s*([一二三四五六七八九十百零]+)\s*條", article_no)
+        if cn_match:
+            normalized = _cn_to_num(cn_match.group(1))
+        else:
+            normalized = re.sub(r"\D", "", article_no)
 
     # Search for matching article
     for a in articles:
@@ -184,8 +212,8 @@ def verify_citation(citation: str) -> dict:
     if not _loaded:
         load_laws()
 
-    # Parse citation: "○○法第○條"
-    match = re.match(r"(.+?)(第\s*\d+\s*條.*)?$", citation)
+    # Parse citation: "○○法第○條" (supports both 阿拉伯 and 中文 numbers)
+    match = re.match(r"(.+?)(第\s*[\d一二三四五六七八九十百零]+\s*條(?:之[\d一二三四五六七八九十]+)?.*)?$", citation)
     if not match:
         return {"valid": False, "error": "無法解析引用格式"}
 
@@ -199,7 +227,7 @@ def verify_citation(citation: str) -> dict:
         return {"valid": False, "error": f"找不到法規「{law_name_part}」"}
 
     best = candidates[0]
-    if best["relevance"] < 50:
+    if best["relevance"] < 20:
         return {
             "valid": False,
             "error": f"找不到完全匹配的法規",
