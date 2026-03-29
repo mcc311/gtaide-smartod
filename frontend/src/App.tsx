@@ -85,6 +85,7 @@ export default function App() {
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
   const [docTypeOverride, setDocTypeOverride] = useState<DocType | null>(null)
   const [citations, setCitations] = useState<Array<{law_name: string; article_no: string; valid: boolean}>>([])
+  const [lawSuggestions, setLawSuggestions] = useState<Array<{law_name: string; articles: Array<{no: string; content: string}>; selected: boolean}>>([])
 
   useEffect(() => {
     fetch("/api/organs")
@@ -145,7 +146,29 @@ export default function App() {
   }
 
   // Step 2: Confirm intent → go to clarify
-  const handleGoToClarify = () => {
+  const handleGoToClarify = async () => {
+    // Fetch law suggestions before going to clarify
+    try {
+      const res = await fetch("/api/suggest-laws", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intent,
+          doc_type: docType,
+          subtype: intent.subtype,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const suggestions = (data.suggestions || []).map((s: { law_name: string; articles: Array<{no: string; content: string}> }) => ({
+          ...s,
+          selected: true, // Default selected
+        }))
+        setLawSuggestions(suggestions)
+      }
+    } catch {
+      // Non-blocking, continue without suggestions
+    }
     setCurrentStep(3)
   }
 
@@ -255,16 +278,50 @@ export default function App() {
         )}
 
         {currentStep === 3 && (
-          <Step3Clarify
-            intent={intentDict}
-            phrases={phrasesDict}
-            docType={docType ?? "函"}
-            direction={phraseResult?.direction ?? "平行文"}
-            subtype={intent.subtype}
-            onComplete={handleClarifyComplete}
-            onSkip={handleClarifySkip}
-            onBack={() => setCurrentStep(2)}
-          />
+          <div className="space-y-4">
+            {lawSuggestions.length > 0 && (
+              <div className="p-4 rounded-xl border border-[#E1E1E1] bg-white space-y-3">
+                <h3 className="text-sm font-medium text-[#1B2D6B] flex items-center gap-1.5">
+                  <span className="text-base">&#128218;</span> 建議引用法規
+                </h3>
+                <p className="text-xs text-[#666]">系統根據公文意圖自動搜尋相關法規，可勾選要引用的項目。</p>
+                <div className="space-y-2">
+                  {lawSuggestions.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={s.selected}
+                        onChange={() => {
+                          setLawSuggestions(prev => prev.map((p, j) =>
+                            j === i ? { ...p, selected: !p.selected } : p
+                          ))
+                        }}
+                        className="mt-1 rounded border-[#E1E1E1]"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-[#222]">{s.law_name}</div>
+                        {s.articles.map((a, ai) => (
+                          <div key={ai} className="text-xs text-[#666] mt-0.5 truncate">
+                            {a.no}：{a.content}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <Step3Clarify
+              intent={intentDict}
+              phrases={phrasesDict}
+              docType={docType ?? "函"}
+              direction={phraseResult?.direction ?? "平行文"}
+              subtype={intent.subtype}
+              onComplete={handleClarifyComplete}
+              onSkip={handleClarifySkip}
+              onBack={() => setCurrentStep(2)}
+            />
+          </div>
         )}
 
         {currentStep === 4 && (
