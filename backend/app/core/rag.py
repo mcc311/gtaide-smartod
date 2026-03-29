@@ -69,21 +69,24 @@ def _normalize_doc(doc: dict) -> dict:
     if "doc_type" in doc or ("subject" in doc and "items" in doc):
         # Normalized gazette data
         doc_type = doc.get("doc_type", "") or doc.get("type", "")
-        subtype = doc.get("subtype", "").replace("預告修法", "預告法規")
-        parts = [f"{doc.get('organ', '')} {doc_type}"]
+        subtype = (doc.get("subtype") or "").replace("預告修法", "預告法規")
+        def _str(val):
+            return val if isinstance(val, str) else str(val) if val else ""
+
+        parts = [f"{_str(doc.get('organ', ''))} {doc_type}"]
         if doc.get("date"):
-            parts.append(doc["date"])
+            parts.append(_str(doc["date"]))
         if doc.get("doc_number"):
-            parts.append(doc["doc_number"])
+            parts.append(_str(doc["doc_number"]))
         if doc.get("subject"):
-            parts.append(f"主旨：{doc['subject']}")
+            parts.append(f"主旨：{_str(doc['subject'])}")
         if doc.get("basis"):
-            parts.append(f"依據：{doc['basis']}")
+            parts.append(f"依據：{_str(doc['basis'])}")
         for item in doc.get("items", []):
             if isinstance(item, str):
                 parts.append(item)
         if doc.get("signer"):
-            parts.append(doc["signer"])
+            parts.append(_str(doc["signer"]))
         return {
             "ID": doc.get("id", doc.get("ID", "")),
             "text": "\n".join(parts),
@@ -104,12 +107,14 @@ def _search_text(doc: dict) -> str:
     """Build searchable text for a document."""
     if "subject" in doc:
         # Structured: use subject (boosted) + items + basis
+        items = doc.get("items", [])
+        items_text = " ".join(i for i in items if isinstance(i, str)) if isinstance(items, list) else ""
         return " ".join(filter(None, [
-            doc.get("subject", ""),
-            doc.get("subject", ""),
-            doc.get("organ", ""),
-            doc.get("basis", ""),
-            " ".join(doc.get("items", [])) if isinstance(doc.get("items"), list) else "",
+            str(doc.get("subject", "")),
+            str(doc.get("subject", "")),
+            str(doc.get("organ", "")),
+            str(doc.get("basis") or ""),
+            items_text,
         ]))
     # Legacy raw text
     return " ".join([
