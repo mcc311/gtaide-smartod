@@ -268,8 +268,8 @@ export default function App() {
     : {}
 
   return (
-    <div className="min-h-screen bg-[#F5F1EC] flex flex-col">
-      <header className="border-b border-[#E1E1E1] bg-white sticky top-0 z-50">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <header className="border-b border-[#E1E1E1] bg-white shrink-0 z-50">
         <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
@@ -285,13 +285,13 @@ export default function App() {
       </header>
 
       {/* Mobile stepper */}
-      <div className="lg:hidden px-4 py-3">
+      <div className="lg:hidden px-4 py-3 shrink-0 bg-[#F5F1EC]">
         <Stepper currentStep={currentStep} steps={STEPS} />
       </div>
 
-      <div className="flex flex-1">
-        {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-52 shrink-0 border-r border-[#E1E1E1] bg-white px-5 py-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop sidebar — fixed height, no scroll with page */}
+        <aside className="hidden lg:flex lg:flex-col w-52 shrink-0 border-r border-[#E1E1E1] bg-white px-5 py-6 overflow-y-auto">
           <Stepper currentStep={currentStep} steps={STEPS} />
           {docType && (
             <div className="mt-8 pt-4 border-t border-[#E1E1E1]">
@@ -310,7 +310,8 @@ export default function App() {
           )}
         </aside>
 
-        <main className="flex-1 min-w-0 px-6 lg:px-10 py-6 pb-12">
+        {/* Main content — independently scrollable */}
+        <main className="flex-1 min-w-0 overflow-y-auto bg-[#F5F1EC] px-6 lg:px-10 py-6">
         {currentStep === 1 && (
           <Step1Input onParsed={handleParsed} onSkip={handleSkipToManual} />
         )}
@@ -373,26 +374,25 @@ export default function App() {
             onRestart={handleRestart}
           />
         )}
-        </main>
-      </div>
 
-      <footer className="border-t border-[#E1E1E1] bg-white py-8">
-        <div className="px-6 lg:px-10 lg:ml-52">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
-            <div>
-              <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Powered by</p>
-              <img src="/taide_logo.png" alt="TAIDE" className="h-10 object-contain" />
-            </div>
-            <div>
-              <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Supported by</p>
-              <div className="flex items-center gap-8">
-                <img src="/nstc_logo.svg" alt="國科會 NSTC" className="h-10 object-contain" />
-                <img src="/niar_logo.png" alt="國研院 NARLabs" className="h-10 object-contain" />
+          {/* Footer inside scroll area */}
+          <footer className="border-t border-[#E1E1E1] mt-12 pt-8 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
+              <div>
+                <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Powered by</p>
+                <img src="/taide_logo.png" alt="TAIDE" className="h-10 object-contain" />
+              </div>
+              <div>
+                <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Supported by</p>
+                <div className="flex items-center gap-8">
+                  <img src="/nstc_logo.svg" alt="國科會 NSTC" className="h-10 object-contain" />
+                  <img src="/niar_logo.png" alt="國研院 NARLabs" className="h-10 object-contain" />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </footer>
+          </footer>
+        </main>
+      </div>
     </div>
   )
 }
