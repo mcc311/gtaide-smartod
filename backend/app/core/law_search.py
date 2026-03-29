@@ -257,6 +257,32 @@ def verify_citation(citation: str) -> dict:
         }
 
 
+def get_law_categories() -> list[dict]:
+    """Return law category tree for browsing UI."""
+    if not _loaded:
+        load_laws()
+
+    from collections import defaultdict
+    tree: dict = defaultdict(lambda: defaultdict(int))
+    for law in _laws:
+        cat = law.get("category", "")
+        if cat.startswith("廢止"):
+            continue
+        parts = cat.split("＞")
+        dept = parts[1] if len(parts) > 1 else parts[0]
+        section = parts[2] if len(parts) > 2 else ""
+        if section:
+            tree[dept][section] += 1
+
+    result = []
+    for dept in sorted(tree.keys()):
+        sections = tree[dept]
+        total = sum(sections.values())
+        children = [{"name": s, "count": c} for s, c in sorted(sections.items())]
+        result.append({"name": dept, "count": total, "children": children})
+    return result
+
+
 def suggest_laws(
     subject_brief: str,
     doc_type: str = "",

@@ -2,9 +2,10 @@ import { useState, useEffect } from "react"
 import Stepper from "@/components/Stepper"
 import Step1Input from "@/components/Step1Input"
 import Step2Intent from "@/components/Step2Intent"
-import Step3Clarify from "@/components/Step2Clarify"
-import Step4Content from "@/components/Step3Content"
-import Step5Preview from "@/components/Step4Preview"
+import Step3LawSuggestion from "@/components/Step3LawSuggestion"
+import Step4Clarify from "@/components/Step2Clarify"
+import Step5Content from "@/components/Step3Content"
+import Step6Preview from "@/components/Step4Preview"
 import type {
   IntentResult,
   PhraseResult,
@@ -287,7 +288,7 @@ export default function App() {
         <Stepper currentStep={currentStep} steps={STEPS} />
       </div>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 pb-12 flex-1">
+      <main className={`mx-auto px-4 sm:px-6 pb-12 flex-1 ${currentStep === 3 ? "max-w-5xl" : "max-w-2xl"}`}>
         {currentStep === 1 && (
           <Step1Input onParsed={handleParsed} onSkip={handleSkipToManual} />
         )}
@@ -307,100 +308,19 @@ export default function App() {
         )}
 
         {currentStep === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-medium text-[#1B2D6B]">法規引用建議</h2>
-            <p className="text-sm text-[#666]">
-              系統根據公文意圖自動搜尋相關法規並預選。你也可以搜尋其他法規加入。
-            </p>
-
-            {/* Selected laws */}
-            <div className="space-y-2">
-              {lawSuggestions.map((s, i) => (
-                <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                  s.selected ? "border-[#F5922A]/30 bg-[#F5922A]/5" : "border-[#E1E1E1] bg-white"
-                }`}>
-                  <input
-                    type="checkbox"
-                    checked={s.selected}
-                    onChange={() => {
-                      setLawSuggestions(prev => prev.map((p, j) =>
-                        j === i ? { ...p, selected: !p.selected } : p
-                      ))
-                    }}
-                    className="mt-0.5 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-[#222]">{s.law_name}</div>
-                    {s.articles.map((a, ai) => (
-                      <div key={ai} className="text-xs text-[#666] mt-1">
-                        <span className="font-medium text-[#444]">{a.no}</span>：{a.content}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {lawSuggestions.length === 0 && (
-                <div className="text-sm text-[#999] py-4 text-center">未找到相關法規建議，可自行搜尋加入</div>
-              )}
-            </div>
-
-            {/* Search bar */}
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="搜尋法規名稱，例如「行政程序法」「勞工保險」"
-                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-1 focus:ring-[#1B2D6B]/10 outline-none"
-                  onKeyDown={async (e) => {
-                    if (e.key !== "Enter") return
-                    const q = (e.target as HTMLInputElement).value.trim()
-                    if (!q) return
-                    try {
-                      const res = await fetch("/api/suggest-laws", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ intent: { subject_brief: q }, doc_type: "", subtype: "" }),
-                      })
-                      if (res.ok) {
-                        const data = await res.json()
-                        const newSugs = (data.suggestions || [])
-                          .filter((s: { law_name: string }) => !lawSuggestions.some(existing => existing.law_name === s.law_name))
-                          .map((s: { law_name: string; articles: Array<{no: string; content: string}> }) => ({
-                            ...s,
-                            selected: true,
-                          }))
-                        if (newSugs.length > 0) {
-                          setLawSuggestions(prev => [...prev, ...newSugs])
-                        }
-                      }
-                    } catch { /* ignore */ }
-                    ;(e.target as HTMLInputElement).value = ""
-                  }}
-                />
-              </div>
-              <p className="text-xs text-[#999]">輸入關鍵字後按 Enter 搜尋</p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleGoToClarify}
-                className="flex-1 px-4 py-2.5 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium text-sm"
-              >
-                下一步：補充資訊
-              </button>
-              <button
-                onClick={() => setCurrentStep(2)}
-                className="px-4 py-2.5 border border-[#1B2D6B] text-[#1B2D6B] hover:bg-[#1B2D6B]/5 rounded-full font-medium text-sm"
-              >
-                上一步
-              </button>
-            </div>
-          </div>
+          <Step3LawSuggestion
+            suggestions={lawSuggestions}
+            onNext={(selectedLaws) => {
+              setLawSuggestions(selectedLaws.map(s => ({ ...s, selected: true })))
+              handleGoToClarify()
+            }}
+            onBack={() => setCurrentStep(2)}
+            onSkip={handleGoToClarify}
+          />
         )}
 
         {currentStep === 4 && (
-          <Step3Clarify
+          <Step4Clarify
             intent={intentDict}
             phrases={phrasesDict}
             docType={docType ?? "函"}
@@ -413,7 +333,7 @@ export default function App() {
         )}
 
         {currentStep === 5 && (
-          <Step4Content
+          <Step5Content
             docType={docType}
             form={form}
             onFormChange={handleFormChange}
@@ -424,7 +344,7 @@ export default function App() {
         )}
 
         {currentStep === 6 && (
-          <Step5Preview
+          <Step6Preview
             intent={intent}
             form={form}
             onBackToEdit={handleBackToEdit}

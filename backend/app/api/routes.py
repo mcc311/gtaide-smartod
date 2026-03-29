@@ -23,7 +23,7 @@ from app.core.rule_engine import select_phrases, select_opening, select_expectat
 from app.core.templates import render_document
 from app.core.validator import validate_document
 from app.core.intent_parser import parse_intent
-from app.core.law_search import suggest_laws
+from app.core.law_search import suggest_laws, get_law_categories
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
 from app.core.followup import generate_followup
@@ -285,6 +285,12 @@ def api_suggest_laws(req: dict):
             organ=intent.get("sender", ""),
         )
     }
+
+
+@router.get("/law-categories")
+def api_law_categories():
+    """Return law category tree for browsing."""
+    return {"categories": get_law_categories()}
 
 
 @router.get("/organs")
