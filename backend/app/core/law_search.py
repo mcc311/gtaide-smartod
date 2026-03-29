@@ -295,7 +295,7 @@ def get_law_categories() -> list[dict]:
     return result
 
 
-def browse_laws_by_category(category_prefix: str, top_k: int = 20) -> list[dict]:
+def browse_laws_by_category(category_prefix: str, top_k: int = 200) -> list[dict]:
     """List laws under a category prefix."""
     if not _loaded:
         load_laws()
