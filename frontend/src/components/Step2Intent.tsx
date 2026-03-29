@@ -168,7 +168,7 @@ export default function Step2Intent({
 
       <div className="space-y-4">
           {/* Sender */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label className="text-[#222] font-medium text-sm">發文機關</Label>
             <OrganSelector
               label="發文機關"
@@ -177,10 +177,13 @@ export default function Step2Intent({
               organTree={organTree}
               placeholder="例：教育部"
             />
+            {intent.sender_parent && (
+              <div className="text-xs text-[#999] pl-1">{intent.sender_parent} &gt; {intent.sender}</div>
+            )}
           </div>
 
           {/* Receiver */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label className="text-[#222] font-medium text-sm">受文機關</Label>
             <OrganSelector
               label="受文者"
@@ -189,6 +192,9 @@ export default function Step2Intent({
               organTree={organTree}
               placeholder="例：國立臺灣大學"
             />
+            {intent.receiver_parent && (
+              <div className="text-xs text-[#999] pl-1">{intent.receiver_parent} &gt; {intent.receiver}</div>
+            )}
           </div>
 
           {/* Receiver type badge */}

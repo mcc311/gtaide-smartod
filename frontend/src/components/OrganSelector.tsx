@@ -293,9 +293,14 @@ export default function OrganSelector({
                       setOpen(false)
                     }}
                   >
-                    <span>{node.name}</span>
+                    <div className="min-w-0">
+                      <div>{node.name}</div>
+                      {node.parent_context && (
+                        <div className="text-xs text-muted-foreground truncate">{node.parent_context}</div>
+                      )}
+                    </div>
                     {node.receiver_type && (
-                      <span className="text-xs text-muted-foreground ml-2">
+                      <span className="text-xs text-muted-foreground ml-2 shrink-0">
                         {node.receiver_type}
                       </span>
                     )}
