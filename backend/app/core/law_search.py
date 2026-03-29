@@ -257,6 +257,92 @@ def verify_citation(citation: str) -> dict:
         }
 
 
+def suggest_laws(
+    subject_brief: str,
+    doc_type: str = "",
+    subtype: str = "",
+    organ: str = "",
+    top_k: int = 3,
+) -> list[dict]:
+    """Suggest relevant laws based on document intent.
+
+    Uses LLM-free heuristic: extract keywords from subject,
+    search laws, and return top matches with relevant articles.
+    """
+    if not _loaded:
+        load_laws()
+
+    # Build search queries from subject + subtype
+    queries = []
+    if subject_brief:
+        queries.append(subject_brief)
+    if subtype and subtype not in subject_brief:
+        queries.append(subtype)
+
+    # Common law patterns by subtype
+    SUBTYPE_LAWS = {
+        "公示送達": ["行政程序法"],
+        "預告法規": ["行政程序法"],
+        "法規修正": [],
+        "法規訂定": [],
+        "法規廢止": [],
+    }
+    extra = SUBTYPE_LAWS.get(subtype, [])
+    queries.extend(extra)
+
+    # Determine category from organ
+    category_prefix = ""
+    if organ:
+        # Try to find matching category
+        for law in _laws[:100]:  # Quick scan
+            if organ in law.get("category", ""):
+                parts = law["category"].split("＞")
+                if len(parts) >= 2:
+                    category_prefix = f"{parts[0]}＞{parts[1]}"
+                break
+
+    # Search and collect unique laws
+    seen = set()
+    suggestions = []
+    for query in queries:
+        results = search_law(query, category_prefix=category_prefix, top_k=5)
+        for r in results:
+            if r["name"] not in seen and r["relevance"] >= 30:
+                seen.add(r["name"])
+                # Find relevant articles by keyword matching
+                law = next((l for l in _laws if l["name"] == r["name"]), None)
+                articles = []
+                if law:
+                    # Score each article by keyword overlap with subject
+                    subject_tokens = set(jieba.cut(subject_brief))
+                    scored = []
+                    for a in law["articles"]:
+                        if not a["no"] or not a["content"]:
+                            continue
+                        a_tokens = set(jieba.cut(a["content"][:200]))
+                        overlap = len(subject_tokens & a_tokens)
+                        if overlap >= 2:
+                            scored.append((overlap, a))
+                    scored.sort(key=lambda x: x[0], reverse=True)
+                    for _, a in scored[:3]:
+                        articles.append({
+                            "no": a["no"],
+                            "content": a["content"][:150],
+                        })
+                suggestions.append({
+                    "law_name": r["name"],
+                    "category": r["category"],
+                    "article_count": r["article_count"],
+                    "articles": articles,
+                })
+                if len(suggestions) >= top_k:
+                    break
+        if len(suggestions) >= top_k:
+            break
+
+    return suggestions
+
+
 # Tool definitions for LLM
 TOOLS = [
     {

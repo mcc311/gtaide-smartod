@@ -23,6 +23,7 @@ from app.core.rule_engine import select_phrases, select_opening, select_expectat
 from app.core.templates import render_document
 from app.core.validator import validate_document
 from app.core.intent_parser import parse_intent
+from app.core.law_search import suggest_laws
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
 from app.core.followup import generate_followup
@@ -268,6 +269,22 @@ def api_generate_with_answers(req: dict):
     data = result.model_dump()
     data["citations"] = citations
     return data
+
+
+@router.post("/suggest-laws")
+def api_suggest_laws(req: dict):
+    """Suggest relevant laws based on document intent."""
+    intent = req.get("intent", {})
+    doc_type = req.get("doc_type", "")
+    subtype = req.get("subtype", intent.get("subtype", ""))
+    return {
+        "suggestions": suggest_laws(
+            subject_brief=intent.get("subject_brief", intent.get("purpose", "")),
+            doc_type=doc_type,
+            subtype=subtype,
+            organ=intent.get("sender", ""),
+        )
+    }
 
 
 @router.get("/organs")
