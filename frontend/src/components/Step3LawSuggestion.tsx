@@ -8,6 +8,10 @@ interface LawArticle {
   content: string
 }
 
+interface CheckedArticle extends LawArticle {
+  checked: boolean
+}
+
 interface LawSuggestion {
   law_name: string
   category?: string
@@ -15,9 +19,9 @@ interface LawSuggestion {
   articles: LawArticle[]
 }
 
-interface SelectedLaw {
+export interface SelectedLaw {
   law_name: string
-  articles: LawArticle[]
+  articles: CheckedArticle[]
 }
 
 interface CategoryNode {
@@ -52,7 +56,10 @@ export default function Step3LawSuggestion({
   useEffect(() => {
     const initial = suggestions
       .filter((s) => s.articles.length > 0)
-      .map((s) => ({ law_name: s.law_name, articles: s.articles }))
+      .map((s) => ({
+        law_name: s.law_name,
+        articles: s.articles.map((a) => ({ ...a, checked: true })),
+      }))
     setSelectedLaws(initial)
   }, [suggestions])
 
@@ -107,7 +114,18 @@ export default function Step3LawSuggestion({
 
   const addLaw = (law: LawSuggestion) => {
     if (selectedLaws.some((s) => s.law_name === law.law_name)) return
-    setSelectedLaws((prev) => [...prev, { law_name: law.law_name, articles: law.articles }])
+    setSelectedLaws((prev) => [...prev, {
+      law_name: law.law_name,
+      articles: law.articles.map((a) => ({ ...a, checked: true })),
+    }])
+  }
+
+  const toggleArticle = (lawName: string, articleNo: string) => {
+    setSelectedLaws((prev) => prev.map((s) =>
+      s.law_name === lawName
+        ? { ...s, articles: s.articles.map((a) => a.no === articleNo ? { ...a, checked: !a.checked } : a) }
+        : s
+    ))
   }
 
   const removeLaw = (lawName: string) => {
@@ -271,22 +289,35 @@ export default function Step3LawSuggestion({
                 尚未選取法規
               </div>
             ) : (
-              <div className="divide-y divide-[#E1E1E1]">
+              <div className="divide-y divide-[#E1E1E1] max-h-96 overflow-y-auto">
                 {selectedLaws.map((law, i) => (
-                  <div key={i} className="flex items-center justify-between px-3 py-2 hover:bg-[#F5F1EC] transition-colors">
-                    <button
-                      onClick={() => setDetailLaw(law)}
-                      className="text-sm text-[#222] hover:text-[#1B2D6B] text-left truncate flex-1"
-                    >
-                      {law.law_name}
-                      <span className="text-xs text-[#999] ml-1">({law.articles.length}條)</span>
-                    </button>
-                    <button
-                      onClick={() => removeLaw(law.law_name)}
-                      className="shrink-0 p-1 text-[#999] hover:text-red-500"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+                  <div key={i} className="px-3 py-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-[#222]">{law.law_name}</span>
+                      <button
+                        onClick={() => removeLaw(law.law_name)}
+                        className="shrink-0 p-1 text-[#999] hover:text-red-500"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {law.articles.length > 0 && (
+                      <div className="mt-1 space-y-0.5">
+                        {law.articles.map((a, ai) => (
+                          <label key={ai} className="flex items-start gap-1.5 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={a.checked}
+                              onChange={() => toggleArticle(law.law_name, a.no)}
+                              className="mt-0.5 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
+                            />
+                            <span className={`text-xs leading-relaxed ${a.checked ? "text-[#444]" : "text-[#999] line-through"}`}>
+                              <span className="font-medium">{a.no}</span>：{a.content.slice(0, 50)}...
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -324,7 +355,13 @@ export default function Step3LawSuggestion({
       {/* Actions */}
       <div className="flex items-center gap-3 pt-2">
         <Button
-          onClick={() => onNext(selectedLaws)}
+          onClick={() => {
+            // Only pass laws with at least one checked article
+            const filtered = selectedLaws
+              .map((s) => ({ ...s, articles: s.articles.filter((a) => a.checked) }))
+              .filter((s) => s.articles.length > 0)
+            onNext(filtered)
+          }}
           className="flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
           size="lg"
         >

@@ -258,28 +258,40 @@ def verify_citation(citation: str) -> dict:
 
 
 def get_law_categories() -> list[dict]:
-    """Return law category tree for browsing UI."""
+    """Return law category tree for browsing UI (3-level: branch > dept > section)."""
     if not _loaded:
         load_laws()
 
     from collections import defaultdict
-    tree: dict = defaultdict(lambda: defaultdict(int))
+    tree: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for law in _laws:
         cat = law.get("category", "")
         if cat.startswith("廢止"):
             continue
         parts = cat.split("＞")
-        dept = parts[1] if len(parts) > 1 else parts[0]
+        branch = parts[0] if parts else ""
+        dept = parts[1] if len(parts) > 1 else ""
         section = parts[2] if len(parts) > 2 else ""
-        if section:
-            tree[dept][section] += 1
+        if branch and dept:
+            tree[branch][dept][section] += 1
+        elif branch:
+            tree[branch][""][""] += 1
 
     result = []
-    for dept in sorted(tree.keys()):
-        sections = tree[dept]
-        total = sum(sections.values())
-        children = [{"name": s, "count": c} for s, c in sorted(sections.items())]
-        result.append({"name": dept, "count": total, "children": children})
+    for branch in ["憲法", "行政", "立法", "司法", "考試", "監察", "總統"]:
+        if branch not in tree:
+            continue
+        depts = tree[branch]
+        branch_total = sum(sum(secs.values()) for secs in depts.values())
+        dept_children = []
+        for dept in sorted(depts.keys()):
+            if not dept:
+                continue
+            sections = depts[dept]
+            dept_total = sum(sections.values())
+            sec_children = [{"name": s, "count": c} for s, c in sorted(sections.items()) if s]
+            dept_children.append({"name": dept, "count": dept_total, "children": sec_children})
+        result.append({"name": branch, "count": branch_total, "children": dept_children})
     return result
 
 
