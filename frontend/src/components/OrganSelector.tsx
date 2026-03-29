@@ -20,14 +20,19 @@ interface OrganSelectorProps {
   placeholder?: string
 }
 
-function flattenNodes(nodes: OrganNode[]): OrganNode[] {
-  const result: OrganNode[] = []
+interface FlatNode extends OrganNode {
+  _parentPath: string
+}
+
+function flattenNodes(nodes: OrganNode[], parentPath: string = ""): FlatNode[] {
+  const result: FlatNode[] = []
   for (const node of nodes) {
     if (!node.is_custom) {
-      result.push(node)
+      result.push({ ...node, _parentPath: parentPath })
     }
     if (node.children.length > 0) {
-      result.push(...flattenNodes(node.children))
+      const childPath = parentPath ? `${parentPath} > ${node.name}` : node.name
+      result.push(...flattenNodes(node.children, childPath))
     }
   }
   return result
@@ -86,33 +91,44 @@ export default function OrganSelector({
     ).slice(0, 20)
   }, [searchText, allFlat])
 
+  const getParentPath = (excludeLast = false) => {
+    const names = path.map((p) => p.name)
+    return (excludeLast ? names.slice(0, -1) : names).join(" > ")
+  }
+
+  const selectNode = (node: OrganNode, parentPath?: string) => {
+    onChange({
+      name: node.name,
+      receiverType: node.receiver_type,
+      level: node.level,
+      parentContext: parentPath ?? getParentPath(),
+      isCustom: false,
+    })
+    setSearchText("")
+    setPath([])
+    setOpen(false)
+    setCustomInputNode(null)
+    setCustomInputText("")
+  }
+
+  const drillDown = (node: OrganNode) => {
+    setPath((prev) => [...prev, node])
+    setSearchText("")
+    setCustomInputNode(null)
+    setCustomInputText("")
+  }
+
   const handleSelect = (node: OrganNode) => {
     if (node.is_custom) {
-      // Show inline text input for custom entry
       setCustomInputNode(node)
       setCustomInputText("")
       return
     }
     if (node.children.length > 0 && !node.receiver_type) {
-      // drill down
-      setPath((prev) => [...prev, node])
-      setSearchText("")
-      setCustomInputNode(null)
-      setCustomInputText("")
+      // Has children — drill down (user can select via "選取" button)
+      drillDown(node)
     } else {
-      // leaf or receiver_type node - select it
-      onChange({
-        name: node.name,
-        receiverType: node.receiver_type,
-        level: node.level,
-        parentContext: node.parent_context,
-        isCustom: false,
-      })
-      setSearchText("")
-      setPath([])
-      setOpen(false)
-      setCustomInputNode(null)
-      setCustomInputText("")
+      selectNode(node)
     }
   }
 
@@ -230,16 +246,25 @@ export default function OrganSelector({
             </div>
           )}
 
-          {/* Back button */}
+          {/* Back + select current */}
           {path.length > 0 && !isSearching && (
-            <button
-              type="button"
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:bg-gray-100 border-b flex-shrink-0"
-              onClick={handleBack}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              返回
-            </button>
+            <div className="flex items-center border-b flex-shrink-0">
+              <button
+                type="button"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:bg-gray-100"
+                onClick={handleBack}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                返回
+              </button>
+              <button
+                type="button"
+                className="ml-auto px-3 py-2 text-xs text-[#F5922A] hover:bg-[#F5922A]/5 font-medium"
+                onClick={() => selectNode(path[path.length - 1], getParentPath(true))}
+              >
+                選取「{path[path.length - 1].name}」
+              </button>
+            </div>
           )}
 
           {/* Custom input inline */}
@@ -285,7 +310,7 @@ export default function OrganSelector({
                         name: node.name,
                         receiverType: node.receiver_type,
                         level: node.level,
-                        parentContext: node.parent_context,
+                        parentContext: node._parentPath || node.parent_context || "",
                         isCustom: false,
                       })
                       setSearchText("")
@@ -295,8 +320,8 @@ export default function OrganSelector({
                   >
                     <div className="min-w-0">
                       <div>{node.name}</div>
-                      {node.parent_context && (
-                        <div className="text-xs text-muted-foreground truncate">{node.parent_context}</div>
+                      {node._parentPath && (
+                        <div className="text-xs text-muted-foreground truncate">{node._parentPath}</div>
                       )}
                     </div>
                     {node.receiver_type && (
