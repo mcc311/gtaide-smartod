@@ -96,6 +96,26 @@ export default function Step3LawSuggestion({
     setSearching(false)
   }, [searchText])
 
+  // Navigate to a law in the category tree (from search or right panel)
+  const navigateToLawByName = async (lawName: string) => {
+    // First get the law's category via suggest-laws
+    try {
+      const res = await fetch("/api/suggest-laws", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intent: { subject_brief: lawName }, doc_type: "", subtype: "" }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const found = (data.suggestions || []).find((s: LawSuggestion) => s.law_name === lawName)
+        if (found) {
+          navigateToLaw(found)
+          return
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
   // Navigate to a law's category in the tree
   const navigateToLaw = (law: LawSuggestion) => {
     const cat = law.category || ""
@@ -414,7 +434,12 @@ export default function Step3LawSuggestion({
                 {selectedLaws.map((law, i) => (
                   <div key={i} className="px-3 py-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-[#222]">{law.law_name}</span>
+                      <button
+                        onClick={() => navigateToLawByName(law.law_name)}
+                        className="text-sm font-medium text-[#222] hover:text-[#1B2D6B] text-left truncate"
+                      >
+                        {law.law_name}
+                      </button>
                       <button onClick={() => removeLaw(law.law_name)} className="shrink-0 p-1 text-[#999] hover:text-red-500">
                         <X className="h-3.5 w-3.5" />
                       </button>
