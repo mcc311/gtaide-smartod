@@ -269,8 +269,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F5F1EC] flex flex-col">
-      <header className="border-b border-[#E1E1E1] bg-[#F5F1EC] sticky top-0 z-50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <header className="border-b border-[#E1E1E1] bg-white sticky top-0 z-50">
+        <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
             <div className="hidden sm:block h-5 w-px bg-[#E1E1E1]" />
@@ -284,11 +284,33 @@ export default function App() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      {/* Mobile stepper */}
+      <div className="lg:hidden px-4 py-3">
         <Stepper currentStep={currentStep} steps={STEPS} />
       </div>
 
-      <main className={`mx-auto px-4 sm:px-6 pb-12 flex-1 ${currentStep === 3 ? "max-w-5xl" : "max-w-2xl"}`}>
+      <div className="flex flex-1">
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:block w-52 shrink-0 border-r border-[#E1E1E1] bg-white px-5 py-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <Stepper currentStep={currentStep} steps={STEPS} />
+          {docType && (
+            <div className="mt-8 pt-4 border-t border-[#E1E1E1]">
+              <div className="text-xs text-[#999]">公文類型</div>
+              <div className="text-sm font-medium text-[#1B2D6B] mt-1">{docType}</div>
+              {intent.subtype && (
+                <div className="text-xs text-[#F5922A] mt-0.5">{intent.subtype}</div>
+              )}
+            </div>
+          )}
+          {intent.sender && (
+            <div className="mt-4">
+              <div className="text-xs text-[#999]">發文機關</div>
+              <div className="text-sm text-[#222] mt-0.5">{intent.sender}</div>
+            </div>
+          )}
+        </aside>
+
+        <main className="flex-1 min-w-0 px-6 lg:px-10 py-6 pb-12">
         {currentStep === 1 && (
           <Step1Input onParsed={handleParsed} onSkip={handleSkipToManual} />
         )}
@@ -351,10 +373,11 @@ export default function App() {
             onRestart={handleRestart}
           />
         )}
-      </main>
+        </main>
+      </div>
 
-      <footer className="border-t border-[#E1E1E1] bg-[#F5F1EC] mt-auto py-10">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+      <footer className="border-t border-[#E1E1E1] bg-white py-8">
+        <div className="px-6 lg:px-10 lg:ml-52">
           <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
             <div>
               <p className="text-[11px] text-[#999] mb-3 uppercase tracking-wider font-medium">Powered by</p>
