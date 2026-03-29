@@ -110,7 +110,28 @@ export default function App() {
     setDocTypeOverride(dt)
   }
 
+  // Find organ path in tree (e.g., "中央機關 > 行政院 > 勞動部")
+  const findOrganPath = (name: string, nodes: OrganNode[], trail: string[] = []): { path: string; level: number } | null => {
+    for (const n of nodes) {
+      const currentTrail = [...trail, n.name]
+      if (n.name === name) {
+        return {
+          path: currentTrail.slice(0, -1).join(" > "), // parent path (without self)
+          level: n.level ?? currentTrail.length - 1,
+        }
+      }
+      if (n.children.length > 0) {
+        const found = findOrganPath(name, n.children, currentTrail)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
   const applyParsedIntent = (result: ParsedIntentResponse) => {
+    const senderInfo = findOrganPath(result.sender, organTree)
+    const receiverInfo = findOrganPath(result.receiver, organTree)
+
     const newIntent: IntentResult = {
       sender: result.sender,
       receiver: result.receiver,
@@ -122,12 +143,14 @@ export default function App() {
       reference_doc: result.reference_doc || undefined,
       attachments: result.attachments ?? [],
       formality: result.formality || "正式",
-      sender_level: 0,
-      receiver_level: 0,
-      sender_parent: "",
-      receiver_parent: "",
+      sender_level: senderInfo?.level ?? 0,
+      receiver_level: receiverInfo?.level ?? 0,
+      sender_parent: senderInfo?.path ?? "",
+      receiver_parent: receiverInfo?.path ?? "",
       receiver_display_name: result.receiver_display_name || "",
       subtype: result.subtype || "",
+      confident: result.confident,
+      reasoning: result.reasoning,
     }
     setIntent(newIntent)
     setForm((prev) => ({ ...prev, intent: newIntent }))

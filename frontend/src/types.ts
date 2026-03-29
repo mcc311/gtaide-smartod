@@ -105,6 +105,8 @@ export interface ParsedIntentResponse {
   receiver_display_name: string
   is_internal: boolean
   subtype: string
+  confident?: boolean
+  reasoning?: string
 }
 
 export interface GeneratedContentResponse {
