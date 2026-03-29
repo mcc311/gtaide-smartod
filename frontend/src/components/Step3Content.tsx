@@ -15,12 +15,19 @@ import {
 import { Plus, Trash2, Eye, ArrowLeft } from "lucide-react"
 import type { DocType, GenerateRequest } from "@/types"
 
+interface Citation {
+  law_name: string
+  article_no: string
+  valid: boolean
+}
+
 interface Step3ContentProps {
   docType: DocType | null
   form: GenerateRequest
   onFormChange: (form: GenerateRequest) => void
   onPreview: () => void
   onBack: () => void
+  citations?: Citation[]
 }
 
 export default function Step3Content({
@@ -29,6 +36,7 @@ export default function Step3Content({
   onFormChange,
   onPreview,
   onBack,
+  citations = [],
 }: Step3ContentProps) {
   const update = <K extends keyof GenerateRequest>(
     key: K,
@@ -203,6 +211,25 @@ export default function Step3Content({
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Law citations */}
+          {citations.length > 0 && (
+            <div className="space-y-2">
+              <Separator className="bg-[#E1E1E1]" />
+              <Label className="text-[#222] font-medium text-sm flex items-center gap-1.5">
+                <span className="text-base">&#128218;</span> AI 引用法規
+              </Label>
+              <div className="space-y-1">
+                {citations.map((c, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-[#444] bg-[#F5F1EC] rounded-md px-3 py-1.5">
+                    <span className="text-green-600">&#10003;</span>
+                    <span className="font-medium">{c.law_name}</span>
+                    {c.article_no && <span className="text-[#666]">{c.article_no}</span>}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

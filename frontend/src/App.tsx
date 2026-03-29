@@ -84,6 +84,7 @@ export default function App() {
   const [form, setForm] = useState<GenerateRequest>(defaultForm)
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
   const [docTypeOverride, setDocTypeOverride] = useState<DocType | null>(null)
+  const [citations, setCitations] = useState<Array<{law_name: string; article_no: string; valid: boolean}>>([])
 
   useEffect(() => {
     fetch("/api/organs")
@@ -153,7 +154,7 @@ export default function App() {
   }
 
   // Step 3: Clarification complete
-  const handleClarifyComplete = (content: GeneratedContentResponse) => {
+  const handleClarifyComplete = (content: GeneratedContentResponse & { citations?: Array<{law_name: string; article_no: string; valid: boolean}> }) => {
     setForm((prev) => ({
       ...prev,
       subject_detail: content.subject_detail || prev.subject_detail,
@@ -166,6 +167,9 @@ export default function App() {
           ? content.action_items
           : prev.action_items,
     }))
+    if (content.citations) {
+      setCitations(content.citations)
+    }
     setCurrentStep(4)
   }
 
@@ -270,6 +274,7 @@ export default function App() {
             onFormChange={handleFormChange}
             onPreview={handlePreview}
             onBack={() => setCurrentStep(3)}
+            citations={citations}
           />
         )}
 

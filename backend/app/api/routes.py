@@ -256,7 +256,7 @@ def api_generate_with_answers(req: dict):
         rag_docs = retrieve(query, doc_type=doc_type, subtype=subtype, top_k=3)
         rag_examples = format_examples(rag_docs)
 
-    result = generate_with_answers(
+    result, citations = generate_with_answers(
         intent=intent,
         phrases=phrases,
         doc_type=doc_type,
@@ -265,7 +265,9 @@ def api_generate_with_answers(req: dict):
         previous_questions=previous_questions,
         rag_examples=rag_examples,
     )
-    return result.model_dump()
+    data = result.model_dump()
+    data["citations"] = citations
+    return data
 
 
 @router.get("/organs")

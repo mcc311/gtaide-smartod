@@ -82,7 +82,7 @@ def generate_with_answers(
     ]
 
     # Use tool calling to let LLM look up law citations
-    result = chat_with_tools_then_structured(
+    result, tool_calls_log = chat_with_tools_then_structured(
         messages=messages,
         tools=LAW_TOOLS,
         tool_handlers=LAW_TOOL_HANDLERS,
@@ -103,4 +103,24 @@ def generate_with_answers(
     result.explanation_items = [clean(i) for i in result.explanation_items if i.strip()]
     result.action_items = [clean(i) for i in result.action_items if i.strip()]
 
-    return result
+    # Extract law citations from tool calls
+    citations = []
+    for tc in tool_calls_log:
+        if tc["tool"] == "verify_citation" and isinstance(tc.get("result"), dict):
+            r = tc["result"]
+            if r.get("valid"):
+                citations.append({
+                    "law_name": r.get("law_name", ""),
+                    "article_no": r.get("article_no", ""),
+                    "valid": True,
+                })
+        elif tc["tool"] == "get_article" and isinstance(tc.get("result"), dict):
+            r = tc["result"]
+            if r.get("found"):
+                citations.append({
+                    "law_name": r.get("law_name", ""),
+                    "article_no": r.get("article_no", ""),
+                    "valid": True,
+                })
+
+    return result, citations
