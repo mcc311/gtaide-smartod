@@ -110,15 +110,39 @@ export default function Step3LawSuggestion({
     } catch { /* ignore */ }
   }
 
-  const toggleLaw = (law: LawSuggestion) => {
+  const toggleLaw = async (law: LawSuggestion) => {
     if (isSelected(law.law_name)) {
       removeLaw(law.law_name)
-    } else {
-      setSelectedLaws((prev) => [...prev, {
-        law_name: law.law_name,
-        articles: law.articles.map((a) => ({ ...a, checked: true })),
-      }])
+      return
     }
+
+    let articles = law.articles
+    if (articles.length === 0) {
+      // Fetch articles for this law
+      try {
+        const res = await fetch("/api/suggest-laws", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            intent: { subject_brief: law.law_name },
+            doc_type: "",
+            subtype: "",
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const found = (data.suggestions || []).find(
+            (s: LawSuggestion) => s.law_name === law.law_name
+          )
+          if (found) articles = found.articles
+        }
+      } catch { /* ignore */ }
+    }
+
+    setSelectedLaws((prev) => [...prev, {
+      law_name: law.law_name,
+      articles: articles.map((a) => ({ ...a, checked: true })),
+    }])
   }
 
   const toggleArticle = (lawName: string, articleNo: string) => {
