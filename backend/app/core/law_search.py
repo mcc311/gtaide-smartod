@@ -59,8 +59,13 @@ def load_laws():
     logger.info(f"Total laws loaded: {len(_laws)}")
 
 
-def search_law(query: str, top_k: int = 5) -> list[dict]:
-    """Search laws by name keyword matching.
+def search_law(query: str, category_prefix: str = "", top_k: int = 5) -> list[dict]:
+    """Search laws by name keyword matching, optionally scoped to a category.
+
+    Args:
+        query: keyword to search in law names
+        category_prefix: category prefix to filter (e.g. "行政＞勞動部")
+        top_k: max results
 
     Returns list of {name, level, category, article_count, relevance}.
     """
@@ -70,16 +75,24 @@ def search_law(query: str, top_k: int = 5) -> list[dict]:
     query_lower = query.lower()
     query_tokens = set(jieba.cut(query))
 
+    candidates = _laws
+    if category_prefix:
+        candidates = [l for l in _laws if l["category"].startswith(category_prefix)]
+
     results = []
-    for law in _laws:
+    for law in candidates:
         name = law["name"]
         name_lower = name.lower()
 
+        # Exact name match (highest priority)
+        if query == name:
+            score = 200
         # Exact substring match in name
-        if query in name:
-            score = 100
+        elif query in name:
+            # Prefer shorter names (more specific match)
+            score = 150 - len(name)
         elif query_lower in name_lower:
-            score = 90
+            score = 90 - len(name)
         else:
             # Token overlap
             name_tokens = set(jieba.cut(name))
@@ -109,12 +122,18 @@ def get_article(law_name: str, article_no: str = "") -> dict:
     if not _loaded:
         load_laws()
 
-    # Find the law
+    # Find the law (exact match first, then substring)
     law = None
     for l in _laws:
-        if l["name"] == law_name or law_name in l["name"]:
+        if l["name"] == law_name:
             law = l
             break
+    if not law:
+        # Substring match, prefer shortest name (most specific)
+        candidates = [l for l in _laws if law_name in l["name"]]
+        if candidates:
+            candidates.sort(key=lambda l: len(l["name"]))
+            law = candidates[0]
 
     if not law:
         return {"found": False, "error": f"找不到法規「{law_name}」"}
@@ -152,7 +171,7 @@ def get_article(law_name: str, article_no: str = "") -> dict:
     return {
         "found": False,
         "law_name": law["name"],
-        "error": f"找不到第{article_no}條",
+        "error": f"找不到{article_no}",
         "available_articles": [a["no"] for a in articles[:10]],
     }
 
@@ -216,13 +235,17 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "search_law",
-            "description": "搜尋台灣法規資料庫。輸入關鍵字，回傳相關法規名稱和基本資訊。引用法條前務必先用此工具確認法規名稱正確。",
+            "description": "搜尋台灣法規資料庫（11,752部）。建議帶 category_prefix 限縮搜尋範圍。常用類別：行政＞勞動部、行政＞經濟部＞商業目、行政＞衛生福利部＞食品藥物管理目、行政＞財政部＞賦稅目、行政＞內政部＞警政目。",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "法規關鍵字，例如「勞工保險」「職業安全衛生」「行政程序」"
+                        "description": "法規關鍵字，例如「勞工保險」「公司法」「食品安全」"
+                    },
+                    "category_prefix": {
+                        "type": "string",
+                        "description": "類別前綴，限縮搜尋範圍。如「行政＞勞動部」「行政＞經濟部＞商業目」。留空搜全部。"
                     }
                 },
                 "required": ["query"]
