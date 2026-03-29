@@ -94,30 +94,31 @@ export default function Step3LawSuggestion({
   const handleBrowseCategory = async (catName: string) => {
     const newPath = [...catPath, catName]
     setCatPath(newPath)
+    // Build category prefix: e.g., "行政＞勞動部＞勞動保險目"
+    const prefix = newPath.join("＞")
     try {
-      const res = await fetch("/api/suggest-laws", {
+      const res = await fetch("/api/browse-laws", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          intent: { subject_brief: catName },
-          doc_type: "",
-          subtype: "",
-        }),
+        body: JSON.stringify({ category_prefix: prefix }),
       })
       if (res.ok) {
         const data = await res.json()
-        setCatResults(data.suggestions || [])
+        setCatResults(data.laws || [])
         setBrowsingCat(true)
       }
     } catch { /* ignore */ }
   }
 
-  const addLaw = (law: LawSuggestion) => {
-    if (selectedLaws.some((s) => s.law_name === law.law_name)) return
-    setSelectedLaws((prev) => [...prev, {
-      law_name: law.law_name,
-      articles: law.articles.map((a) => ({ ...a, checked: true })),
-    }])
+  const toggleLaw = (law: LawSuggestion) => {
+    if (isSelected(law.law_name)) {
+      removeLaw(law.law_name)
+    } else {
+      setSelectedLaws((prev) => [...prev, {
+        law_name: law.law_name,
+        articles: law.articles.map((a) => ({ ...a, checked: true })),
+      }])
+    }
   }
 
   const toggleArticle = (lawName: string, articleNo: string) => {
@@ -194,8 +195,8 @@ export default function Step3LawSuggestion({
               {searchResults.map((law, i) => (
                 <button
                   key={i}
-                  onClick={() => addLaw(law)}
-                  disabled={isSelected(law.law_name)}
+                  onClick={() => toggleLaw(law)}
+                  
                   className={`w-full text-left px-3 py-2 text-sm border-t border-[#E1E1E1] transition-colors ${
                     isSelected(law.law_name)
                       ? "bg-[#F5922A]/5 text-[#999]"
@@ -237,8 +238,8 @@ export default function Step3LawSuggestion({
                 catResults.map((law, i) => (
                   <button
                     key={i}
-                    onClick={() => addLaw(law)}
-                    disabled={isSelected(law.law_name)}
+                    onClick={() => toggleLaw(law)}
+                    
                     className={`w-full text-left px-3 py-1.5 text-sm border-t border-[#E1E1E1] transition-colors ${
                       isSelected(law.law_name) ? "bg-[#F5922A]/5 text-[#999]" : "hover:bg-[#F5F1EC]"
                     }`}

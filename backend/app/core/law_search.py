@@ -295,6 +295,28 @@ def get_law_categories() -> list[dict]:
     return result
 
 
+def browse_laws_by_category(category_prefix: str, top_k: int = 20) -> list[dict]:
+    """List laws under a category prefix."""
+    if not _loaded:
+        load_laws()
+
+    results = []
+    for law in _laws:
+        cat = law.get("category", "")
+        if cat.startswith("廢止"):
+            continue
+        if cat.startswith(category_prefix) or category_prefix in cat:
+            results.append({
+                "law_name": law["name"],
+                "category": cat,
+                "article_count": len(law["articles"]),
+                "articles": [],
+            })
+            if len(results) >= top_k:
+                break
+    return results
+
+
 def suggest_laws(
     subject_brief: str,
     doc_type: str = "",
