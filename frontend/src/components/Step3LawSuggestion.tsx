@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, ChevronRight, ChevronLeft, X, Sparkles, ArrowLeft, ArrowRight } from "lucide-react"
+import { Search, ChevronRight, ChevronLeft, X, Sparkles, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 
 interface LawArticle {
   no: string
@@ -51,7 +51,11 @@ export default function Step3LawSuggestion({
   const [catPath, setCatPath] = useState<string[]>([])
   const [catResults, setCatResults] = useState<LawSuggestion[]>([])
   const [browsingCat, setBrowsingCat] = useState(false)
-  const [detailLaw, setDetailLaw] = useState<SelectedLaw | null>(null)
+
+  // Currently expanded law in left panel (showing articles)
+  const [expandedLaw, setExpandedLaw] = useState<string | null>(null)
+  const [expandedArticles, setExpandedArticles] = useState<LawArticle[]>([])
+  const [loadingArticles, setLoadingArticles] = useState(false)
 
   useEffect(() => {
     const initial = suggestions
@@ -73,6 +77,7 @@ export default function Step3LawSuggestion({
   const handleSearch = useCallback(async () => {
     if (!searchText.trim()) return
     setSearching(true)
+    setExpandedLaw(null)
     try {
       const res = await fetch("/api/suggest-laws", {
         method: "POST",
@@ -94,8 +99,8 @@ export default function Step3LawSuggestion({
   const handleBrowseCategory = async (catName: string) => {
     const newPath = [...catPath, catName]
     setCatPath(newPath)
-    // Build category prefix: e.g., "行政＞勞動部＞勞動保險目"
     const prefix = newPath.join("＞")
+    setExpandedLaw(null)
     try {
       const res = await fetch("/api/browse-laws", {
         method: "POST",
@@ -110,54 +115,69 @@ export default function Step3LawSuggestion({
     } catch { /* ignore */ }
   }
 
-  const toggleLaw = async (law: LawSuggestion) => {
-    if (isSelected(law.law_name)) {
-      removeLaw(law.law_name)
+  // Expand a law to show its articles
+  const handleExpandLaw = async (lawName: string) => {
+    if (expandedLaw === lawName) {
+      setExpandedLaw(null)
       return
     }
-
-    let articles = law.articles
-    if (articles.length === 0) {
-      // Fetch articles for this law
-      try {
-        const res = await fetch("/api/suggest-laws", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            intent: { subject_brief: law.law_name },
-            doc_type: "",
-            subtype: "",
-          }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const found = (data.suggestions || []).find(
-            (s: LawSuggestion) => s.law_name === law.law_name
-          )
-          if (found) articles = found.articles
-        }
-      } catch { /* ignore */ }
-    }
-
-    setSelectedLaws((prev) => [...prev, {
-      law_name: law.law_name,
-      articles: articles.map((a) => ({ ...a, checked: true })),
-    }])
+    setExpandedLaw(lawName)
+    setLoadingArticles(true)
+    try {
+      const res = await fetch("/api/law-articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ law_name: lawName }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setExpandedArticles(data.articles || [])
+      }
+    } catch { /* ignore */ }
+    setLoadingArticles(false)
   }
 
-  const toggleArticle = (lawName: string, articleNo: string) => {
-    setSelectedLaws((prev) => prev.map((s) =>
-      s.law_name === lawName
-        ? { ...s, articles: s.articles.map((a) => a.no === articleNo ? { ...a, checked: !a.checked } : a) }
-        : s
-    ))
+  const toggleArticleSelection = (lawName: string, article: LawArticle) => {
+    const existing = selectedLaws.find((s) => s.law_name === lawName)
+    if (existing) {
+      const hasArticle = existing.articles.some((a) => a.no === article.no)
+      if (hasArticle) {
+        // Toggle off
+        const updated = existing.articles.filter((a) => a.no !== article.no)
+        if (updated.length === 0) {
+          setSelectedLaws((prev) => prev.filter((s) => s.law_name !== lawName))
+        } else {
+          setSelectedLaws((prev) =>
+            prev.map((s) => (s.law_name === lawName ? { ...s, articles: updated } : s))
+          )
+        }
+      } else {
+        // Add article
+        setSelectedLaws((prev) =>
+          prev.map((s) =>
+            s.law_name === lawName
+              ? { ...s, articles: [...s.articles, { ...article, checked: true }] }
+              : s
+          )
+        )
+      }
+    } else {
+      // New law
+      setSelectedLaws((prev) => [
+        ...prev,
+        { law_name: lawName, articles: [{ ...article, checked: true }] },
+      ])
+    }
+  }
+
+  const isArticleSelected = (lawName: string, articleNo: string) => {
+    const law = selectedLaws.find((s) => s.law_name === lawName)
+    return law?.articles.some((a) => a.no === articleNo) ?? false
   }
 
   const removeLaw = (lawName: string) => {
     setSelectedLaws((prev) => prev.filter((s) => s.law_name !== lawName))
   }
-
-  const isSelected = (lawName: string) => selectedLaws.some((s) => s.law_name === lawName)
 
   const currentCatChildren = (() => {
     let node = categories
@@ -169,18 +189,80 @@ export default function Step3LawSuggestion({
     return node
   })()
 
+  // Render a law item (in search results or category browse)
+  const renderLawItem = (law: LawSuggestion, i: number) => {
+    const isExpanded = expandedLaw === law.law_name
+    const selectedCount = selectedLaws.find((s) => s.law_name === law.law_name)?.articles.length ?? 0
+
+    return (
+      <div key={i} className="border-t border-[#E1E1E1]">
+        <button
+          onClick={() => handleExpandLaw(law.law_name)}
+          className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
+            isExpanded ? "bg-[#1B2D6B]/5" : "hover:bg-[#F5F1EC]"
+          }`}
+        >
+          <div>
+            <span className="font-medium">{law.law_name}</span>
+            {law.article_count && <span className="text-xs text-[#999] ml-1">{law.article_count}條</span>}
+            {selectedCount > 0 && (
+              <span className="ml-2 text-xs text-[#F5922A] bg-[#F5922A]/10 px-1.5 py-0.5 rounded">
+                已選 {selectedCount} 條
+              </span>
+            )}
+          </div>
+          <ChevronRight className={`h-3 w-3 text-[#999] transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+        </button>
+
+        {isExpanded && (
+          <div className="bg-[#FAFAFA] border-t border-[#E1E1E1] max-h-60 overflow-y-auto">
+            {loadingArticles ? (
+              <div className="flex items-center justify-center py-4 text-sm text-[#999]">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />載入條文...
+              </div>
+            ) : expandedArticles.length === 0 ? (
+              <div className="px-3 py-3 text-xs text-[#999]">無條文資料</div>
+            ) : (
+              expandedArticles.map((a, ai) => {
+                if (!a.no) return null
+                const checked = isArticleSelected(law.law_name, a.no)
+                return (
+                  <label
+                    key={ai}
+                    className={`flex items-start gap-2 px-3 py-1.5 cursor-pointer hover:bg-white transition-colors ${
+                      checked ? "bg-[#F5922A]/5" : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleArticleSelection(law.law_name, a)}
+                      className="mt-0.5 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
+                    />
+                    <span className="text-xs leading-relaxed">
+                      <span className="font-medium text-[#444]">{a.no}</span>
+                      <span className="text-[#666]">：{a.content.slice(0, 80)}{a.content.length > 80 ? "..." : ""}</span>
+                    </span>
+                  </label>
+                )
+              })
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-medium text-[#1B2D6B]">法規引用</h2>
-          <p className="text-sm text-[#666] mt-1">
-            AI 已預選相關法規。可搜尋或瀏覽分類來新增。
-          </p>
+          <p className="text-sm text-[#666] mt-1">搜尋或瀏覽法規，勾選要引用的條文。</p>
         </div>
         {suggestions.length > 0 && (
           <span className="flex items-center gap-1 text-xs text-[#F5922A] bg-[#F5922A]/10 px-2 py-1 rounded-full">
-            <Sparkles className="h-3 w-3" /> AI 已建議 {suggestions.length} 部
+            <Sparkles className="h-3 w-3" /> AI 已建議
           </span>
         )}
       </div>
@@ -206,7 +288,7 @@ export default function Step3LawSuggestion({
               size="sm"
               className="bg-[#1B2D6B] hover:bg-[#152350] text-white"
             >
-              {searching ? "搜尋中..." : "搜尋"}
+              {searching ? "..." : "搜尋"}
             </Button>
           </div>
 
@@ -214,24 +296,9 @@ export default function Step3LawSuggestion({
           {searchResults.length > 0 && (
             <div className="border border-[#E1E1E1] rounded-lg overflow-hidden">
               <div className="px-3 py-1.5 bg-[#F5F1EC] text-xs font-medium text-[#666]">
-                搜尋結果（點擊加入）
+                搜尋結果（點擊展開條文）
               </div>
-              {searchResults.map((law, i) => (
-                <button
-                  key={i}
-                  onClick={() => toggleLaw(law)}
-                  
-                  className={`w-full text-left px-3 py-2 text-sm border-t border-[#E1E1E1] transition-colors ${
-                    isSelected(law.law_name)
-                      ? "bg-[#F5922A]/5 text-[#999]"
-                      : "hover:bg-[#F5F1EC]"
-                  }`}
-                >
-                  <span className="font-medium">{law.law_name}</span>
-                  {law.article_count && <span className="text-xs text-[#999] ml-2">{law.article_count}條</span>}
-                  {isSelected(law.law_name) && <span className="ml-2 text-xs text-[#F5922A]">已選</span>}
-                </button>
-              ))}
+              {searchResults.map((law, i) => renderLawItem(law, i))}
             </div>
           )}
 
@@ -250,6 +317,7 @@ export default function Step3LawSuggestion({
                   setCatPath((prev) => prev.slice(0, -1))
                   setCatResults([])
                   setBrowsingCat(false)
+                  setExpandedLaw(null)
                 }}
                 className="flex items-center gap-1 w-full px-3 py-1.5 text-xs text-[#666] hover:bg-[#F5F1EC] border-t border-[#E1E1E1]"
               >
@@ -257,21 +325,9 @@ export default function Step3LawSuggestion({
               </button>
             )}
 
-            <div className="max-h-64 overflow-y-auto">
+            <div className="max-h-72 overflow-y-auto">
               {browsingCat && catResults.length > 0 ? (
-                catResults.map((law, i) => (
-                  <button
-                    key={i}
-                    onClick={() => toggleLaw(law)}
-                    
-                    className={`w-full text-left px-3 py-1.5 text-sm border-t border-[#E1E1E1] transition-colors ${
-                      isSelected(law.law_name) ? "bg-[#F5922A]/5 text-[#999]" : "hover:bg-[#F5F1EC]"
-                    }`}
-                  >
-                    <span>{law.law_name}</span>
-                    {isSelected(law.law_name) && <span className="ml-2 text-xs text-[#F5922A]">已選</span>}
-                  </button>
-                ))
+                catResults.map((law, i) => renderLawItem(law, i + 1000))
               ) : (
                 currentCatChildren.map((cat, i) => (
                   <button
@@ -281,6 +337,7 @@ export default function Step3LawSuggestion({
                         setCatPath((prev) => [...prev, cat.name])
                         setBrowsingCat(false)
                         setCatResults([])
+                        setExpandedLaw(null)
                       } else {
                         handleBrowseCategory(cat.name)
                       }
@@ -295,7 +352,7 @@ export default function Step3LawSuggestion({
                   </button>
                 ))
               )}
-              {currentCatChildren.length === 0 && !browsingCat && (
+              {currentCatChildren.length === 0 && !browsingCat && categories.length === 0 && (
                 <div className="px-3 py-4 text-sm text-[#999] text-center">載入中...</div>
               )}
             </div>
@@ -306,15 +363,15 @@ export default function Step3LawSuggestion({
         <div className="lg:col-span-1">
           <div className="border border-[#E1E1E1] rounded-lg overflow-hidden lg:sticky lg:top-4">
             <div className="px-3 py-2 bg-[#1B2D6B] text-white text-sm font-medium">
-              已選法規 ({selectedLaws.length})
+              已選引用 ({selectedLaws.reduce((sum, s) => sum + s.articles.length, 0)} 條)
             </div>
 
             {selectedLaws.length === 0 ? (
               <div className="px-3 py-8 text-sm text-[#999] text-center">
-                尚未選取法規
+                從左邊選取法規條文
               </div>
             ) : (
-              <div className="divide-y divide-[#E1E1E1] max-h-96 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto divide-y divide-[#E1E1E1]">
                 {selectedLaws.map((law, i) => (
                   <div key={i} className="px-3 py-2">
                     <div className="flex items-center justify-between">
@@ -326,23 +383,13 @@ export default function Step3LawSuggestion({
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    {law.articles.length > 0 && (
-                      <div className="mt-1 space-y-0.5">
-                        {law.articles.map((a, ai) => (
-                          <label key={ai} className="flex items-start gap-1.5 cursor-pointer group">
-                            <input
-                              type="checkbox"
-                              checked={a.checked}
-                              onChange={() => toggleArticle(law.law_name, a.no)}
-                              className="mt-0.5 rounded border-[#E1E1E1] text-[#F5922A] focus:ring-[#F5922A]"
-                            />
-                            <span className={`text-xs leading-relaxed ${a.checked ? "text-[#444]" : "text-[#999] line-through"}`}>
-                              <span className="font-medium">{a.no}</span>：{a.content.slice(0, 50)}...
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
+                    <div className="mt-1 space-y-0.5">
+                      {law.articles.map((a, ai) => (
+                        <div key={ai} className="text-xs text-[#666]">
+                          <span className="font-medium text-[#F5922A]">{a.no}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -351,40 +398,11 @@ export default function Step3LawSuggestion({
         </div>
       </div>
 
-      {/* Detail dialog */}
-      {detailLaw && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setDetailLaw(null)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 max-h-[70vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-[#E1E1E1] flex items-center justify-between">
-              <h3 className="font-medium text-[#1B2D6B]">{detailLaw.law_name}</h3>
-              <button onClick={() => setDetailLaw(null)} className="p-1 hover:bg-[#F5F1EC] rounded">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="px-4 py-3 overflow-y-auto max-h-[55vh] space-y-3">
-              {detailLaw.articles.length > 0 ? (
-                detailLaw.articles.map((a, ai) => (
-                  <div key={ai} className="text-sm">
-                    <div className="font-medium text-[#1B2D6B]">{a.no}</div>
-                    <div className="text-[#444] mt-1 leading-relaxed">{a.content}</div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-sm text-[#999]">無條文預覽</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Actions */}
       <div className="flex items-center gap-3 pt-2">
         <Button
           onClick={() => {
-            // Only pass laws with at least one checked article
-            const filtered = selectedLaws
-              .map((s) => ({ ...s, articles: s.articles.filter((a) => a.checked) }))
-              .filter((s) => s.articles.length > 0)
+            const filtered = selectedLaws.filter((s) => s.articles.length > 0)
             onNext(filtered)
           }}
           className="flex-1 bg-[#F5922A] hover:bg-[#D47B22] text-white rounded-full font-medium"
@@ -398,7 +416,6 @@ export default function Step3LawSuggestion({
         </Button>
         <Button variant="outline" onClick={onBack} className="border-[#1B2D6B] text-[#1B2D6B] rounded-full" size="lg">
           <ArrowLeft className="h-4 w-4" />
-          上一步
         </Button>
       </div>
     </div>

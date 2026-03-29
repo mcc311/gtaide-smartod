@@ -23,7 +23,7 @@ from app.core.rule_engine import select_phrases, select_opening, select_expectat
 from app.core.templates import render_document
 from app.core.validator import validate_document
 from app.core.intent_parser import parse_intent
-from app.core.law_search import suggest_laws, get_law_categories, browse_laws_by_category
+from app.core.law_search import suggest_laws, get_law_categories, browse_laws_by_category, get_article
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
 from app.core.followup import generate_followup
@@ -284,6 +284,42 @@ def api_suggest_laws(req: dict):
             subtype=subtype,
             organ=intent.get("sender", ""),
         )
+    }
+
+
+@router.post("/law-articles")
+def api_law_articles(req: dict):
+    """Get all articles for a specific law."""
+    from app.core.law_search import _laws, load_laws
+    load_laws()
+    law_name = req.get("law_name", "")
+    if not law_name:
+        return {"error": "law_name required"}
+    # Find the law
+    law = None
+    for l in _laws:
+        if l["name"] == law_name:
+            law = l
+            break
+    if not law:
+        for l in _laws:
+            if law_name in l["name"]:
+                law = l
+                break
+    if not law:
+        return {"found": False, "error": f"找不到法規「{law_name}」"}
+    # Return all real articles (filter out chapter headers)
+    articles = [
+        {"no": a["no"], "content": a["content"][:200]}
+        for a in law["articles"]
+        if a["no"] and a["content"] and not a["content"].strip().startswith("第") or "條" in a.get("no", "")
+    ]
+    return {
+        "found": True,
+        "law_name": law["name"],
+        "category": law.get("category", ""),
+        "total_articles": len(articles),
+        "articles": articles,
     }
 
 
