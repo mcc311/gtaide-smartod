@@ -25,12 +25,18 @@ interface ClarifyResult {
   rag_examples?: string[]
 }
 
+interface SelectedLawRef {
+  law_name: string
+  articles: Array<{ no: string; content: string }>
+}
+
 interface Step2ClarifyProps {
   intent: Record<string, unknown>
   phrases: Record<string, string>
   docType: string
   direction: string
   subtype: string
+  selectedLaws?: SelectedLawRef[]
   onComplete: (content: { subject_detail: string; explanation_items: string[]; action_items: string[] }) => void
   onSkip: () => void
   onBack: () => void
@@ -42,6 +48,7 @@ export default function Step2Clarify({
   docType,
   direction,
   subtype,
+  selectedLaws = [],
   onComplete,
   onSkip,
   onBack,
@@ -155,6 +162,10 @@ export default function Step2Clarify({
             })),
             ...(additionalNotes.trim() ? [{ field_key: "additional_notes", header: "其他補充", question: "其他補充資訊" }] : []),
           ],
+          selected_laws: selectedLaws.map((l) => ({
+            law_name: l.law_name,
+            articles: l.articles.map((a) => `${a.no}：${a.content}`),
+          })),
           rag_examples: ragExamples,
         }),
       })

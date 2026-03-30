@@ -345,6 +345,7 @@ export default function App() {
             docType={docType ?? "函"}
             direction={phraseResult?.direction ?? "平行文"}
             subtype={intent.subtype}
+            selectedLaws={lawSuggestions.filter(s => s.selected).map(s => ({ law_name: s.law_name, articles: s.articles }))}
             onComplete={handleClarifyComplete}
             onSkip={handleClarifySkip}
             onBack={() => setCurrentStep(3)}

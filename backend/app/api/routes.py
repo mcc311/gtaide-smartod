@@ -257,6 +257,28 @@ def api_generate_with_answers(req: dict):
         rag_docs = retrieve(query, doc_type=doc_type, subtype=subtype, top_k=3)
         rag_examples = format_examples(rag_docs)
 
+    # Build law citation context from user's Step 3 selections
+    selected_laws = req.get("selected_laws", [])
+    law_context = ""
+    if selected_laws:
+        cite_parts = []
+        for law in selected_laws:
+            name = law.get("law_name", "")
+            articles = law.get("articles", [])
+            art_nos = []
+            for art in articles:
+                if isinstance(art, str):
+                    art_nos.append(art.split("：")[0].strip())
+                elif isinstance(art, dict):
+                    art_nos.append(art.get("no", ""))
+            art_nos = [a for a in art_nos if a]
+            if art_nos:
+                cite_parts.append(f"{name}{'、'.join(art_nos)}")
+            else:
+                cite_parts.append(name)
+        basis_text = "、".join(cite_parts)
+        law_context = f"使用者選擇引用的法規依據：{basis_text}。\n請在依據段或說明第一項使用此引用（格式：依○○法第○條規定）。如需引述條文內容到說明段，請用 get_article 工具查詢完整條文。"
+
     result, citations = generate_with_answers(
         intent=intent,
         phrases=phrases,
@@ -265,6 +287,7 @@ def api_generate_with_answers(req: dict):
         answers=answers,
         previous_questions=previous_questions,
         rag_examples=rag_examples,
+        law_context=law_context,
     )
     data = result.model_dump()
     data["citations"] = citations

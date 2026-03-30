@@ -21,6 +21,10 @@
 {% for key, value in answers.items() %}
   {{ answer_labels.get(key, key) }}：{{ value }}
 {% endfor %}
+{% if law_context %}
+
+{{ law_context }}
+{% endif %}
 {% if rag_examples %}
 
 以下是資料庫中類似公文的範例，請參考其措辭風格和內容結構：

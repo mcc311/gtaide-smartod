@@ -57,7 +57,8 @@ def generate_with_answers(
     answers: dict[str, str],
     previous_questions: list[dict] | None = None,
     rag_examples: list[str] | None = None,
-) -> ContentWithAnswers:
+    law_context: str = "",
+) -> tuple:
     """Generate content using the original intent + user's clarification answers."""
     # Build answer_labels mapping from field_key to header
     answer_labels = {}
@@ -78,6 +79,7 @@ def generate_with_answers(
             answers=answers,
             answer_labels=answer_labels,
             rag_examples=rag_examples,
+            law_context=law_context,
         )},
     ]
 
