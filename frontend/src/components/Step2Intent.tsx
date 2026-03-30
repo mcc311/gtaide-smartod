@@ -197,6 +197,25 @@ export default function Step2Intent({
             </div>
           </div>
 
+          {/* Direction badges — right after sender/receiver */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {phraseResult && (
+              <Badge variant="outline" className={directionColor(phraseResult.direction)}>
+                {phraseResult.direction}
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={
+                intent.is_internal
+                  ? "bg-[#F5F1EC] text-[#666] border-[#E1E1E1] rounded-md"
+                  : "bg-[#DBEAFE] text-[#1E40AF] border-[#DBEAFE] rounded-md"
+              }
+            >
+              {intent.is_internal ? "內部行文" : "對外行文"}
+            </Badge>
+          </div>
+
           {/* Receiver type + Display name row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="flex items-center gap-2 flex-wrap">
@@ -281,24 +300,6 @@ export default function Step2Intent({
             </div>
           )}
 
-          {/* Direction and internal/external badges */}
-          <div className="flex items-center gap-3 flex-wrap">
-            {phraseResult && (
-              <Badge variant="outline" className={directionColor(phraseResult.direction)}>
-                行文方向：{phraseResult.direction}
-              </Badge>
-            )}
-            <Badge
-              variant="outline"
-              className={
-                intent.is_internal
-                  ? "bg-[#F5F1EC] text-[#666] border-[#E1E1E1] rounded-md"
-                  : "bg-[#DBEAFE] text-[#1E40AF] border-[#DBEAFE] rounded-md"
-              }
-            >
-              {intent.is_internal ? "內部行文" : "對外行文"}
-            </Badge>
-          </div>
 
           <Separator className="bg-[#E1E1E1]" />
 
