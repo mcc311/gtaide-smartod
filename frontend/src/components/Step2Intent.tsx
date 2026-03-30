@@ -167,84 +167,86 @@ export default function Step2Intent({
       </p>
 
       <div className="space-y-4">
-          {/* Sender */}
-          <div className="space-y-1">
-            <Label className="text-[#222] font-medium text-sm">發文機關</Label>
-            <OrganSelector
-              label="發文機關"
-              value={intent.sender}
-              onChange={handleSenderChange}
-              organTree={organTree}
-              placeholder="例：教育部"
-            />
-            {intent.sender_parent && (
-              <div className="text-xs text-[#999] pl-1">{intent.sender_parent} &gt; {intent.sender}</div>
-            )}
-          </div>
-
-          {/* Receiver */}
-          <div className="space-y-1">
-            <Label className="text-[#222] font-medium text-sm">受文機關</Label>
-            <OrganSelector
-              label="受文者"
-              value={intent.receiver}
-              onChange={handleReceiverChange}
-              organTree={organTree}
-              placeholder="例：國立臺灣大學"
-            />
-            {intent.receiver_parent && (
-              <div className="text-xs text-[#999] pl-1">{intent.receiver_parent} &gt; {intent.receiver}</div>
-            )}
-          </div>
-
-          {/* Receiver type badge */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <Label className="shrink-0 text-[#222] font-medium text-sm">受文者類型：</Label>
-            <Select
-              value={intent.receiver_type}
-              onValueChange={(v) => updateField("receiver_type", v as ReceiverType)}
-            >
-              <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["政府機關", "人民", "企業/公司", "團體/協會", "學校", "公眾", "自訂"].map((rt) => (
-                  <SelectItem key={rt} value={rt}>{rt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Display name for non-gov */}
-          {showDisplayNameInput && displayNameInfo && (
-            <div className="space-y-2">
-              <Label className="text-[#222] font-medium text-sm">{displayNameInfo.label}</Label>
-              <Input
-                value={intent.receiver_display_name}
-                onChange={(e) => updateField("receiver_display_name", e.target.value)}
-                placeholder={displayNameInfo.placeholder}
-                className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+          {/* Sender + Receiver row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label className="text-[#222] font-medium text-sm">發文機關</Label>
+              <OrganSelector
+                label="發文機關"
+                value={intent.sender}
+                onChange={handleSenderChange}
+                organTree={organTree}
+                placeholder="例：教育部"
               />
+              {intent.sender_parent && (
+                <div className="text-xs text-[#999] pl-1">{intent.sender_parent} &gt; {intent.sender}</div>
+              )}
             </div>
-          )}
+            <div className="space-y-1">
+              <Label className="text-[#222] font-medium text-sm">受文機關</Label>
+              <OrganSelector
+                label="受文者"
+                value={intent.receiver}
+                onChange={handleReceiverChange}
+                organTree={organTree}
+                placeholder="例：國立臺灣大學"
+              />
+              {intent.receiver_parent && (
+                <div className="text-xs text-[#999] pl-1">{intent.receiver_parent} &gt; {intent.receiver}</div>
+              )}
+            </div>
+          </div>
 
-          {/* Doc type */}
-          <div className="space-y-2">
+          {/* Receiver type + Display name row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <Label className="shrink-0 text-[#222] font-medium text-sm">公文類型</Label>
+              <Label className="shrink-0 text-[#222] font-medium text-sm">受文者類型：</Label>
               <Select
-                value={docType ?? ""}
-                onValueChange={(v) => onDocTypeOverride(v as DocType)}
+                value={intent.receiver_type}
+                onValueChange={(v) => updateField("receiver_type", v as ReceiverType)}
               >
                 <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                  <SelectValue placeholder="選擇類型" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {DOC_TYPES.map((dt) => (
-                    <SelectItem key={dt} value={dt}>{dt}</SelectItem>
+                  {["政府機關", "人民", "企業/公司", "團體/協會", "學校", "公眾", "自訂"].map((rt) => (
+                    <SelectItem key={rt} value={rt}>{rt}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            {showDisplayNameInput && displayNameInfo && (
+              <div className="space-y-1">
+                <Label className="text-[#222] font-medium text-sm">{displayNameInfo.label}</Label>
+                <Input
+                  value={intent.receiver_display_name}
+                  onChange={(e) => updateField("receiver_display_name", e.target.value)}
+                  placeholder={displayNameInfo.placeholder}
+                  className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Doc type + Subtype row */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Label className="shrink-0 text-[#222] font-medium text-sm">公文類型</Label>
+                <Select
+                  value={docType ?? ""}
+                  onValueChange={(v) => onDocTypeOverride(v as DocType)}
+                >
+                  <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
+                    <SelectValue placeholder="選擇類型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOC_TYPES.map((dt) => (
+                      <SelectItem key={dt} value={dt}>{dt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             {intent.confident === false && intent.reasoning && (
               <div className="flex items-start gap-2 p-2.5 rounded-lg bg-[#FEF3C7] border border-[#F59E0B]/20 text-sm">

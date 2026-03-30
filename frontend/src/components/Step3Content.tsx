@@ -236,25 +236,27 @@ export default function Step3Content({
           {/* Meeting-specific fields */}
           {isMeeting && (
             <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="meeting_time" className="text-[#222] font-medium text-sm">開會時間</Label>
-                <Input
-                  id="meeting_time"
-                  value={form.meeting_time ?? ""}
-                  onChange={(e) => update("meeting_time", e.target.value)}
-                  placeholder="例：115年4月1日（星期二）上午10時"
-                  className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="meeting_place" className="text-[#222] font-medium text-sm">開會地點</Label>
-                <Input
-                  id="meeting_place"
-                  value={form.meeting_place ?? ""}
-                  onChange={(e) => update("meeting_place", e.target.value)}
-                  placeholder="例：本部5樓大禮堂"
-                  className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="meeting_time" className="text-[#222] font-medium text-sm">開會時間</Label>
+                  <Input
+                    id="meeting_time"
+                    value={form.meeting_time ?? ""}
+                    onChange={(e) => update("meeting_time", e.target.value)}
+                    placeholder="例：115年4月1日（星期二）上午10時"
+                    className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meeting_place" className="text-[#222] font-medium text-sm">開會地點</Label>
+                  <Input
+                    id="meeting_place"
+                    value={form.meeting_place ?? ""}
+                    onChange={(e) => update("meeting_place", e.target.value)}
+                    placeholder="例：本部5樓大禮堂"
+                    className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="meeting_chair" className="text-[#222] font-medium text-sm">主席</Label>
@@ -304,45 +306,48 @@ export default function Step3Content({
 
           <Separator className="bg-[#E1E1E1]" />
 
-          {/* Recipients */}
-          <div className="space-y-2">
-            <Label className="text-[#222] font-medium text-sm">正本受文者</Label>
-            <TagInput
-              value={form.recipients_main}
-              onChange={(tags) => update("recipients_main", tags)}
-              placeholder="輸入受文者後按 Enter、逗號或頓號新增"
-            />
+          {/* Recipients row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[#222] font-medium text-sm">正本受文者</Label>
+              <TagInput
+                value={form.recipients_main}
+                onChange={(tags) => update("recipients_main", tags)}
+                placeholder="輸入後按 Enter 新增"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[#222] font-medium text-sm">副本受文者（選填）</Label>
+              <TagInput
+                value={form.recipients_cc}
+                onChange={(tags) => update("recipients_cc", tags)}
+                placeholder="輸入後按 Enter 新增"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[#222] font-medium text-sm">副本受文者（選填）</Label>
-            <TagInput
-              value={form.recipients_cc}
-              onChange={(tags) => update("recipients_cc", tags)}
-              placeholder="輸入受文者後按 Enter、逗號或頓號新增"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="doc_date" className="text-[#222] font-medium text-sm">發文日期</Label>
-            <Input
-              id="doc_date"
-              type="date"
-              value={form.doc_date}
-              onChange={(e) => update("doc_date", e.target.value)}
-              className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="doc_number" className="text-[#222] font-medium text-sm">發文字號</Label>
-            <Input
-              id="doc_number"
-              value={form.doc_number}
-              onChange={(e) => update("doc_number", e.target.value)}
-              placeholder="例：台教高(一)字第1150000000號"
-              className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
-            />
+          {/* Date + Doc number row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="doc_date" className="text-[#222] font-medium text-sm">發文日期</Label>
+              <Input
+                id="doc_date"
+                type="date"
+                value={form.doc_date}
+                onChange={(e) => update("doc_date", e.target.value)}
+                className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="doc_number" className="text-[#222] font-medium text-sm">發文字號</Label>
+              <Input
+                id="doc_number"
+                value={form.doc_number}
+                onChange={(e) => update("doc_number", e.target.value)}
+                placeholder="例：台教高(一)字第1150000000號"
+                className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
