@@ -272,9 +272,9 @@ export default function App() {
       <header className="border-b border-[#E1E1E1] bg-white shrink-0 z-50">
         <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
-            <div className="hidden sm:block h-5 w-px bg-[#E1E1E1]" />
-            <span className="hidden sm:inline text-sm font-medium text-[#1B2D6B]">SmartOD 智慧公文系統</span>
+            <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-8" />
+            <div className="hidden sm:block h-6 w-px bg-[#E1E1E1]" />
+            <span className="hidden sm:inline text-lg font-semibold text-[#1B2D6B]">SmartOD 智慧公文系統</span>
           </div>
         </div>
       </header>
