@@ -143,16 +143,6 @@ export default function Step2Intent({
     return "bg-[#DBEAFE] text-[#1E40AF] border-[#DBEAFE]"
   }
 
-  const receiverNameConfig: Record<string, { label: string; placeholder: string }> = {
-    "人民": { label: "受文者姓名", placeholder: "例：王小明" },
-    "企業/公司": { label: "公司名稱", placeholder: "例：台積電股份有限公司" },
-    "團體/協會": { label: "團體名稱", placeholder: "例：中華民國工商協進會" },
-    "學校": { label: "學校名稱", placeholder: "例：國立臺灣大學" },
-  }
-
-  const showDisplayNameInput = intent.receiver_type in receiverNameConfig
-  const displayNameInfo = receiverNameConfig[intent.receiver_type]
-
   const handleNext = () => {
     onGenerate()
   }
@@ -216,36 +206,6 @@ export default function Step2Intent({
             </Badge>
           </div>
 
-          {/* Receiver type + Display name row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Label className="shrink-0 text-[#222] font-medium text-sm">受文者類型：</Label>
-              <Select
-                value={intent.receiver_type}
-                onValueChange={(v) => updateField("receiver_type", v as ReceiverType)}
-              >
-                <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {["政府機關", "人民", "企業/公司", "團體/協會", "學校", "公眾", "自訂"].map((rt) => (
-                    <SelectItem key={rt} value={rt}>{rt}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {showDisplayNameInput && displayNameInfo && (
-              <div className="space-y-1">
-                <Label className="text-[#222] font-medium text-sm">{displayNameInfo.label}</Label>
-                <Input
-                  value={intent.receiver_display_name}
-                  onChange={(e) => updateField("receiver_display_name", e.target.value)}
-                  placeholder={displayNameInfo.placeholder}
-                  className="rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10"
-                />
-              </div>
-            )}
-          </div>
 
           {/* Doc type + Subtype row */}
           <div className="space-y-2">
