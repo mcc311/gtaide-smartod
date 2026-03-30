@@ -276,11 +276,6 @@ export default function App() {
             <div className="hidden sm:block h-5 w-px bg-[#E1E1E1]" />
             <span className="hidden sm:inline text-sm font-medium text-[#1B2D6B]">SmartOD 智慧公文系統</span>
           </div>
-          {docType && (
-            <div className="hidden sm:block text-sm text-[#666]">
-              文別：<span className="font-medium text-[#1B2D6B]">{docType}</span>
-            </div>
-          )}
         </div>
       </header>
 
