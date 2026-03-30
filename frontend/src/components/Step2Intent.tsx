@@ -6,19 +6,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { TagInput } from "@/components/ui/tag-input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Sparkles, PenLine } from "lucide-react"
 import OrganSelector from "@/components/OrganSelector"
+import DocTypeSelector from "@/components/DocTypeSelector"
 import type { OrganSelectInfo } from "@/components/OrganSelector"
-import {
-  SUBTYPE_OPTIONS,
-} from "@/types"
+import type {} from "@/types"
 import type {
   DocType,
   IntentResult,
@@ -26,10 +18,6 @@ import type {
   OrganNode,
   ReceiverType,
 } from "@/types"
-
-const DOC_TYPES: DocType[] = [
-  "函", "書函", "簽", "便簽", "公告", "令", "開會通知單",
-]
 
 interface Step2IntentProps {
   intent: IntentResult
@@ -207,58 +195,27 @@ export default function Step2Intent({
           </div>
 
 
-          {/* Doc type + Subtype row */}
+          {/* Doc type + Subtype selector */}
           <div className="space-y-2">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Label className="shrink-0 text-[#222] font-medium text-sm">公文類型</Label>
-                <Select
-                  value={docType ?? ""}
-                  onValueChange={(v) => onDocTypeOverride(v as DocType)}
-                >
-                  <SelectTrigger className="w-auto h-8 text-xs rounded-lg border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-[#1B2D6B]/10">
-                    <SelectValue placeholder="選擇類型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOC_TYPES.map((dt) => (
-                      <SelectItem key={dt} value={dt}>{dt}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <Label className="text-[#222] font-medium text-sm">公文類型</Label>
+            <DocTypeSelector
+              docType={docType}
+              subtype={intent.subtype}
+              onSelect={(dt, st) => {
+                onDocTypeOverride(dt)
+                updateField("subtype", st)
+              }}
+            />
             {intent.confident === false && intent.reasoning && (
               <div className="flex items-start gap-2 p-2.5 rounded-lg bg-[#FEF3C7] border border-[#F59E0B]/20 text-sm">
                 <span className="shrink-0 mt-0.5">💡</span>
                 <div className="text-[#92400E]">
-                  <span className="font-medium">AI 判斷為「{docType}」，但不太確定</span>
+                  <span className="font-medium">AI 判斷為「{docType}{intent.subtype ? ` / ${intent.subtype}` : ""}」，但不太確定</span>
                   <p className="mt-0.5 text-xs text-[#A16207]">{intent.reasoning}</p>
                 </div>
               </div>
             )}
           </div>
-
-          {/* Subtype selector */}
-          {docType && (SUBTYPE_OPTIONS[docType] || []).length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-[#222] font-medium text-sm">子類型</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {(SUBTYPE_OPTIONS[docType] || []).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => updateField("subtype", intent.subtype === st ? "" : st)}
-                    className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
-                      intent.subtype === st
-                        ? "bg-[#F5922A]/10 text-[#F5922A] border-[#F5922A]/30"
-                        : "bg-white text-[#666] border-[#E1E1E1] hover:border-[#F5922A]/30"
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
 
           <Separator className="bg-[#E1E1E1]" />
