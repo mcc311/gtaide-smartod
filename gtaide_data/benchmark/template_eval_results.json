@@ -1,0 +1,56 @@
+{
+  "total": 700,
+  "ok": 500,
+  "error": 200,
+  "ok_rate": 0.714,
+  "by_type": {
+    "令": {
+      "ok": 0,
+      "err": 100,
+      "fail": 0,
+      "total": 100
+    },
+    "便簽": {
+      "ok": 98,
+      "err": 2,
+      "fail": 0,
+      "total": 100
+    },
+    "公告": {
+      "ok": 2,
+      "err": 98,
+      "fail": 0,
+      "total": 100
+    },
+    "函": {
+      "ok": 100,
+      "err": 0,
+      "fail": 0,
+      "total": 100
+    },
+    "書函": {
+      "ok": 100,
+      "err": 0,
+      "fail": 0,
+      "total": 100
+    },
+    "簽": {
+      "ok": 100,
+      "err": 0,
+      "fail": 0,
+      "total": 100
+    },
+    "開會通知單": {
+      "ok": 100,
+      "err": 0,
+      "fail": 0,
+      "total": 100
+    }
+  },
+  "top_issues": {
+    "signer_missing": 198,
+    "first_item_missing": 14,
+    "subject_missing": 2,
+    "organ_missing": 2
+  }
+}
