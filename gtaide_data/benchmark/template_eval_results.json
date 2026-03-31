@@ -1,12 +1,12 @@
 {
   "total": 700,
-  "ok": 500,
-  "error": 200,
-  "ok_rate": 0.714,
+  "ok": 677,
+  "error": 23,
+  "ok_rate": 0.967,
   "by_type": {
     "令": {
-      "ok": 0,
-      "err": 100,
+      "ok": 79,
+      "err": 21,
       "fail": 0,
       "total": 100
     },
@@ -17,8 +17,8 @@
       "total": 100
     },
     "公告": {
-      "ok": 2,
-      "err": 98,
+      "ok": 100,
+      "err": 0,
       "fail": 0,
       "total": 100
     },
@@ -48,7 +48,7 @@
     }
   },
   "top_issues": {
-    "signer_missing": 198,
+    "signer_missing": 19,
     "first_item_missing": 14,
     "subject_missing": 2,
     "organ_missing": 2

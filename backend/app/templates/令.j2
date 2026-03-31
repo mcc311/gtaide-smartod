@@ -45,9 +45,7 @@
 {% endfor -%}
 {% endif -%}
 
-{% if signer -%}
-{{ signer }}
-{% endif -%}
+{{ signer or "○○○" }}
 
 {% else -%}
 {# === 預設格式 === #}

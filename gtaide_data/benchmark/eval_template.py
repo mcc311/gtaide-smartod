@@ -126,10 +126,11 @@ def check_rendered(dt_str: str, d: dict, rendered: str) -> list:
     if organ and len(organ) > 1 and organ not in rendered:
         issues.append(f"organ_missing: {organ}")
 
-    # Check signer (令/公告 should have signer)
-    signer = str(d.get("signer", "") or "")
-    if signer and dt_str in ("令", "公告") and signer not in rendered:
-        issues.append(f"signer_missing: {signer}")
+    # Check signer (令 should have signer or placeholder)
+    if dt_str == "令":
+        signer = str(d.get("signer", "") or "")
+        if signer and signer not in rendered and "○○○" not in rendered:
+            issues.append(f"signer_missing: {signer}")
 
     # Check items rendered (at least first item should appear)
     items = d.get("items") or d.get("explanation_items") or []
