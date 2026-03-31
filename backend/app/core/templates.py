@@ -63,8 +63,10 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
     recipients_main = "、".join(req.recipients_main) if req.recipients_main else receiver_for_doc
     recipients_cc = "、".join(req.recipients_cc) if req.recipients_cc else ""
 
-    # 便簽: combine all items (filtered)
-    all_items = [f"本件係{req.subject_detail}案"] + [i for i in req.explanation_items if i.strip()] + [i for i in req.action_items if i.strip()]
+    # 便簽: combine all items (filtered, deduplicated)
+    _exp = [i for i in req.explanation_items if i.strip()]
+    _act = [i for i in req.action_items if i.strip() and i.strip() not in set(x.strip() for x in _exp)]
+    all_items = [f"本件係{req.subject_detail}案"] + _exp + _act
 
     # 公告
     basis = req.intent.reference_doc or ""
@@ -80,12 +82,24 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
     if opening and subject_detail.startswith(opening):
         subject_detail = subject_detail[len(opening):].lstrip()
 
+    # Subtype (default to empty)
+    subtype = getattr(req.intent, "subtype", "") or ""
+
+    # 令: strip duplicated verb prefix from subject_detail
+    if subtype in ("法規修正", "法規訂定", "法規廢止"):
+        for verb in ("修正", "訂定", "廢止"):
+            if subject_detail.startswith(verb):
+                # Template will prepend the verb, so strip it here
+                subject_detail = subject_detail[len(verb):].lstrip()
+                break
+
+    # 書函: strip trailing expectation from subject_detail to avoid doubling
+    if expectation and subject_detail.rstrip("。").endswith(expectation.rstrip("。")):
+        subject_detail = subject_detail[:subject_detail.rfind(expectation)].rstrip("，、 ")
+
     # Filter out empty items
     explanation_items = [i for i in req.explanation_items if i.strip()]
     action_items = [i for i in req.action_items if i.strip()]
-
-    # Subtype (default to empty)
-    subtype = getattr(req.intent, "subtype", "") or ""
 
     # 陳情回函 special fields
     receiver_name = req.intent.receiver_display_name or ""
@@ -111,7 +125,7 @@ def _build_context(phrases: dict, req: GenerateRequest) -> dict:
         "recipients_cc": recipients_cc,
         "subtype": subtype,
         "doc_type_label": doc_type_label,
-        "signer": "",  # for 令 templates
+        "signer": getattr(req, "signer", "") or "",
         "items": explanation_items,  # alias for 令/人事令
         # 便簽
         "all_items": all_items,

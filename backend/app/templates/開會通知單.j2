@@ -15,3 +15,15 @@
 {% if meeting_notes -%}
 備註：{{ meeting_notes }}
 {% endif -%}
+{% if not meeting_time and explanation_items -%}
+說明：
+{% for item in explanation_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
+{% if not meeting_time and action_items -%}
+辦法：
+{% for item in action_items -%}
+　{{ cn_number(loop.index0) }}{{ item | trim_period }}。
+{% endfor -%}
+{% endif -%}
