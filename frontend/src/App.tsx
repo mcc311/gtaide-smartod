@@ -307,7 +307,7 @@ export default function App() {
             <div className="mt-4 pt-4 border-t border-[#E1E1E1] space-y-1.5">
               <div className="text-xs text-[#999] font-medium">公文用語</div>
               {Object.entries(phraseResult.phrases)
-                .filter(([key]) => !["行文性質"].includes(key))
+                .filter(([key]) => !["行文性質", "期望語", "開頭語"].includes(key))
                 .map(([key, val]) => (
                   <div key={key} className="flex items-center justify-between text-xs">
                     <span className="text-[#999]">{key}</span>
