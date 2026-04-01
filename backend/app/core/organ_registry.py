@@ -486,10 +486,10 @@ def get_organ_tree() -> list[dict]:
     others: dict = {
         "name": "其他對象", "short_name": "", "level": 0,
         "children": [
-            {"name": "人民（個人）", "short_name": "台端", "level": -1, "receiver_type": "人民", "children": []},
-            {"name": "企業/公司", "short_name": "貴公司", "level": -1, "receiver_type": "企業/公司", "children": []},
-            {"name": "團體/協會", "short_name": "貴會", "level": -1, "receiver_type": "團體/協會", "children": []},
-            {"name": "學校", "short_name": "貴校", "level": -1, "receiver_type": "學校", "children": []},
+            {"name": "人民（個人）", "short_name": "台端", "level": -1, "receiver_type": "人民", "is_custom": True, "children": []},
+            {"name": "企業/公司", "short_name": "貴公司", "level": -1, "receiver_type": "企業/公司", "is_custom": True, "children": []},
+            {"name": "團體/協會", "short_name": "貴會", "level": -1, "receiver_type": "團體/協會", "is_custom": True, "children": []},
+            {"name": "學校", "short_name": "貴校", "level": -1, "receiver_type": "學校", "is_custom": True, "children": []},
             {"name": "公眾", "short_name": "", "level": -1, "receiver_type": "公眾", "children": []},
             {"name": "自訂", "short_name": "", "level": 0, "is_custom": True, "receiver_type": "自訂", "children": []},
         ]

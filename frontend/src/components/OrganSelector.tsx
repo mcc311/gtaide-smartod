@@ -124,12 +124,6 @@ export default function OrganSelector({
       setCustomInputText("")
       return
     }
-    // receiver_type nodes like 人民/企業/學校 need a name input (except 公眾)
-    if (node.receiver_type && node.receiver_type !== "公眾" && node.receiver_type !== "政府機關") {
-      setCustomInputNode(node)
-      setCustomInputText("")
-      return
-    }
     if (node.children.length > 0 && !node.receiver_type) {
       drillDown(node)
     } else {
@@ -202,11 +196,13 @@ export default function OrganSelector({
   }
 
   const getCustomLabel = (node: OrganNode): string => {
+    if (node.receiver_type === "人民") return "請輸入姓名："
+    if (node.receiver_type === "企業/公司") return "請輸入公司名稱："
+    if (node.receiver_type === "團體/協會") return "請輸入團體名稱："
+    if (node.receiver_type === "學校") return "請輸入學校名稱："
+    if (node.receiver_type === "自訂") return "自訂對象名稱："
     if (node.parent_context) {
       return `${node.parent_context}所屬機關名稱：`
-    }
-    if (node.receiver_type === "自訂") {
-      return "自訂對象名稱："
     }
     return "機關名稱："
   }
