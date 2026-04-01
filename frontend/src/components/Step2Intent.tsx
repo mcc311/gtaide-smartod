@@ -115,14 +115,26 @@ export default function Step2Intent({
     const rt: ReceiverType = info.receiverType
       ? (info.receiverType as ReceiverType)
       : "政府機關"
-    onIntentChange({
-      ...intent,
-      receiver: info.name,
-      receiver_type: rt,
-      receiver_level: info.level ?? 0,
-      receiver_parent: info.parentContext ?? "",
-      receiver_display_name: "",
-    })
+    if (info.isCustom) {
+      // Custom entry: name goes to display_name, receiver is the type category
+      onIntentChange({
+        ...intent,
+        receiver: rt,
+        receiver_type: rt,
+        receiver_level: 0,
+        receiver_parent: "",
+        receiver_display_name: info.name,
+      })
+    } else {
+      onIntentChange({
+        ...intent,
+        receiver: info.name,
+        receiver_type: rt,
+        receiver_level: info.level ?? 0,
+        receiver_parent: info.parentContext ?? "",
+        receiver_display_name: "",
+      })
+    }
   }
 
   const directionColor = (dir: string) => {
