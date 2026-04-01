@@ -264,52 +264,6 @@ export default function Step2Intent({
             />
           </div>
 
-          {/* Formality */}
-          <div className="flex items-center gap-2">
-            <Label className="shrink-0 text-[#222] font-medium text-sm">正式程度：</Label>
-            <Badge
-              variant="outline"
-              className={
-                intent.formality === "正式"
-                  ? "bg-[#F5F1EC] text-[#666] border-[#E1E1E1] rounded-md"
-                  : "bg-[#F5922A]/10 text-[#F5922A] border-[#F5922A]/30 rounded-md"
-              }
-            >
-              {intent.formality}
-            </Badge>
-          </div>
-
-          {/* Auto-selected phrases */}
-          {phraseResult && (
-            <>
-              <Separator className="bg-[#E1E1E1]" />
-              <div className="space-y-2">
-                <Label className="text-[#222] font-medium text-sm">自動選用公文用語</Label>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1.5 text-sm">
-                  {Object.entries(phraseResult.phrases)
-                    .filter(([key]) => !["行文性質", "期望語", "開頭語"].includes(key))
-                    .map(([key, val]) => (
-                      <div key={key} className="flex items-center gap-1">
-                        <span className="text-[#999] text-xs shrink-0">{key}</span>
-                        <span className="text-[#222]">{val || "—"}</span>
-                      </div>
-                    ))}
-                  {phraseResult.opening && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[#999] text-xs shrink-0">開頭語</span>
-                      <span className="text-[#222]">{phraseResult.opening}</span>
-                    </div>
-                  )}
-                  {phraseResult.expectation && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[#999] text-xs shrink-0">期望語</span>
-                      <span className="text-[#222]">{phraseResult.expectation}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
       </div>
 
       {/* Action buttons */}

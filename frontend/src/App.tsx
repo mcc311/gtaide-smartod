@@ -303,6 +303,31 @@ export default function App() {
               <div className="text-sm text-[#222] mt-0.5">{intent.sender}</div>
             </div>
           )}
+          {phraseResult && (
+            <div className="mt-4 pt-4 border-t border-[#E1E1E1] space-y-1.5">
+              <div className="text-xs text-[#999] font-medium">公文用語</div>
+              {Object.entries(phraseResult.phrases)
+                .filter(([key]) => !["行文性質"].includes(key))
+                .map(([key, val]) => (
+                  <div key={key} className="flex items-center justify-between text-xs">
+                    <span className="text-[#999]">{key}</span>
+                    <span className="text-[#222]">{String(val) || "—"}</span>
+                  </div>
+                ))}
+              {phraseResult.opening && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#999]">開頭語</span>
+                  <span className="text-[#222]">{phraseResult.opening}</span>
+                </div>
+              )}
+              {phraseResult.expectation && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#999]">期望語</span>
+                  <span className="text-[#222]">{phraseResult.expectation}</span>
+                </div>
+              )}
+            </div>
+          )}
         </aside>
 
         {/* Main + Footer column */}
