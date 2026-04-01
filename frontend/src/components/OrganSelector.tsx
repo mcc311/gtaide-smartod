@@ -124,8 +124,13 @@ export default function OrganSelector({
       setCustomInputText("")
       return
     }
+    // receiver_type nodes like 人民/企業/學校 need a name input (except 公眾)
+    if (node.receiver_type && node.receiver_type !== "公眾" && node.receiver_type !== "政府機關") {
+      setCustomInputNode(node)
+      setCustomInputText("")
+      return
+    }
     if (node.children.length > 0 && !node.receiver_type) {
-      // Has children — drill down (user can select via "選取" button)
       drillDown(node)
     } else {
       selectNode(node)
