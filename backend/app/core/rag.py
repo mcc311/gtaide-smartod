@@ -12,6 +12,7 @@ import jieba
 from dotenv import load_dotenv
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
+from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
@@ -31,6 +32,9 @@ _openai = OpenAI(
     api_key=OPENROUTER_API_KEY,
 )
 
+GEMMA300M_MODEL_PATH = _DATA_DIR / "embedding_gemma_300m_0331"
+GEMMA_CACHE_PATH = _DATA_DIR / "gemma300_embeddings_cache.npy"
+
 # In-memory indices
 _documents: list[dict] = []
 _corpus_tokens: list[list[str]] = []
@@ -38,7 +42,9 @@ _bm25: BM25Okapi | None = None
 _embeddings: np.ndarray | None = None  # shape: (n_docs, dim)
 _loaded = False
 _embeddings_loaded = False
-
+_gemma300m_model: SentenceTransformer | None = None
+_gemma300m_model_loaded = False
+_gemma300_embeddings: np.ndarray | None = None
 
 def _tokenize(text: str) -> list[str]:
     return list(jieba.cut(text))
@@ -280,9 +286,18 @@ def retrieve(query: str, doc_type: str = "", subtype: str = "", top_k: int = 5) 
         emb_results = _embedding_search(query, top_k=200)
         emb_ranked = [idx for idx, _ in emb_results
                       if allowed_indices is None or idx in allowed_indices]
+        
+        # embedding gemma300m search (if available)
+        gemma300m_results = _gemma300_search(query, top_k=200)
+        gemma300m_ranked = [idx for idx, _ in gemma300m_results
+                            if allowed_indices is None or idx in allowed_indices]
 
         # RRF fusion
-        fused = _rrf_fusion([bm25_ranked[:50], emb_ranked[:50]], k=60, top_n=top_k)
+        # fused = _rrf_fusion([bm25_ranked[:50], emb_ranked[:50], gemma300m_ranked[:50]], k=60, top_n=top_k)
+        fused = _rrf_fusion(
+            [bm25_ranked[:50], emb_ranked[:50], gemma300m_ranked[:50]], 
+            k=60, top_n=top_k)
+
     else:
         # Fallback to BM25 only
         fused = bm25_ranked[:top_k]
@@ -319,3 +334,50 @@ def format_examples(docs: list[dict], max_chars: int = 2000) -> list[str]:
         header = f"[{organ}　{doc_type}]\n" if organ else ""
         examples.append(f"{header}{text}")
     return examples
+
+def load_embedding_gemma_model():
+
+    global _gemma300m_model, _gemma300m_model_loaded, _gemma300_embeddings
+
+    if _gemma300m_model_loaded:
+        return
+
+    if not _loaded:
+        load_index()
+
+    logger.info(f"Loading embedding_gemma_300m model...")
+    _gemma300m_model = SentenceTransformer(str(GEMMA300M_MODEL_PATH))
+    _gemma300m_model_loaded = True
+    logger.info(f"embedding_gemma_300m model loaded loaded")
+
+    if GEMMA_CACHE_PATH.exists():
+        logger.info(f"Loading cached Gemma300M embeddings...")
+        _gemma300_embeddings = np.load(GEMMA_CACHE_PATH)
+        if len(_gemma300_embeddings) == len(_documents):
+            logger.info(f"Loaded {len(_gemma300_embeddings)} cached Gemma300M embeddings")
+            return
+        else:
+            logger.warning("Cache size mismatch, rebuilding...")        
+    
+    logger.info(f"Building gemma embedding cache for {len(_documents)} documents...")
+    texts = [_search_text(doc) for doc in _documents]
+    _gemma300_embeddings = _gemma300m_model.encode_document(texts)
+    np.save(GEMMA_CACHE_PATH, _gemma300_embeddings)
+    logger.info("Gemma embedding cache built and saved")
+
+
+def _gemma300_search(query: str, top_k: int = 50) -> list[tuple[int, float]]:
+    """Dense search using Embedding_gemma_300m model."""
+    
+    if _gemma300m_model is None or _gemma300_embeddings is None:
+        return []
+    
+    query_embedding = _gemma300m_model.encode(query)
+    
+    # Cosine similarity
+    similarities = _gemma300m_model.similarity(query_embedding, _gemma300_embeddings)
+    scores = similarities.flatten()
+    sorted_indices = scores.argsort(descending=True)
+    
+    top_indices = sorted_indices[:top_k]
+    return [(int(i.item()), float(scores[i].item())) for i in top_indices]

@@ -3,7 +3,7 @@ import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
-from app.core.rag import load_index, load_embeddings
+from app.core.rag import load_index, load_embeddings, load_embedding_gemma_model, _gemma300_search
 from app.core.law_search import load_laws
 
 app = FastAPI(title="SmartOD", description="智慧公文系統")
