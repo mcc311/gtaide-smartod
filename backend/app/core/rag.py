@@ -356,8 +356,8 @@ def load_embedding_gemma_model():
     logger.info(f"Loading embedding_gemma_300m model...")
     _gemma300m_model = SentenceTransformer(str(GEMMA300M_MODEL_PATH))
     _gemma300m_model_loaded = True
-    logger.info(f"embedding_gemma_300m model loaded loaded")
-
+    logger.info(f"embedding_gemma_300m model loaded from {GEMMA300M_MODEL_PATH}")
+    
     if GEMMA_CACHE_PATH.exists():
         logger.info(f"Loading cached Gemma300M embeddings...")
         _gemma300_embeddings = np.load(GEMMA_CACHE_PATH)
