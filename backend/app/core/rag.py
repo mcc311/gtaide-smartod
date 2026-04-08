@@ -12,8 +12,16 @@ import jieba
 from dotenv import load_dotenv
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
-from sentence_transformers import SentenceTransformer
 
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    class SentenceTransformer:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs):
+            raise ImportError(
+                "sentence-transformers is required to load the Gemma embedding "
+                "model. Install the optional dependency to enable Gemma-based search."
+            )
 load_dotenv()
 
 logger = logging.getLogger(__name__)
