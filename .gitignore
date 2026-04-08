@@ -30,3 +30,10 @@ Thumbs.db
 # Temp
 /tmp/
 gtaide_data/gazette/gazette_normalized_nchc.jsonl
+
+# ft_embedding_gemma300m
+gtaide_data/embedding_gemma_300m_0331/
+
+# embedding cache
+gtaide_data/embeddings_cache.npy
+gtaide_data/gemma300_embeddings_cache.npy
