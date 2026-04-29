@@ -143,7 +143,9 @@ export function useDirectDocState() {
             rag_examples: ragExamples,
             selected_laws: selectedLaws.map((l) => ({
               law_name: l.law_name,
-              articles: l.articles.filter((a) => a.checked).map((a) => a.no),
+              articles: l.articles
+                .filter((a) => a.checked)
+                .map((a) => `${a.no}：${a.content}`),
             })),
           }),
         })
