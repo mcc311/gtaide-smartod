@@ -1,8 +1,11 @@
+import type React from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import type { DocType } from "@/types"
 import Editable from "./Editable"
 import Pickable from "./Pickable"
 import TagsInline from "./TagsInline"
+import ListSection from "./ListSection"
+import PlaceholderBlock from "./PlaceholderBlock"
 import { DOC_TYPES, DIRECTIONS } from "./constants"
 
 interface DocCanvasProps {
@@ -125,6 +128,77 @@ export default function DocCanvas({ hook }: DocCanvasProps) {
           </dd>
         </div>
       </dl>
+
+      <hr className="my-5 border-t border-[#E1E1E1]" />
+
+      <section className="space-y-4">
+        <SectionRow label="主旨">
+          {state.subject_detail ? (
+            <Editable
+              multiline
+              value={state.subject_detail}
+              onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+              recent={state.recentChange === "subject_detail"}
+              className="text-sm leading-relaxed"
+            />
+          ) : state.phase === "ready" ? (
+            <Editable
+              multiline
+              value=""
+              placeholder="點此撰寫主旨..."
+              onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+            />
+          ) : (
+            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+          )}
+        </SectionRow>
+
+        <SectionRow label="說明">
+          {state.phase === "ready" || state.explanation_items.length > 0 ? (
+            <ListSection
+              items={state.explanation_items}
+              placeholder="點此新增說明事項..."
+              onChange={(items) => update({ explanation_items: items }, "explanation_items")}
+            />
+          ) : (
+            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+          )}
+        </SectionRow>
+
+        <SectionRow
+          label={
+            state.docType === "公告"
+              ? "公告事項"
+              : state.docType === "簽" || state.docType === "便簽"
+              ? "擬辦"
+              : "辦法"
+          }
+        >
+          {state.phase === "ready" || state.action_items.length > 0 ? (
+            <ListSection
+              items={state.action_items}
+              placeholder="點此新增段落..."
+              onChange={(items) => update({ action_items: items }, "action_items")}
+            />
+          ) : (
+            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+          )}
+        </SectionRow>
+      </section>
+
+      <footer className="mt-8 text-right text-sm text-[#1B2D6B]">
+        <div className="font-semibold">{mergedIntent?.sender || "—"}</div>
+        <div className="text-xs text-[#666] mt-1">機關首長</div>
+      </footer>
     </article>
+  )
+}
+
+function SectionRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3 items-start">
+      <div className="shrink-0 w-12 text-sm font-semibold text-[#1B2D6B] pt-0.5">{label}：</div>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
   )
 }
