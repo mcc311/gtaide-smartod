@@ -39,7 +39,10 @@ const initialState: DirectDocState = {
 }
 
 export function useDirectDocState() {
-  const [state, setState] = useState<DirectDocState>(initialState)
+  const [state, setState] = useState<DirectDocState>(() => ({
+    ...initialState,
+    doc_date: isoToday(),
+  }))
   const [history, setHistory] = useState<DirectDocState[]>([])
 
   const flash = useCallback((key: string) => {
@@ -51,23 +54,27 @@ export function useDirectDocState() {
 
   const update = useCallback(
     (patch: Partial<DirectDocState>, flashKey?: string) => {
-      setHistory((h) => [...h.slice(-19), state])
-      setState((prev) => ({ ...prev, ...patch }))
+      setState((prev) => {
+        setHistory((h) => [...h.slice(-19), prev])
+        return { ...prev, ...patch }
+      })
       if (flashKey) flash(flashKey)
     },
-    [state, flash]
+    [flash]
   )
 
   const overrideIntent = useCallback(
     (patch: Partial<IntentResult>, flashKey?: string) => {
-      setHistory((h) => [...h.slice(-19), state])
-      setState((prev) => ({
-        ...prev,
-        intentOverrides: { ...prev.intentOverrides, ...patch },
-      }))
+      setState((prev) => {
+        setHistory((h) => [...h.slice(-19), prev])
+        return {
+          ...prev,
+          intentOverrides: { ...prev.intentOverrides, ...patch },
+        }
+      })
       if (flashKey) flash(flashKey)
     },
-    [state, flash]
+    [flash]
   )
 
   const undo = useCallback(() => {

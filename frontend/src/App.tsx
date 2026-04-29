@@ -86,7 +86,7 @@ const STEPS = [
 ]
 
 export default function App() {
-  if (isDirectMode()) return <DirectEditPage />
+  const isDirect = isDirectMode()
   const [currentStep, setCurrentStep] = useState(1)
   const [intent, setIntent] = useState<IntentResult>(defaultIntent)
   const [phraseResult, setPhraseResult] = useState<PhraseResult | null>(null)
@@ -273,6 +273,8 @@ export default function App() {
         Object.entries(phraseResult.phrases).map(([k, v]) => [k, String(v)])
       )
     : {}
+
+  if (isDirect) return <DirectEditPage />
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
