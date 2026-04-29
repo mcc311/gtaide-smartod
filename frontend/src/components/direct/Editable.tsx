@@ -23,7 +23,9 @@ export default function Editable({
   const inputRef = useRef<HTMLInputElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
-  useEffect(() => setDraft(value || ""), [value])
+  useEffect(() => {
+    if (!editing) setDraft(value || "")
+  }, [value, editing])
   useEffect(() => {
     const el = multiline ? textareaRef.current : inputRef.current
     if (editing && el) {
@@ -56,6 +58,10 @@ export default function Editable({
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === "Escape") cancel()
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault()
+              commit()
+            }
           }}
           rows={Math.max(2, draft.split("\n").length)}
         />
