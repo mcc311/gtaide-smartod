@@ -1,6 +1,8 @@
 import type React from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
-import type { DocType } from "@/types"
+import type { DocType, OrganNode, IntentResult } from "@/types"
+import OrganSelector from "@/components/OrganSelector"
+import type { OrganSelectInfo } from "@/components/OrganSelector"
 import Editable from "./Editable"
 import Pickable from "./Pickable"
 import TagsInline from "./TagsInline"
@@ -10,10 +12,37 @@ import { DOC_TYPES, DIRECTIONS } from "./constants"
 
 interface DocCanvasProps {
   hook: UseDirectDocStateReturn
+  organTree: OrganNode[]
 }
 
-export default function DocCanvas({ hook }: DocCanvasProps) {
+export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
   const { state, mergedIntent, update, overrideIntent } = hook
+
+  const handleSender = (info: OrganSelectInfo) => {
+    overrideIntent(
+      {
+        sender: info.name,
+        sender_level: info.level ?? 0,
+        sender_parent: info.parentContext ?? "",
+      },
+      "sender"
+    )
+  }
+  const handleReceiver = (info: OrganSelectInfo) => {
+    overrideIntent(
+      {
+        receiver: info.name,
+        receiver_level: info.level ?? 0,
+        receiver_parent: info.parentContext ?? "",
+        receiver_type:
+          (info.receiverType as IntentResult["receiver_type"]) ??
+          mergedIntent?.receiver_type ??
+          "政府機關",
+        receiver_display_name: info.isCustom ? info.name : "",
+      },
+      "receiver"
+    )
+  }
   const docType = state.docType
   const direction = state.phrases?.direction ?? "平行文"
   const subtype = mergedIntent?.subtype ?? ""
@@ -27,13 +56,15 @@ export default function DocCanvas({ hook }: DocCanvasProps) {
   return (
     <article className="bg-white rounded-lg shadow-sm border border-[#E1E1E1] p-8 max-w-3xl mx-auto font-serif">
       <header className="flex items-baseline justify-between border-b border-[#1B2D6B] pb-3">
-        <Editable
-          value={mergedIntent?.sender ?? ""}
-          placeholder="點此輸入發文機關"
-          className="text-2xl font-bold text-[#1B2D6B] tracking-wider"
-          onChange={(v) => overrideIntent({ sender: v }, "sender")}
-          recent={state.recentChange === "sender"}
-        />
+        <div className="text-2xl font-bold text-[#1B2D6B] tracking-wider min-w-[12rem]">
+          <OrganSelector
+            label="發文機關"
+            value={mergedIntent?.sender ?? ""}
+            onChange={handleSender}
+            organTree={organTree}
+            placeholder="點此選擇發文機關"
+          />
+        </div>
         <Pickable
           value={docType}
           options={[...DOC_TYPES]}
@@ -72,11 +103,12 @@ export default function DocCanvas({ hook }: DocCanvasProps) {
         <div className="flex items-baseline gap-2">
           <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
           <dd className="flex-1">
-            <Editable
+            <OrganSelector
+              label="受文者"
               value={mergedIntent?.receiver ?? ""}
-              placeholder="點此輸入受文者..."
-              onChange={(v) => overrideIntent({ receiver: v }, "receiver")}
-              recent={state.recentChange === "receiver"}
+              onChange={handleReceiver}
+              organTree={organTree}
+              placeholder="點此選擇受文者"
             />
           </dd>
         </div>

@@ -1,8 +1,17 @@
+import { useEffect, useState } from "react"
 import { useDirectDocState } from "./useDirectDocState"
 import DocCanvas from "./DocCanvas"
+import type { OrganNode } from "@/types"
 
 export default function DirectEditPage() {
   const hook = useDirectDocState()
+  const [organTree, setOrganTree] = useState<OrganNode[]>([])
+  useEffect(() => {
+    fetch("/api/organs")
+      .then((r) => r.json())
+      .then((data: OrganNode[]) => setOrganTree(data))
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC]">
@@ -18,7 +27,7 @@ export default function DirectEditPage() {
 
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
         <section className="overflow-y-auto p-6 lg:p-10">
-          <DocCanvas hook={hook} />
+          <DocCanvas hook={hook} organTree={organTree} />
         </section>
         <aside className="hidden lg:block border-l border-[#E1E1E1] bg-white overflow-y-auto p-4">
           <p className="text-sm text-[#999]">[AiPanel placeholder]</p>
