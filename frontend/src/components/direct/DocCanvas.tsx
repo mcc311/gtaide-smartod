@@ -44,22 +44,20 @@ export default function DocCanvas({ hook }: DocCanvasProps) {
       </header>
 
       <div className="flex items-center gap-2 mt-3">
-        <Pickable
-          value={direction}
-          options={[...DIRECTIONS]}
-          className={`text-xs px-2 py-0.5 rounded-full font-medium ${directionColor}`}
-          onChange={(v) =>
-            update(
-              {
-                phrases: state.phrases
-                  ? { ...state.phrases, direction: v as typeof direction }
-                  : null,
-              },
-              "direction"
-            )
-          }
-          recent={state.recentChange === "direction"}
-        />
+        {state.phrases && (
+          <Pickable
+            value={direction}
+            options={[...DIRECTIONS]}
+            className={`text-xs px-2 py-0.5 rounded-full font-medium ${directionColor}`}
+            onChange={(v) =>
+              update(
+                { phrases: { ...state.phrases!, direction: v as typeof direction } },
+                "direction"
+              )
+            }
+            recent={state.recentChange === "direction"}
+          />
+        )}
         {subtype && (
           <Editable
             value={subtype}

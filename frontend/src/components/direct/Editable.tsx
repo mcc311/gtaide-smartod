@@ -24,9 +24,6 @@ export default function Editable({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
-    if (!editing) setDraft(value || "")
-  }, [value, editing])
-  useEffect(() => {
     const el = multiline ? textareaRef.current : inputRef.current
     if (editing && el) {
       el.focus()
@@ -34,6 +31,11 @@ export default function Editable({
       el.setSelectionRange(len, len)
     }
   }, [editing, multiline])
+
+  const startEdit = () => {
+    setDraft(value || "")
+    setEditing(true)
+  }
 
   const commit = () => {
     if (draft !== value) onChange(draft)
@@ -93,7 +95,7 @@ export default function Editable({
           "text-left text-[#999] italic hover:bg-[#F5F1EC] rounded px-1 py-0.5 transition-colors",
           className
         )}
-        onClick={() => setEditing(true)}
+        onClick={startEdit}
       >
         {placeholder}
       </button>
@@ -109,9 +111,9 @@ export default function Editable({
         recent && "bg-[#FFF4E0]",
         className
       )}
-      onClick={() => setEditing(true)}
+      onClick={startEdit}
       onKeyDown={(e) => {
-        if (e.key === "Enter") setEditing(true)
+        if (e.key === "Enter") startEdit()
       }}
     >
       {value}

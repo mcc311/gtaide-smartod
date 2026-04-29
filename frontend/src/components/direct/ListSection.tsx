@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useState } from "react"
 import Editable from "./Editable"
 import { Plus, Trash2 } from "lucide-react"
 
@@ -8,18 +8,24 @@ interface ListSectionProps {
   onChange: (items: string[]) => void
 }
 
-export default function ListSection({ items, placeholder, onChange }: ListSectionProps) {
-  const idsRef = useRef<string[]>([])
-  // Keep ids array length in sync with items length
-  while (idsRef.current.length < items.length) {
-    idsRef.current.push(
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `id-${Date.now()}-${idsRef.current.length}-${Math.random().toString(36).slice(2)}`
-    )
+function makeId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID()
   }
-  if (idsRef.current.length > items.length) {
-    idsRef.current = idsRef.current.slice(0, items.length)
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+export default function ListSection({ items, placeholder, onChange }: ListSectionProps) {
+  const [ids, setIds] = useState<string[]>(() => items.map(() => makeId()))
+
+  // Keep ids array length in sync with items length (deriving state from props)
+  if (ids.length !== items.length) {
+    if (ids.length < items.length) {
+      const extra = Array.from({ length: items.length - ids.length }, () => makeId())
+      setIds([...ids, ...extra])
+    } else {
+      setIds(ids.slice(0, items.length))
+    }
   }
 
   const updateAt = (i: number, v: string) => {
@@ -28,7 +34,7 @@ export default function ListSection({ items, placeholder, onChange }: ListSectio
     onChange(next)
   }
   const removeAt = (i: number) => {
-    idsRef.current = idsRef.current.filter((_, j) => j !== i)
+    setIds((prev) => prev.filter((_, j) => j !== i))
     onChange(items.filter((_, j) => j !== i))
   }
   const add = () => onChange([...items, ""])
@@ -48,7 +54,7 @@ export default function ListSection({ items, placeholder, onChange }: ListSectio
   return (
     <ol className="space-y-2 list-none">
       {items.map((it, i) => (
-        <li key={idsRef.current[i]} className="flex gap-2 items-start text-sm leading-relaxed">
+        <li key={ids[i] ?? `tmp-${i}`} className="flex gap-2 items-start text-sm leading-relaxed">
           <span className="text-[#999] shrink-0 w-6 text-right pt-0.5">
             {items.length > 1 ? `${i + 1}.` : ""}
           </span>
