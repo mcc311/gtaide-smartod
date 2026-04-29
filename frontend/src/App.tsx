@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import DirectEditPage from "@/components/direct/DirectEditPage"
 import Stepper from "@/components/Stepper"
 import Step1Input from "@/components/Step1Input"
 import Step2Intent from "@/components/Step2Intent"
@@ -17,6 +18,11 @@ import type {
   ReceiverType,
   ActionType,
 } from "@/types"
+
+function isDirectMode(): boolean {
+  if (typeof window === "undefined") return false
+  return new URLSearchParams(window.location.search).get("direct") === "1"
+}
 
 function isoToday(): string {
   const now = new Date()
@@ -80,6 +86,7 @@ const STEPS = [
 ]
 
 export default function App() {
+  if (isDirectMode()) return <DirectEditPage />
   const [currentStep, setCurrentStep] = useState(1)
   const [intent, setIntent] = useState<IntentResult>(defaultIntent)
   const [phraseResult, setPhraseResult] = useState<PhraseResult | null>(null)
