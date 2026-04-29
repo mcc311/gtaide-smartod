@@ -306,25 +306,27 @@ export default function Step3Content({
 
           <Separator className="bg-[#E1E1E1]" />
 
-          {/* Recipients row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[#222] font-medium text-sm">正本受文者</Label>
-              <TagInput
-                value={form.recipients_main}
-                onChange={(tags) => update("recipients_main", tags)}
-                placeholder="輸入後按 Enter 新增"
-              />
+          {/* Recipients row — hidden for 公告/簽/便簽 */}
+          {!isBulletin && !isSign && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[#222] font-medium text-sm">正本受文者</Label>
+                <TagInput
+                  value={form.recipients_main}
+                  onChange={(tags) => update("recipients_main", tags)}
+                  placeholder="輸入後按 Enter 新增"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[#222] font-medium text-sm">副本受文者（選填）</Label>
+                <TagInput
+                  value={form.recipients_cc}
+                  onChange={(tags) => update("recipients_cc", tags)}
+                  placeholder="輸入後按 Enter 新增"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-[#222] font-medium text-sm">副本受文者（選填）</Label>
-              <TagInput
-                value={form.recipients_cc}
-                onChange={(tags) => update("recipients_cc", tags)}
-                placeholder="輸入後按 Enter 新增"
-              />
-            </div>
-          </div>
+          )}
 
           {/* Date + Doc number row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
