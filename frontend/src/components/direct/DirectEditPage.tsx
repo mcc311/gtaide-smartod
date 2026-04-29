@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import { useDirectDocState } from "./useDirectDocState"
 import DocCanvas from "./DocCanvas"
+import OnboardingOverlay from "./OnboardingOverlay"
 import type { OrganNode } from "@/types"
 
 export default function DirectEditPage() {
   const hook = useDirectDocState()
+  const { state } = hook
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
   useEffect(() => {
     fetch("/api/organs")
@@ -14,7 +16,7 @@ export default function DirectEditPage() {
   }, [])
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC]">
+    <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC] relative">
       <header className="border-b border-[#E1E1E1] bg-white shrink-0 px-4 lg:px-8 py-3">
         <div className="flex items-center gap-2.5">
           <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
@@ -24,6 +26,14 @@ export default function DirectEditPage() {
           </span>
         </div>
       </header>
+
+      {(state.phase === "onboarding" || state.phase === "parsing") && (
+        <OnboardingOverlay
+          onSubmit={hook.onSubmitOnboarding}
+          onBlank={() => hook.setPhase("ready")}
+          loading={state.phase === "parsing"}
+        />
+      )}
 
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
         <section className="overflow-y-auto p-6 lg:p-10">
