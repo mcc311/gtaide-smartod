@@ -218,7 +218,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
       <hr className="my-5 border-t border-[#E1E1E1]" />
 
       <section className="space-y-4">
-        <SectionRow label="主旨">
+        <SectionRow label={state.docType === "開會通知單" ? "開會事由" : "主旨"}>
           {state.subject_detail ? (
             <Editable
               multiline
@@ -239,42 +239,135 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
           )}
         </SectionRow>
 
-        <SectionRow label="說明">
-          {state.phase === "ready" || state.explanation_items.length > 0 ? (
-            <ListSection
-              items={state.explanation_items}
-              placeholder="點此新增說明事項..."
-              onChange={(items) => update({ explanation_items: items }, "explanation_items")}
-            />
-          ) : (
-            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
-          )}
-        </SectionRow>
+        {/* Meeting-specific fields — replace 說明/辦法 for 開會通知單 */}
+        {state.docType === "開會通知單" ? (
+          <div className="space-y-2">
+            <SectionRow label="開會時間">
+              <Editable
+                value={state.meeting_time}
+                placeholder="例：115年4月29日（星期二）下午2時"
+                onChange={(v) => update({ meeting_time: v }, "meeting_time")}
+                recent={state.recentChange === "meeting_time"}
+              />
+            </SectionRow>
+            <SectionRow label="開會地點">
+              <Editable
+                value={state.meeting_place}
+                placeholder="例：本部第一會議室"
+                onChange={(v) => update({ meeting_place: v }, "meeting_place")}
+                recent={state.recentChange === "meeting_place"}
+              />
+            </SectionRow>
+            <SectionRow label="主持人">
+              <Editable
+                value={state.meeting_chair}
+                placeholder="例：本部○次長"
+                onChange={(v) => update({ meeting_chair: v }, "meeting_chair")}
+                recent={state.recentChange === "meeting_chair"}
+              />
+            </SectionRow>
+            <SectionRow label="聯絡人">
+              <div className="flex flex-wrap gap-2 items-baseline">
+                <Editable
+                  value={state.meeting_contact}
+                  placeholder="姓名"
+                  onChange={(v) => update({ meeting_contact: v }, "meeting_contact")}
+                />
+                <Editable
+                  value={state.meeting_contact_phone}
+                  placeholder="電話"
+                  onChange={(v) => update({ meeting_contact_phone: v }, "meeting_contact_phone")}
+                />
+              </div>
+            </SectionRow>
+            <SectionRow label="出席者">
+              <TagsInline
+                tags={state.meeting_attendees}
+                onChange={(t) => update({ meeting_attendees: t }, "meeting_attendees")}
+                placeholder="+ 出席者"
+              />
+            </SectionRow>
+            <SectionRow label="列席者">
+              <TagsInline
+                tags={state.meeting_observers}
+                onChange={(t) => update({ meeting_observers: t }, "meeting_observers")}
+                placeholder="+ 列席者"
+              />
+            </SectionRow>
+            <SectionRow label="備註">
+              <Editable
+                multiline
+                value={state.meeting_notes}
+                placeholder="（選填）"
+                onChange={(v) => update({ meeting_notes: v }, "meeting_notes")}
+              />
+            </SectionRow>
+          </div>
+        ) : (
+          <>
+            <SectionRow label={state.docType === "公告" ? "依據" : "說明"}>
+              {state.phase === "ready" || state.explanation_items.length > 0 ? (
+                <ListSection
+                  items={state.explanation_items}
+                  placeholder={state.docType === "公告" ? "點此新增依據..." : "點此新增說明事項..."}
+                  onChange={(items) => update({ explanation_items: items }, "explanation_items")}
+                />
+              ) : (
+                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+              )}
+            </SectionRow>
 
-        <SectionRow
-          label={
-            state.docType === "公告"
-              ? "公告事項"
-              : state.docType === "簽" || state.docType === "便簽"
-              ? "擬辦"
-              : "辦法"
-          }
-        >
-          {state.phase === "ready" || state.action_items.length > 0 ? (
-            <ListSection
-              items={state.action_items}
-              placeholder="點此新增段落..."
-              onChange={(items) => update({ action_items: items }, "action_items")}
-            />
-          ) : (
-            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
-          )}
-        </SectionRow>
+            <SectionRow
+              label={
+                state.docType === "公告"
+                  ? "公告事項"
+                  : state.docType === "簽" || state.docType === "便簽"
+                  ? "擬辦"
+                  : "辦法"
+              }
+            >
+              {state.phase === "ready" || state.action_items.length > 0 ? (
+                <ListSection
+                  items={state.action_items}
+                  placeholder="點此新增段落..."
+                  onChange={(items) => update({ action_items: items }, "action_items")}
+                />
+              ) : (
+                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+              )}
+            </SectionRow>
+          </>
+        )}
       </section>
+
+      {/* Recipients (正本/副本) — only for doc types with formal recipients */}
+      {(state.docType === "函" ||
+        state.docType === "書函" ||
+        state.docType === "開會通知單" ||
+        state.docType === "令") && (
+        <div className="mt-6 pt-3 border-t border-dashed border-[#E1E1E1] space-y-2">
+          <SectionRow label="正本">
+            <TagsInline
+              tags={state.recipients_main}
+              onChange={(t) => update({ recipients_main: t }, "recipients_main")}
+              placeholder="+ 正本受文者"
+            />
+          </SectionRow>
+          <SectionRow label="副本">
+            <TagsInline
+              tags={state.recipients_cc}
+              onChange={(t) => update({ recipients_cc: t }, "recipients_cc")}
+              placeholder="+ 副本受文者"
+            />
+          </SectionRow>
+        </div>
+      )}
 
       <footer className="mt-8 text-right text-sm text-[#1B2D6B]">
         <div className="font-semibold">{mergedIntent?.sender || "—"}</div>
-        <div className="text-xs text-[#666] mt-1">機關首長</div>
+        <div className="text-xs text-[#666] mt-1">
+          {state.docType === "簽" || state.docType === "便簽" ? "簽辦人" : "機關首長"}
+        </div>
       </footer>
     </article>
   )
