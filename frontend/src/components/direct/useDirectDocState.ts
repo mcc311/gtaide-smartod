@@ -262,26 +262,101 @@ export function useDirectDocState() {
           lawSuggestions: sugg.suggestions ?? [],
         }))
 
-        const clarifyRes = await fetch("/api/clarify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            intent: intentToDict(intent),
-            phrases: phrasesToDict(phrases),
-            doc_type: docType,
-            direction: phrases?.direction ?? "平行文",
-            subtype: intent.subtype,
-          }),
-        })
-        const clarifyData = clarifyRes.ok
-          ? await clarifyRes.json()
-          : { questions: [], rag_examples: [] }
+        // First agent turn: let the LLM decide whether to ask or draft.
+        // Use locally-scoped values (intent, phrases, sugg, docType) — not state — to avoid
+        // stale closures from setState calls earlier in this function.
+        try {
+          const chatRes = await fetch("/api/chat-edit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              intent: intentToDict(intent),
+              phrases: phrasesToDict(phrases),
+              doc_type: docType,
+              direction: phrases?.direction ?? "平行文",
+              subtype: intent.subtype,
+              subject_detail: "",
+              explanation_items: [],
+              action_items: [],
+              doc_date: "",
+              doc_number: "",
+              speed: "普通件",
+              attachments_text: (intent.attachments ?? []).join("、"),
+              recipients_main: [],
+              recipients_cc: [],
+              meeting_time: "",
+              meeting_place: "",
+              meeting_chair: "",
+              meeting_contact: "",
+              meeting_contact_phone: "",
+              meeting_attendees: [],
+              meeting_observers: [],
+              meeting_notes: "",
+              chat_history: [
+                { role: "user", content: text },
+                {
+                  role: "assistant",
+                  content: `已根據您的描述完成解析：${intent.sender || "（未知機關）"} → ${intent.receiver || "（未知對象）"}，類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
+                },
+              ],
+              user_message: "",
+            }),
+          })
+          if (!chatRes.ok) throw new Error(`chat-edit ${chatRes.status}`)
+          const data: {
+            edits: { field: string; value: string | string[] }[]
+            assistant_message: string
+            pending_question: { question: string; options?: string[] } | null
+          } = await chatRes.json()
 
-        setState((s) => ({
-          ...s,
-          clarifyQuestions: clarifyData.questions ?? [],
-          ragExamples: clarifyData.rag_examples ?? [],
-        }))
+          const SCALAR = new Set([
+            "subject_detail", "doc_date", "doc_number", "speed", "attachments_text",
+            "meeting_time", "meeting_place", "meeting_chair",
+            "meeting_contact", "meeting_contact_phone", "meeting_notes",
+          ])
+          const ARRAY = new Set([
+            "explanation_items", "action_items",
+            "recipients_main", "recipients_cc",
+            "meeting_attendees", "meeting_observers", "attachments",
+          ])
+
+          const assistantContent = data.pending_question?.question ?? data.assistant_message ?? ""
+          const assistantOptions = data.pending_question?.options
+          const hasDraft =
+            (data.edits ?? []).some((e) =>
+              ["subject_detail", "explanation_items", "action_items"].includes(e.field)
+            )
+
+          setState((prev) => {
+            const next: DirectDocState = { ...prev }
+            for (const edit of data.edits ?? []) {
+              if (SCALAR.has(edit.field) && typeof edit.value === "string") {
+                ;(next as unknown as Record<string, unknown>)[edit.field] = edit.value
+              } else if (ARRAY.has(edit.field) && Array.isArray(edit.value)) {
+                ;(next as unknown as Record<string, unknown>)[edit.field] = edit.value
+              }
+            }
+            if (assistantContent) {
+              next.chatHistory = [
+                ...next.chatHistory,
+                { role: "assistant", content: assistantContent, options: assistantOptions },
+              ]
+            }
+            if (hasDraft) {
+              next.phase = "ready"
+            }
+            return next
+          })
+        } catch (err) {
+          console.error(err)
+          setState((s) => ({
+            ...s,
+            chatHistory: [
+              ...s.chatHistory,
+              { role: "assistant", content: "（錯誤：第一輪 AI 助理連線失敗，請重新整理頁面）" },
+            ],
+          }))
+        }
       } catch (err) {
         console.error(err)
         setState((s) => ({ ...s, phase: "onboarding" }))
