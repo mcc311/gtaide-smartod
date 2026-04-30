@@ -1,6 +1,8 @@
 import { Loader2, Send } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
+import type { ChatMessage, DirectDocState } from "./directTypes"
+import type { IntentResult } from "@/types"
 
 interface AiTabChatProps {
   hook: UseDirectDocStateReturn
@@ -12,9 +14,82 @@ const QUICK_QUESTIONS = [
   "加上罰則段落",
 ]
 
+interface Edit {
+  field: string
+  value: string | string[]
+}
+
+const SCALAR_FIELDS = new Set([
+  "subject_detail",
+  "doc_date",
+  "doc_number",
+  "speed",
+  "attachments_text",
+  "meeting_time",
+  "meeting_place",
+  "meeting_chair",
+  "meeting_contact",
+  "meeting_contact_phone",
+  "meeting_notes",
+])
+const ARRAY_FIELDS = new Set([
+  "explanation_items",
+  "action_items",
+  "recipients_main",
+  "recipients_cc",
+  "meeting_attendees",
+  "meeting_observers",
+  "attachments",
+])
+
+function buildChatEditPayload(
+  state: DirectDocState,
+  mergedIntent: IntentResult | null,
+  userMessage: string
+) {
+  return {
+    intent: mergedIntent
+      ? {
+          sender: mergedIntent.sender,
+          receiver: mergedIntent.receiver,
+          receiver_type: mergedIntent.receiver_type,
+          action_type: mergedIntent.action_type,
+          purpose: mergedIntent.purpose,
+          subject_brief: mergedIntent.subject_brief,
+          reference_doc: mergedIntent.reference_doc ?? "",
+          attachments: mergedIntent.attachments,
+          receiver_display_name: mergedIntent.receiver_display_name,
+        }
+      : {},
+    phrases: state.phrases?.phrases ?? {},
+    doc_type: state.docType,
+    direction: state.phrases?.direction ?? "平行文",
+    subtype: mergedIntent?.subtype ?? "",
+    subject_detail: state.subject_detail,
+    explanation_items: state.explanation_items,
+    action_items: state.action_items,
+    doc_date: state.doc_date,
+    doc_number: state.doc_number,
+    speed: state.speed,
+    attachments_text: state.attachments.join("、"),
+    recipients_main: state.recipients_main,
+    recipients_cc: state.recipients_cc,
+    meeting_time: state.meeting_time,
+    meeting_place: state.meeting_place,
+    meeting_chair: state.meeting_chair,
+    meeting_contact: state.meeting_contact,
+    meeting_contact_phone: state.meeting_contact_phone,
+    meeting_attendees: state.meeting_attendees,
+    meeting_observers: state.meeting_observers,
+    meeting_notes: state.meeting_notes,
+    chat_history: state.chatHistory,
+    user_message: userMessage,
+  }
+}
+
 export default function AiTabChat({ hook }: AiTabChatProps) {
   const [text, setText] = useState("")
-  const submitting = hook.state.phase === "generating"
+  const [submitting, setSubmitting] = useState(false)
   const history = hook.state.chatHistory
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
@@ -22,16 +97,44 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [history.length])
 
+  const applyEdit = (edit: Edit) => {
+    if (SCALAR_FIELDS.has(edit.field) && typeof edit.value === "string") {
+      hook.update({ [edit.field]: edit.value } as Partial<DirectDocState>, edit.field)
+    } else if (ARRAY_FIELDS.has(edit.field) && Array.isArray(edit.value)) {
+      hook.update({ [edit.field]: edit.value } as Partial<DirectDocState>, edit.field)
+    } else {
+      console.warn("Unsupported edit:", edit)
+    }
+  }
+
   const handleSubmit = async () => {
-    if (!text.trim()) return
-    // v1 stub: backend chat-edit endpoint not yet wired (lands in Task 24).
-    // For now, just push the user message and a placeholder assistant reply.
-    hook.appendChat({ role: "user", content: text })
-    hook.appendChat({
-      role: "assistant",
-      content: "（chat-edit 後端尚未串接，本次訊息暫不執行修改）",
-    })
+    const trimmed = text.trim()
+    if (!trimmed || submitting) return
     setText("")
+    setSubmitting(true)
+    const userMsg: ChatMessage = { role: "user", content: trimmed }
+    hook.appendChat(userMsg)
+    try {
+      const res = await fetch("/api/chat-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          buildChatEditPayload(hook.state, hook.mergedIntent, trimmed)
+        ),
+      })
+      if (!res.ok) throw new Error(`chat-edit ${res.status}`)
+      const data: { edits: Edit[]; assistant_message: string } = await res.json()
+      for (const edit of data.edits ?? []) applyEdit(edit)
+      hook.appendChat({ role: "assistant", content: data.assistant_message ?? "" })
+    } catch (err) {
+      console.error(err)
+      hook.appendChat({
+        role: "assistant",
+        content: "（錯誤：無法連線至 chat-edit 服務）",
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -55,6 +158,11 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
             </div>
           ))
         )}
+        {submitting && (
+          <div className="mr-6 bg-[#F5F1EC] text-[#666] rounded-lg px-3 py-2 text-sm flex items-center gap-2">
+            <Loader2 className="h-3 w-3 animate-spin" /> AI 思考中...
+          </div>
+        )}
       </div>
 
       <div className="mt-3 space-y-2">
@@ -65,6 +173,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
               type="button"
               className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] hover:border-[#1B2D6B]"
               onClick={() => setText(q)}
+              disabled={submitting}
             >
               {q}
             </button>
