@@ -7,6 +7,10 @@ from jinja2 import Template
 from pydantic import BaseModel
 
 from app.core.llm import chat_with_tools_then_structured
+from app.core.law_search import (
+    TOOLS as LAW_TOOLS,
+    TOOL_HANDLERS as LAW_TOOL_HANDLERS,
+)
 from app.models.schemas import ChatEditRequest
 
 _PROMPT_PATH = (
@@ -146,6 +150,8 @@ TOOLS = [
     },
 ]
 
+TOOLS = TOOLS + LAW_TOOLS
+
 
 class _AssistantReply(BaseModel):
     assistant_message: str
@@ -217,6 +223,7 @@ def chat_edit(req: ChatEditRequest) -> "ChatEditOutcome":
         "update_meeting": update_meeting,
         "ask_user": ask_user,
     }
+    handlers = {**handlers, **LAW_TOOL_HANDLERS}
 
     template = Template(_PROMPT_PATH.read_text(encoding="utf-8"))
     system_prompt = template.render(
