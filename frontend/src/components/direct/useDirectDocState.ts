@@ -1,6 +1,27 @@
-import { useState, useCallback, useMemo } from "react"
-import type { IntentResult, PhraseResult, DocType } from "@/types"
+import { useState, useCallback, useEffect, useMemo } from "react"
+import type { IntentResult, PhraseResult, DocType, OrganNode } from "@/types"
 import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage } from "./directTypes"
+
+function findOrganPath(
+  name: string,
+  nodes: OrganNode[],
+  trail: string[] = []
+): { path: string; level: number } | null {
+  for (const n of nodes) {
+    const currentTrail = [...trail, n.name]
+    if (n.name === name) {
+      return {
+        path: currentTrail.slice(0, -1).join(" > "), // parent path (without self)
+        level: n.level ?? currentTrail.length - 1,
+      }
+    }
+    if (n.children.length > 0) {
+      const found = findOrganPath(name, n.children, currentTrail)
+      if (found) return found
+    }
+  }
+  return null
+}
 
 function isoToday(): string {
   return new Date().toISOString().slice(0, 10)
@@ -66,6 +87,14 @@ export function useDirectDocState() {
     doc_date: isoToday(),
   }))
   const [history, setHistory] = useState<DirectDocState[]>([])
+  const [organTree, setOrganTree] = useState<OrganNode[]>([])
+
+  useEffect(() => {
+    fetch("/api/organs")
+      .then((r) => r.json())
+      .then((data: OrganNode[]) => setOrganTree(data))
+      .catch(() => {})
+  }, [])
 
   const flash = useCallback((key: string) => {
     setState((s) => ({ ...s, recentChange: key }))
@@ -196,6 +225,14 @@ export function useDirectDocState() {
                 ? "報告"
                 : "新案"
 
+        // Look up parent paths from organ tree (defaults if unknown)
+        const senderInfo = parsed.sender
+          ? findOrganPath(parsed.sender, organTree)
+          : null
+        const receiverInfo = parsed.receiver
+          ? findOrganPath(parsed.receiver, organTree)
+          : null
+
         const intent: IntentResult = {
           sender: parsed.sender ?? "",
           receiver: parsed.receiver ?? "",
@@ -208,10 +245,10 @@ export function useDirectDocState() {
           reference_doc: parsed.reference_doc || undefined,
           attachments: parsed.attachments ?? [],
           formality: parsed.formality ?? "正式",
-          sender_level: 0,
-          receiver_level: 0,
-          sender_parent: "",
-          receiver_parent: "",
+          sender_level: senderInfo?.level ?? 0,
+          receiver_level: receiverInfo?.level ?? 0,
+          sender_parent: senderInfo?.path ?? "",
+          receiver_parent: receiverInfo?.path ?? "",
           receiver_display_name: parsed.receiver_display_name ?? "",
           subtype: parsed.subtype ?? "",
           confident: parsed.confident,
@@ -221,10 +258,16 @@ export function useDirectDocState() {
 
         setState((s) => ({ ...s, intent, docType, phase: "clarifying" }))
 
+        const senderDisplay = intent.sender_parent
+          ? `${intent.sender_parent} > ${intent.sender}`
+          : intent.sender || "（未知機關）"
+        const receiverDisplay = intent.receiver_parent
+          ? `${intent.receiver_parent} > ${intent.receiver}`
+          : intent.receiver || "（未知對象）"
         const userMsg: ChatMessage = { role: "user", content: text }
         const assistantMsg: ChatMessage = {
           role: "assistant",
-          content: `已根據您的描述完成解析：${intent.sender || "（未知機關）"} → ${intent.receiver || "（未知對象）"}，類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。請於右側完成釐清問題後，將自動生成草稿。`,
+          content: `已解析：發文機關 ${senderDisplay}；受文者 ${receiverDisplay}；公文類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。AI 將起草初版（不確定處以 ○○○ 標記），稍後會詢問需要補充的項目。`,
         }
         setState((s) => ({ ...s, chatHistory: [...s.chatHistory, userMsg, assistantMsg] }))
 
@@ -296,7 +339,7 @@ export function useDirectDocState() {
                 { role: "user", content: text },
                 {
                   role: "assistant",
-                  content: `已根據您的描述完成解析：${intent.sender || "（未知機關）"} → ${intent.receiver || "（未知對象）"}，類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
+                  content: `已解析：發文機關 ${senderDisplay}；受文者 ${receiverDisplay}；公文類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
                 },
               ],
               user_message: "",
@@ -362,7 +405,7 @@ export function useDirectDocState() {
         setState((s) => ({ ...s, phase: "onboarding" }))
       }
     },
-    []
+    [organTree]
   )
 
   const answerClarify = useCallback(
@@ -424,6 +467,7 @@ export function useDirectDocState() {
     mergedIntent,
     unansweredRequired,
     canUndo: history.length > 0,
+    organTree,
     update,
     overrideIntent,
     undo,

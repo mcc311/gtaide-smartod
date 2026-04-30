@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useDirectDocState } from "./useDirectDocState"
 import DocCanvas from "./DocCanvas"
 import OnboardingOverlay from "./OnboardingOverlay"
@@ -7,7 +7,7 @@ import LawSearchModal from "./LawSearchModal"
 import Header from "./Header"
 import ExportModal from "./ExportModal"
 import BottomStatusBar from "./BottomStatusBar"
-import type { OrganNode, GenerateRequest, IntentResult } from "@/types"
+import type { GenerateRequest, IntentResult } from "@/types"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 
 function buildGenerateRequest(
@@ -41,16 +41,9 @@ function buildGenerateRequest(
 
 export default function DirectEditPage() {
   const hook = useDirectDocState()
-  const { state } = hook
-  const [organTree, setOrganTree] = useState<OrganNode[]>([])
+  const { state, organTree } = hook
   const [lawSearchOpen, setLawSearchOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
-  useEffect(() => {
-    fetch("/api/organs")
-      .then((r) => r.json())
-      .then((data: OrganNode[]) => setOrganTree(data))
-      .catch(() => {})
-  }, [])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC] relative">
