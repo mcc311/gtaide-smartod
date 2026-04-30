@@ -89,7 +89,9 @@ function buildChatEditPayload(
 
 export default function AiTabChat({ hook }: AiTabChatProps) {
   const [text, setText] = useState("")
-  const [submitting, setSubmitting] = useState(false)
+  const submitting = hook.state.phase === "generating"
+  const beforeParse =
+    hook.state.phase === "onboarding" || hook.state.phase === "parsing"
   const history = hook.state.chatHistory
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
@@ -107,11 +109,12 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
     }
   }
 
+  const [localSubmitting, setLocalSubmitting] = useState(false)
   const sendMessage = async (msg: string) => {
     const trimmed = msg.trim()
-    if (!trimmed || submitting) return
+    if (!trimmed || submitting || localSubmitting || beforeParse) return
     setText("")
-    setSubmitting(true)
+    setLocalSubmitting(true)
     hook.appendChat({ role: "user", content: trimmed })
     try {
       const res = await fetch("/api/chat-edit", {
@@ -144,7 +147,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         content: "（錯誤：無法連線至 chat-edit 服務）",
       })
     } finally {
-      setSubmitting(false)
+      setLocalSubmitting(false)
     }
   }
 
@@ -157,7 +160,9 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 pr-1">
         {history.length === 0 ? (
           <div className="text-sm text-[#666]">
-            先描述要發的公文，AI 將起草草稿。
+            {beforeParse
+              ? "請先在中央彈窗中描述要發的公文。完成 AI 分析後，可在此與 AI 助理對話、修改草稿。"
+              : "AI 助理已就緒。可直接打字下指令。"}
           </div>
         ) : (
           history.map((m, i) => (
@@ -179,10 +184,10 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
                       type="button"
                       className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] bg-white hover:border-[#1B2D6B] hover:bg-[#F5F1EC]"
                       onClick={() => {
-                        if (submitting) return
+                        if (submitting || beforeParse) return
                         void sendMessage(opt)
                       }}
-                      disabled={submitting}
+                      disabled={submitting || beforeParse}
                     >
                       {opt}
                     </button>
@@ -207,7 +212,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
               type="button"
               className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] hover:border-[#1B2D6B]"
               onClick={() => setText(q)}
-              disabled={submitting}
+              disabled={submitting || beforeParse}
             >
               {q}
             </button>
@@ -221,7 +226,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="告訴 AI 您要修改什麼..."
-            disabled={submitting}
+            disabled={submitting || beforeParse}
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault()
@@ -233,7 +238,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
             type="button"
             className="bg-[#1B2D6B] hover:bg-[#152456] disabled:opacity-50 text-white p-2 rounded-md"
             onClick={handleSubmit}
-            disabled={!text.trim() || submitting}
+            disabled={!text.trim() || submitting || beforeParse}
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
