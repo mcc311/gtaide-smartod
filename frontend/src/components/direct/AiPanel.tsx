@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import AiTabSuggestions from "./AiTabSuggestions"
 import AiTabLaws from "./AiTabLaws"
+import AiTabChat from "./AiTabChat"
 
 interface AiPanelProps {
   hook: UseDirectDocStateReturn
@@ -71,7 +72,7 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 text-sm">
-        {tab === "chat" && <div className="text-[#999]">[AiTabChat — Task 17]</div>}
+        {tab === "chat" && <AiTabChat hook={hook} />}
         {tab === "suggestions" && <AiTabSuggestions hook={hook} />}
         {tab === "laws" && <AiTabLaws hook={hook} onOpenSearch={onOpenLawSearch} />}
       </div>

@@ -4,6 +4,7 @@ import DocCanvas from "./DocCanvas"
 import OnboardingOverlay from "./OnboardingOverlay"
 import AiPanel from "./AiPanel"
 import LawSearchModal from "./LawSearchModal"
+import Header from "./Header"
 import type { OrganNode } from "@/types"
 
 export default function DirectEditPage() {
@@ -11,6 +12,7 @@ export default function DirectEditPage() {
   const { state } = hook
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
   const [lawSearchOpen, setLawSearchOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   useEffect(() => {
     fetch("/api/organs")
       .then((r) => r.json())
@@ -20,15 +22,7 @@ export default function DirectEditPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC] relative">
-      <header className="border-b border-[#E1E1E1] bg-white shrink-0 px-4 lg:px-8 py-3">
-        <div className="flex items-center gap-2.5">
-          <img src="/gtaide_logo.svg" alt="GTAIDE" className="h-7" />
-          <div className="hidden sm:block h-5 w-px bg-[#E1E1E1]" />
-          <span className="hidden sm:inline text-base font-semibold text-[#1B2D6B]">
-            SmartOD <span className="text-[#666] font-normal">· 直接編輯版</span>
-          </span>
-        </div>
-      </header>
+      <Header canUndo={hook.canUndo} onUndo={hook.undo} onRestart={hook.reset} onExport={() => setExportOpen(true)} />
 
       {(state.phase === "onboarding" || state.phase === "parsing") && (
         <OnboardingOverlay
@@ -54,6 +48,7 @@ export default function DirectEditPage() {
         initialSuggestions={hook.state.lawSuggestions}
         onSave={(selected) => hook.update({ selectedLaws: selected })}
       />
+      {exportOpen && null /* placeholder until Task 18 */}
     </div>
   )
 }
