@@ -5,7 +5,38 @@ import OnboardingOverlay from "./OnboardingOverlay"
 import AiPanel from "./AiPanel"
 import LawSearchModal from "./LawSearchModal"
 import Header from "./Header"
-import type { OrganNode } from "@/types"
+import ExportModal from "./ExportModal"
+import type { OrganNode, GenerateRequest, IntentResult } from "@/types"
+import type { UseDirectDocStateReturn } from "./useDirectDocState"
+
+function buildGenerateRequest(
+  hook: UseDirectDocStateReturn
+): { intent: IntentResult; form: GenerateRequest } | null {
+  const merged = hook.mergedIntent
+  if (!merged) return null
+  const s = hook.state
+  const form: GenerateRequest = {
+    intent: merged,
+    subject_detail: s.subject_detail,
+    explanation_items: s.explanation_items,
+    action_items: s.action_items,
+    recipients_main: s.recipients_main,
+    recipients_cc: s.recipients_cc,
+    doc_date: s.doc_date,
+    doc_number: s.doc_number,
+    speed: s.speed,
+    attachments_text: s.attachments.join("、"),
+    meeting_time: s.meeting_time || undefined,
+    meeting_place: s.meeting_place || undefined,
+    meeting_chair: s.meeting_chair || undefined,
+    meeting_contact: s.meeting_contact || undefined,
+    meeting_contact_phone: s.meeting_contact_phone || undefined,
+    meeting_attendees: s.meeting_attendees.length ? s.meeting_attendees : undefined,
+    meeting_observers: s.meeting_observers.length ? s.meeting_observers : undefined,
+    meeting_notes: s.meeting_notes || undefined,
+  }
+  return { intent: merged, form }
+}
 
 export default function DirectEditPage() {
   const hook = useDirectDocState()
@@ -48,7 +79,18 @@ export default function DirectEditPage() {
         initialSuggestions={hook.state.lawSuggestions}
         onSave={(selected) => hook.update({ selectedLaws: selected })}
       />
-      {exportOpen && null /* placeholder until Task 18 */}
+      {(() => {
+        const built = buildGenerateRequest(hook)
+        if (!built) return null
+        return (
+          <ExportModal
+            open={exportOpen}
+            onClose={() => setExportOpen(false)}
+            intent={built.intent}
+            form={built.form}
+          />
+        )
+      })()}
     </div>
   )
 }
