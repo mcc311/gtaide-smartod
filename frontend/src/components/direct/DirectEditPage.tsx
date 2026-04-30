@@ -6,6 +6,7 @@ import AiPanel from "./AiPanel"
 import LawSearchModal from "./LawSearchModal"
 import Header from "./Header"
 import ExportModal from "./ExportModal"
+import BottomStatusBar from "./BottomStatusBar"
 import type { OrganNode, GenerateRequest, IntentResult } from "@/types"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 
@@ -70,9 +71,7 @@ export default function DirectEditPage() {
         <AiPanel hook={hook} onOpenLawSearch={() => setLawSearchOpen(true)} />
       </main>
 
-      <footer className="border-t border-[#E1E1E1] bg-white shrink-0 px-4 py-2 text-xs text-[#999]">
-        [BottomStatusBar placeholder]
-      </footer>
+      <BottomStatusBar hook={hook} />
       <LawSearchModal
         open={lawSearchOpen}
         onClose={() => setLawSearchOpen(false)}
