@@ -13,6 +13,7 @@ from app.models.schemas import (
     ChatEditRequest,
     ChatEditResponse,
     ChatEdit,
+    ChatPendingQuestion,
 )
 from app.core.organ_registry import (
     get_organ,
@@ -414,8 +415,17 @@ def list_action_types() -> list[dict]:
 
 @router.post("/chat-edit", response_model=ChatEditResponse)
 def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
-    edits, assistant_message = chat_edit(req)
+    outcome = chat_edit(req)
+    pending_question = (
+        ChatPendingQuestion(
+            question=outcome.pending["question"],
+            options=outcome.pending.get("options"),
+        )
+        if outcome.pending
+        else None
+    )
     return ChatEditResponse(
-        edits=[ChatEdit(field=e["field"], value=e["value"]) for e in edits],
-        assistant_message=assistant_message,
+        edits=[ChatEdit(field=e["field"], value=e["value"]) for e in outcome.edits],
+        assistant_message=outcome.assistant_message,
+        pending_question=pending_question,
     )

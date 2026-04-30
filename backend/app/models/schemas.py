@@ -197,6 +197,12 @@ class ChatEdit(BaseModel):
     value: str | list[str]
 
 
+class ChatPendingQuestion(BaseModel):
+    question: str
+    options: list[str] | None = None
+
+
 class ChatEditResponse(BaseModel):
     edits: list[ChatEdit]
     assistant_message: str
+    pending_question: ChatPendingQuestion | None = None

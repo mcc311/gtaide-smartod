@@ -1,5 +1,6 @@
 """Tool-calling chat-edit: LLM revises specific fields of a 公文 draft."""
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from jinja2 import Template
@@ -118,6 +119,31 @@ TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "ask_user",
+            "description": (
+                "Ask the user a clarifying question when you lack information needed "
+                "to draft or edit. The question becomes the next assistant turn. "
+                "If `options` are provided, they render as clickable shortcuts; "
+                "the user can also type a free-text answer. Use sparingly — only "
+                "when the missing info is truly load-bearing for the document."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string", "description": "The question text shown in chat"},
+                    "options": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Optional 2-5 short shortcut answers (≤8 Chinese chars each)"
+                    }
+                },
+                "required": ["question"]
+            }
+        }
+    },
 ]
 
 
@@ -125,13 +151,17 @@ class _AssistantReply(BaseModel):
     assistant_message: str
 
 
-def chat_edit(req: ChatEditRequest) -> tuple[list[dict], str]:
-    """Run LLM with edit tools. Returns (edits, assistant_message).
+@dataclass
+class ChatEditOutcome:
+    edits: list[dict]
+    assistant_message: str
+    pending: dict | None  # {"question": str, "options": list[str] | None} when ask_user was called
 
-    edits: list of {field, value} dicts to apply on the frontend.
-    assistant_message: natural-language reply to append to chat history.
-    """
+
+def chat_edit(req: ChatEditRequest) -> "ChatEditOutcome":
+    """Run LLM with edit tools. Returns ChatEditOutcome bundling edits, message, and pending question."""
     edits: list[dict] = []
+    pending: dict | None = None  # set when ask_user is called
 
     def _ok():
         return json.dumps({"ok": True})
@@ -173,6 +203,11 @@ def chat_edit(req: ChatEditRequest) -> tuple[list[dict], str]:
         edits.append({"field": field, "value": value})
         return _ok()
 
+    def ask_user(question: str, options: list[str] | None = None) -> str:
+        nonlocal pending
+        pending = {"question": question, "options": options or None}
+        return _ok()
+
     handlers = {
         "update_subject": update_subject,
         "update_explanation": update_explanation,
@@ -180,6 +215,7 @@ def chat_edit(req: ChatEditRequest) -> tuple[list[dict], str]:
         "update_recipients": update_recipients,
         "update_meta": update_meta,
         "update_meeting": update_meeting,
+        "ask_user": ask_user,
     }
 
     template = Template(_PROMPT_PATH.read_text(encoding="utf-8"))
@@ -209,7 +245,7 @@ def chat_edit(req: ChatEditRequest) -> tuple[list[dict], str]:
     messages = [{"role": "system", "content": system_prompt}]
     for msg in req.chat_history:
         messages.append({"role": msg.role, "content": msg.content})
-    messages.append({"role": "user", "content": req.user_message})
+    messages.append({"role": "user", "content": req.user_message or "（首輪：請評估資訊是否足夠，並決定是否提問或起草）"})
 
     result, _tool_log = chat_with_tools_then_structured(
         messages=messages,
@@ -219,4 +255,8 @@ def chat_edit(req: ChatEditRequest) -> tuple[list[dict], str]:
         temperature=0.3,
     )
 
-    return edits, result.assistant_message
+    return ChatEditOutcome(
+        edits=edits,
+        assistant_message=result.assistant_message,
+        pending=pending,
+    )
