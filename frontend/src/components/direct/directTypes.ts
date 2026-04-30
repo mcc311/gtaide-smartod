@@ -44,6 +44,7 @@ export interface Citation {
 export interface ChatMessage {
   role: "user" | "assistant"
   content: string
+  options?: string[]  // quick-reply shortcuts on assistant questions; user can also type freely
 }
 
 export interface DirectDocState {
