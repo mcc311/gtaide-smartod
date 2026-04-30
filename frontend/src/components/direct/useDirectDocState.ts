@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react"
 import type { IntentResult, PhraseResult, DocType } from "@/types"
-import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw } from "./directTypes"
+import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage } from "./directTypes"
 
 function isoToday(): string {
   return new Date().toISOString().slice(0, 10)
@@ -12,6 +12,7 @@ const initialState: DirectDocState = {
   intentOverrides: {},
   docType: "函",
   phrases: null,
+  chatHistory: [],
   clarifyQuestions: [],
   answers: {},
   ragExamples: [],
@@ -117,6 +118,10 @@ export function useDirectDocState() {
     []
   )
 
+  const appendChat = useCallback((msg: ChatMessage) => {
+    setState((s) => ({ ...s, chatHistory: [...s.chatHistory, msg] }))
+  }, [])
+
   const _runGeneration = useCallback(
     async (
       intentForApi: IntentResult,
@@ -215,6 +220,13 @@ export function useDirectDocState() {
         const docType: DocType = inferredDocType
 
         setState((s) => ({ ...s, intent, docType, phase: "clarifying" }))
+
+        const userMsg: ChatMessage = { role: "user", content: text }
+        const assistantMsg: ChatMessage = {
+          role: "assistant",
+          content: `已根據您的描述完成解析：${intent.sender || "（未知機關）"} → ${intent.receiver || "（未知對象）"}，類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。請於右側完成釐清問題後，將自動生成草稿。`,
+        }
+        setState((s) => ({ ...s, chatHistory: [...s.chatHistory, userMsg, assistantMsg] }))
 
         const phrasesPromise = fetch("/api/get-phrases", {
           method: "POST",
@@ -345,6 +357,7 @@ export function useDirectDocState() {
     onSubmitOnboarding,
     answerClarify,
     regenerate,
+    appendChat,
   }
 }
 

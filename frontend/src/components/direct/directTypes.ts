@@ -41,12 +41,18 @@ export interface Citation {
   valid: boolean
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant"
+  content: string
+}
+
 export interface DirectDocState {
   phase: Phase
   intent: IntentResult | null
   intentOverrides: Partial<IntentResult>
   docType: DocType
   phrases: PhraseResult | null
+  chatHistory: ChatMessage[]
   clarifyQuestions: ClarifyQuestion[]
   answers: Record<string, string>
   ragExamples: string[]
