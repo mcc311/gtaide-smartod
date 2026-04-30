@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useDirectDocState } from "./useDirectDocState"
 import DocCanvas from "./DocCanvas"
 import OnboardingOverlay from "./OnboardingOverlay"
+import AiPanel from "./AiPanel"
 import type { OrganNode } from "@/types"
 
 export default function DirectEditPage() {
@@ -39,23 +40,7 @@ export default function DirectEditPage() {
         <section className="overflow-y-auto p-6 lg:p-10">
           <DocCanvas hook={hook} organTree={organTree} />
         </section>
-        <aside className="hidden lg:block border-l border-[#E1E1E1] bg-white overflow-y-auto p-4 space-y-4">
-          <p className="text-xs text-[#999] uppercase tracking-wider">AI 助理（建構中）</p>
-
-          {state.clarifyQuestions.length > 0 ? (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-[#666]">需要釐清（暫顯）</div>
-              {state.clarifyQuestions.map((q) => (
-                <div key={q.field_key} className="text-xs text-[#444]">
-                  · {q.header}: {q.question}
-                </div>
-              ))}
-              <p className="text-xs text-[#999] italic mt-2">完整 AI 面板將在 Task 14 後上線</p>
-            </div>
-          ) : (
-            <p className="text-xs text-[#999]">送出後會載入釐清問題。</p>
-          )}
-        </aside>
+        <AiPanel hook={hook} onOpenLawSearch={() => alert("law modal — Task 16")} />
       </main>
 
       <footer className="border-t border-[#E1E1E1] bg-white shrink-0 px-4 py-2 text-xs text-[#999]">
