@@ -10,6 +10,9 @@ from app.models.schemas import (
     GenerateResponse,
     PhrasesRequest,
     PhrasesResponse,
+    ChatEditRequest,
+    ChatEditResponse,
+    ChatEdit,
 )
 from app.core.organ_registry import (
     get_organ,
@@ -26,6 +29,7 @@ from app.core.intent_parser import parse_intent
 from app.core.law_search import suggest_laws, get_law_categories, browse_laws_by_category, get_article
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
+from app.core.chat_edit import chat_edit
 from app.core.followup import generate_followup
 from app.core.rag import retrieve, format_examples, load_index
 
@@ -406,3 +410,12 @@ def list_action_types() -> list[dict]:
         {"value": at.value, "description": descriptions.get(at, "")}
         for at in ActionType
     ]
+
+
+@router.post("/chat-edit", response_model=ChatEditResponse)
+def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
+    edits, assistant_message = chat_edit(req)
+    return ChatEditResponse(
+        edits=[ChatEdit(field=e["field"], value=e["value"]) for e in edits],
+        assistant_message=assistant_message,
+    )

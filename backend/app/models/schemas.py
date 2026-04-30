@@ -154,3 +154,48 @@ class PhrasesResponse(BaseModel):
     phrases: dict
     opening: str
     expectation: str
+
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+
+class ChatEditRequest(BaseModel):
+    intent: dict
+    phrases: dict = {}
+    doc_type: str
+    direction: str = "平行文"
+    subtype: str = ""
+
+    # Current document state (mirrors GenerateRequest's payload fields)
+    subject_detail: str = ""
+    explanation_items: list[str] = []
+    action_items: list[str] = []
+    doc_date: str = ""
+    doc_number: str = ""
+    speed: str = "普通件"
+    attachments_text: str = ""
+    recipients_main: list[str] = []
+    recipients_cc: list[str] = []
+    meeting_time: str = ""
+    meeting_place: str = ""
+    meeting_chair: str = ""
+    meeting_contact: str = ""
+    meeting_contact_phone: str = ""
+    meeting_attendees: list[str] = []
+    meeting_observers: list[str] = []
+    meeting_notes: str = ""
+
+    chat_history: list[ChatMessage] = []
+    user_message: str
+
+
+class ChatEdit(BaseModel):
+    field: str  # e.g. "subject_detail", "explanation_items", "doc_number"
+    value: str | list[str]
+
+
+class ChatEditResponse(BaseModel):
+    edits: list[ChatEdit]
+    assistant_message: str
