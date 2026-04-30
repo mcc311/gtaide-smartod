@@ -164,6 +164,7 @@ class ChatMessage(BaseModel):
 
 class ChatEditRequest(BaseModel):
     intent: dict
+    session_id: str | None = None
     phrases: dict = {}
     doc_type: str
     direction: str = "平行文"
@@ -206,3 +207,4 @@ class ChatEditResponse(BaseModel):
     edits: list[ChatEdit]
     assistant_message: str
     pending_question: ChatPendingQuestion | None = None
+    session_id: str

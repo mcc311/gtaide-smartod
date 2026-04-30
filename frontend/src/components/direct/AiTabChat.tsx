@@ -48,6 +48,7 @@ function buildChatEditPayload(
   userMessage: string
 ) {
   return {
+    session_id: state.chatSessionId,
     intent: mergedIntent
       ? {
           sender: mergedIntent.sender,
@@ -129,8 +130,12 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         edits: Edit[]
         assistant_message: string
         pending_question?: { question: string; options?: string[] } | null
+        session_id: string
       } = await res.json()
       for (const edit of data.edits ?? []) applyEdit(edit)
+      if (data.session_id) {
+        hook.update({ chatSessionId: data.session_id })
+      }
       const replyContent = data.pending_question?.question ?? data.assistant_message ?? ""
       const replyOptions = data.pending_question?.options
       if (replyContent) {

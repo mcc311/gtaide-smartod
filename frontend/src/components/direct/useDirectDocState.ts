@@ -34,6 +34,7 @@ const initialState: DirectDocState = {
   docType: "函",
   phrases: null,
   chatHistory: [],
+  chatSessionId: null,
   clarifyQuestions: [],
   answers: {},
   ragExamples: [],
@@ -335,6 +336,7 @@ export function useDirectDocState() {
               meeting_attendees: [],
               meeting_observers: [],
               meeting_notes: "",
+              session_id: null,
               chat_history: [
                 { role: "user", content: text },
                 {
@@ -350,6 +352,7 @@ export function useDirectDocState() {
             edits: { field: string; value: string | string[] }[]
             assistant_message: string
             pending_question: { question: string; options?: string[] } | null
+            session_id: string
           } = await chatRes.json()
 
           const SCALAR = new Set([
@@ -371,7 +374,7 @@ export function useDirectDocState() {
             )
 
           setState((prev) => {
-            const next: DirectDocState = { ...prev }
+            const next: DirectDocState = { ...prev, chatSessionId: data.session_id }
             for (const edit of data.edits ?? []) {
               if (SCALAR.has(edit.field) && typeof edit.value === "string") {
                 ;(next as unknown as Record<string, unknown>)[edit.field] = edit.value

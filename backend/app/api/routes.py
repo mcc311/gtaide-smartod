@@ -415,7 +415,7 @@ def list_action_types() -> list[dict]:
 
 @router.post("/chat-edit", response_model=ChatEditResponse)
 def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
-    outcome = chat_edit(req)
+    outcome, session_id = chat_edit(req)
     pending_question = (
         ChatPendingQuestion(
             question=outcome.pending["question"],
@@ -428,4 +428,5 @@ def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
         edits=[ChatEdit(field=e["field"], value=e["value"]) for e in outcome.edits],
         assistant_message=outcome.assistant_message,
         pending_question=pending_question,
+        session_id=session_id,
     )

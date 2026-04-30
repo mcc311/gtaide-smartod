@@ -54,6 +54,7 @@ export interface DirectDocState {
   docType: DocType
   phrases: PhraseResult | null
   chatHistory: ChatMessage[]
+  chatSessionId: string | null
   clarifyQuestions: ClarifyQuestion[]
   answers: Record<string, string>
   ragExamples: string[]

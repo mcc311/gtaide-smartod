@@ -1,12 +1,11 @@
 """Tool-calling chat-edit: LLM revises specific fields of a 公文 draft."""
 import json
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
 from jinja2 import Template
-from pydantic import BaseModel
 
-from app.core.llm import chat_with_tools_then_structured
 from app.core.law_search import (
     TOOLS as LAW_TOOLS,
     TOOL_HANDLERS as LAW_TOOL_HANDLERS,
@@ -153,10 +152,6 @@ TOOLS = [
 TOOLS = TOOLS + LAW_TOOLS
 
 
-class _AssistantReply(BaseModel):
-    assistant_message: str
-
-
 @dataclass
 class ChatEditOutcome:
     edits: list[dict]
@@ -164,10 +159,22 @@ class ChatEditOutcome:
     pending: dict | None  # {"question": str, "options": list[str] | None} when ask_user was called
 
 
-def chat_edit(req: ChatEditRequest) -> "ChatEditOutcome":
-    """Run LLM with edit tools. Returns ChatEditOutcome bundling edits, message, and pending question."""
+# In-memory per-session conversation store (excludes system prompt — rebuilt per turn).
+# Each entry is a list of OpenAI-format messages (user / assistant with tool_calls / tool / assistant final).
+_conversations: dict[str, list[dict]] = {}
+
+MAX_TOOL_ROUNDS = 6
+
+
+def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
+    """Run the agent. Returns (outcome, session_id).
+
+    Maintains a per-session conversation in `_conversations` so the LLM sees
+    its own previous tool calls (preventing repeated questions).
+    """
+    from app.core.llm import _client, MODEL
     edits: list[dict] = []
-    pending: dict | None = None  # set when ask_user is called
+    pending: dict | None = None
 
     def _ok():
         return json.dumps({"ok": True})
@@ -225,6 +232,14 @@ def chat_edit(req: ChatEditRequest) -> "ChatEditOutcome":
     }
     handlers = {**handlers, **LAW_TOOL_HANDLERS}
 
+    # Resolve session
+    session_id = (req.session_id or "").strip()
+    if not session_id or session_id not in _conversations:
+        session_id = str(uuid.uuid4())
+        _conversations[session_id] = []
+    history = _conversations[session_id]
+
+    # Build messages (system rendered per-turn from current state; history is reused)
     template = Template(_PROMPT_PATH.read_text(encoding="utf-8"))
     system_prompt = template.render(
         intent=req.intent,
@@ -249,21 +264,61 @@ def chat_edit(req: ChatEditRequest) -> "ChatEditOutcome":
         meeting_notes=req.meeting_notes,
     )
 
-    messages = [{"role": "system", "content": system_prompt}]
-    for msg in req.chat_history:
-        messages.append({"role": msg.role, "content": msg.content})
-    messages.append({"role": "user", "content": req.user_message or "（首輪：請評估資訊是否足夠，並決定是否提問或起草）"})
+    new_user_msg = {
+        "role": "user",
+        "content": req.user_message or "（請評估目前狀態並決定下一步）",
+    }
+    messages = [{"role": "system", "content": system_prompt}, *history, new_user_msg]
+    new_messages: list[dict] = [new_user_msg]
 
-    result, _tool_log = chat_with_tools_then_structured(
-        messages=messages,
-        tools=TOOLS,
-        tool_handlers=handlers,
-        response_model=_AssistantReply,
-        temperature=0.3,
-    )
+    assistant_text = ""
+    for _ in range(MAX_TOOL_ROUNDS):
+        resp = _client.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            temperature=0.3,
+            tools=TOOLS,
+        )
+        msg = resp.choices[0].message
+        msg_dict = msg.model_dump()
 
-    return ChatEditOutcome(
-        edits=edits,
-        assistant_message=result.assistant_message,
-        pending=pending,
+        if not msg.tool_calls:
+            # Final natural-language assistant turn
+            assistant_text = msg.content or ""
+            messages.append(msg_dict)
+            new_messages.append(msg_dict)
+            break
+
+        # Append assistant turn (with tool_calls) and execute each tool
+        messages.append(msg_dict)
+        new_messages.append(msg_dict)
+        for tc in msg.tool_calls:
+            fn_name = tc.function.name
+            try:
+                fn_args = json.loads(tc.function.arguments) if tc.function.arguments else {}
+            except json.JSONDecodeError:
+                fn_args = {}
+            handler = handlers.get(fn_name)
+            try:
+                result = handler(**fn_args) if handler else f"Unknown tool: {fn_name}"
+            except Exception as exc:
+                result = json.dumps({"error": f"{type(exc).__name__}: {exc}"})
+            tool_msg = {
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": result if isinstance(result, str) else json.dumps(result, ensure_ascii=False),
+            }
+            messages.append(tool_msg)
+            new_messages.append(tool_msg)
+    else:
+        # Max rounds without a non-tool-call response — fabricate a closing message
+        assistant_text = "（已達最多工具呼叫輪數，請使用者繼續描述需求）"
+        new_messages.append({"role": "assistant", "content": assistant_text})
+
+    # Persist new turns
+    _conversations[session_id].extend(new_messages)
+
+    return (
+        ChatEditOutcome(edits=edits, assistant_message=assistant_text, pending=pending),
+        session_id,
     )
