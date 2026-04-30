@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
-import AiTabSuggestions from "./AiTabSuggestions"
 import AiTabLaws from "./AiTabLaws"
 import AiTabChat from "./AiTabChat"
 
@@ -11,10 +10,10 @@ interface AiPanelProps {
   onOpenLawSearch: () => void
 }
 
-type Tab = "chat" | "suggestions" | "laws"
+type Tab = "chat" | "laws"
 
 export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
-  const [tab, setTab] = useState<Tab>("suggestions")
+  const [tab, setTab] = useState<Tab>("chat")
   const [open, setOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth >= 1024
   )
@@ -32,7 +31,6 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
     )
   }
 
-  const unansweredCount = hook.unansweredRequired.length
   return (
     <aside className="border-l border-[#E1E1E1] bg-white flex flex-col overflow-hidden fixed inset-y-0 right-0 w-full sm:w-[360px] z-30 shadow-xl lg:static lg:shadow-none">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E1E1E1]">
@@ -56,7 +54,6 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
       <div className="flex border-b border-[#E1E1E1] text-sm">
         {([
           ["chat", "對話"],
-          ["suggestions", `建議${unansweredCount > 0 ? ` ${unansweredCount}` : ""}`],
           ["laws", "法規"],
         ] as Array<[Tab, string]>).map(([key, label]) => (
           <button
@@ -75,7 +72,6 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
 
       <div className="flex-1 overflow-y-auto p-4 text-sm">
         {tab === "chat" && <AiTabChat hook={hook} />}
-        {tab === "suggestions" && <AiTabSuggestions hook={hook} />}
         {tab === "laws" && <AiTabLaws hook={hook} onOpenSearch={onOpenLawSearch} />}
       </div>
     </aside>
