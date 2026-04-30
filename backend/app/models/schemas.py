@@ -159,6 +159,7 @@ class PhrasesResponse(BaseModel):
 class ChatMessage(BaseModel):
     role: str  # "user" or "assistant"
     content: str
+    options: list[str] | None = None  # quick-reply shortcuts attached to assistant questions
 
 
 class ChatEditRequest(BaseModel):
