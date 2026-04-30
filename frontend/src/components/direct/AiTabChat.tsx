@@ -1,7 +1,7 @@
 import { Loader2, Send } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
-import type { ChatMessage, DirectDocState } from "./directTypes"
+import type { DirectDocState } from "./directTypes"
 import type { IntentResult } from "@/types"
 
 interface AiTabChatProps {
@@ -107,13 +107,12 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
     }
   }
 
-  const handleSubmit = async () => {
-    const trimmed = text.trim()
+  const sendMessage = async (msg: string) => {
+    const trimmed = msg.trim()
     if (!trimmed || submitting) return
     setText("")
     setSubmitting(true)
-    const userMsg: ChatMessage = { role: "user", content: trimmed }
-    hook.appendChat(userMsg)
+    hook.appendChat({ role: "user", content: trimmed })
     try {
       const res = await fetch("/api/chat-edit", {
         method: "POST",
@@ -123,9 +122,21 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         ),
       })
       if (!res.ok) throw new Error(`chat-edit ${res.status}`)
-      const data: { edits: Edit[]; assistant_message: string } = await res.json()
+      const data: {
+        edits: Edit[]
+        assistant_message: string
+        pending_question?: { question: string; options?: string[] } | null
+      } = await res.json()
       for (const edit of data.edits ?? []) applyEdit(edit)
-      hook.appendChat({ role: "assistant", content: data.assistant_message ?? "" })
+      const replyContent = data.pending_question?.question ?? data.assistant_message ?? ""
+      const replyOptions = data.pending_question?.options
+      if (replyContent) {
+        hook.appendChat({
+          role: "assistant",
+          content: replyContent,
+          options: replyOptions,
+        })
+      }
     } catch (err) {
       console.error(err)
       hook.appendChat({
@@ -137,6 +148,10 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
     }
   }
 
+  const handleSubmit = () => {
+    void sendMessage(text)
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -146,15 +161,34 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
           </div>
         ) : (
           history.map((m, i) => (
-            <div
-              key={i}
-              className={
-                m.role === "user"
-                  ? "ml-6 bg-[#1B2D6B] text-white rounded-lg px-3 py-2 text-sm"
-                  : "mr-6 bg-[#F5F1EC] text-[#222] rounded-lg px-3 py-2 text-sm"
-              }
-            >
-              {m.content}
+            <div key={i} className={m.role === "user" ? "ml-6" : "mr-6"}>
+              <div
+                className={
+                  m.role === "user"
+                    ? "bg-[#1B2D6B] text-white rounded-lg px-3 py-2 text-sm"
+                    : "bg-[#F5F1EC] text-[#222] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
+                }
+              >
+                {m.content}
+              </div>
+              {m.role === "assistant" && m.options && m.options.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {m.options.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] bg-white hover:border-[#1B2D6B] hover:bg-[#F5F1EC]"
+                      onClick={() => {
+                        if (submitting) return
+                        void sendMessage(opt)
+                      }}
+                      disabled={submitting}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))
         )}
