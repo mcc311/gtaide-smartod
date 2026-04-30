@@ -19,9 +19,9 @@ import type {
   ActionType,
 } from "@/types"
 
-function isDirectMode(): boolean {
+function isLegacyMode(): boolean {
   if (typeof window === "undefined") return false
-  return new URLSearchParams(window.location.search).get("direct") === "1"
+  return new URLSearchParams(window.location.search).get("legacy") === "1"
 }
 
 function isoToday(): string {
@@ -86,7 +86,7 @@ const STEPS = [
 ]
 
 export default function App() {
-  const isDirect = isDirectMode()
+  const isLegacy = isLegacyMode()
   const [currentStep, setCurrentStep] = useState(1)
   const [intent, setIntent] = useState<IntentResult>(defaultIntent)
   const [phraseResult, setPhraseResult] = useState<PhraseResult | null>(null)
@@ -274,7 +274,7 @@ export default function App() {
       )
     : {}
 
-  if (isDirect) return <DirectEditPage />
+  if (!isLegacy) return <DirectEditPage />
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
