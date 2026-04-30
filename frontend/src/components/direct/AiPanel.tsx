@@ -15,7 +15,9 @@ type Tab = "chat" | "suggestions" | "laws"
 
 export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
   const [tab, setTab] = useState<Tab>("suggestions")
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 1024
+  )
 
   if (!open) {
     return (
@@ -32,7 +34,7 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
 
   const unansweredCount = hook.unansweredRequired.length
   return (
-    <aside className="border-l border-[#E1E1E1] bg-white flex flex-col overflow-hidden">
+    <aside className="border-l border-[#E1E1E1] bg-white flex flex-col overflow-hidden fixed inset-y-0 right-0 w-full sm:w-[360px] z-30 shadow-xl lg:static lg:shadow-none">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E1E1E1]">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[#F5922A]" />

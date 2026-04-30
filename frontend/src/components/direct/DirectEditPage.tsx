@@ -64,7 +64,7 @@ export default function DirectEditPage() {
         />
       )}
 
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
+      <main className="relative flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
         <section className="overflow-y-auto p-6 lg:p-10">
           <DocCanvas hook={hook} organTree={organTree} />
         </section>
