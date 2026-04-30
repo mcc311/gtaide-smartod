@@ -3,6 +3,7 @@ import { Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import AiTabSuggestions from "./AiTabSuggestions"
+import AiTabLaws from "./AiTabLaws"
 
 interface AiPanelProps {
   hook: UseDirectDocStateReturn
@@ -72,11 +73,7 @@ export default function AiPanel({ hook, onOpenLawSearch }: AiPanelProps) {
       <div className="flex-1 overflow-y-auto p-4 text-sm">
         {tab === "chat" && <div className="text-[#999]">[AiTabChat — Task 17]</div>}
         {tab === "suggestions" && <AiTabSuggestions hook={hook} />}
-        {tab === "laws" && (
-          <button type="button" className="text-[#1B2D6B] underline" onClick={onOpenLawSearch}>
-            [AiTabLaws — Task 16] · 開啟搜尋 modal
-          </button>
-        )}
+        {tab === "laws" && <AiTabLaws hook={hook} onOpenSearch={onOpenLawSearch} />}
       </div>
     </aside>
   )

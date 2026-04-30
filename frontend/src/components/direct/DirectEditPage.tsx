@@ -3,12 +3,14 @@ import { useDirectDocState } from "./useDirectDocState"
 import DocCanvas from "./DocCanvas"
 import OnboardingOverlay from "./OnboardingOverlay"
 import AiPanel from "./AiPanel"
+import LawSearchModal from "./LawSearchModal"
 import type { OrganNode } from "@/types"
 
 export default function DirectEditPage() {
   const hook = useDirectDocState()
   const { state } = hook
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
+  const [lawSearchOpen, setLawSearchOpen] = useState(false)
   useEffect(() => {
     fetch("/api/organs")
       .then((r) => r.json())
@@ -40,12 +42,18 @@ export default function DirectEditPage() {
         <section className="overflow-y-auto p-6 lg:p-10">
           <DocCanvas hook={hook} organTree={organTree} />
         </section>
-        <AiPanel hook={hook} onOpenLawSearch={() => alert("law modal — Task 16")} />
+        <AiPanel hook={hook} onOpenLawSearch={() => setLawSearchOpen(true)} />
       </main>
 
       <footer className="border-t border-[#E1E1E1] bg-white shrink-0 px-4 py-2 text-xs text-[#999]">
         [BottomStatusBar placeholder]
       </footer>
+      <LawSearchModal
+        open={lawSearchOpen}
+        onClose={() => setLawSearchOpen(false)}
+        initialSuggestions={hook.state.lawSuggestions}
+        onSave={(selected) => hook.update({ selectedLaws: selected })}
+      />
     </div>
   )
 }
