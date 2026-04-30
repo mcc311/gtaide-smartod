@@ -180,12 +180,24 @@ export function useDirectDocState() {
         if (!parseRes.ok) throw new Error("parse-intent failed")
         const parsed = await parseRes.json()
 
+        // parse-intent's action_type is deprecated and may be ""; derive from doc_type when empty
+        const inferredDocType: DocType = parsed.doc_type ?? "函"
+        const derivedActionType: IntentResult["action_type"] =
+          inferredDocType === "令"
+            ? "公布法令"
+            : inferredDocType === "開會通知單"
+              ? "會議通知"
+              : inferredDocType === "簽"
+                ? "報告"
+                : "新案"
+
         const intent: IntentResult = {
           sender: parsed.sender ?? "",
           receiver: parsed.receiver ?? "",
           receiver_type: parsed.receiver_type ?? "政府機關",
           is_internal: !!parsed.is_internal,
-          action_type: parsed.action_type ?? "新案",
+          action_type:
+            (parsed.action_type as IntentResult["action_type"]) || derivedActionType,
           purpose: parsed.purpose ?? "",
           subject_brief: parsed.subject_brief ?? "",
           reference_doc: parsed.reference_doc || undefined,
@@ -200,7 +212,7 @@ export function useDirectDocState() {
           confident: parsed.confident,
           reasoning: parsed.reasoning,
         }
-        const docType: DocType = parsed.doc_type ?? "函"
+        const docType: DocType = inferredDocType
 
         setState((s) => ({ ...s, intent, docType, phase: "clarifying" }))
 
