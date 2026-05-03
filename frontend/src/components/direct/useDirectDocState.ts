@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react"
 import type { IntentResult, PhraseResult, DocType, OrganNode } from "@/types"
 import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage } from "./directTypes"
+import { toChatEditPayload } from "./payload"
 
 function findOrganPath(
   name: string,
@@ -313,39 +314,43 @@ export function useDirectDocState() {
           const chatRes = await fetch("/api/chat-edit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              intent: intentToDict(intent),
-              phrases: phrasesToDict(phrases),
-              doc_type: docType,
-              direction: phrases?.direction ?? "平行文",
-              subtype: intent.subtype,
-              subject_detail: "",
-              explanation_items: [],
-              action_items: [],
-              doc_date: "",
-              doc_number: "",
-              speed: "普通件",
-              attachments_text: (intent.attachments ?? []).join("、"),
-              recipients_main: [],
-              recipients_cc: [],
-              meeting_time: "",
-              meeting_place: "",
-              meeting_chair: "",
-              meeting_contact: "",
-              meeting_contact_phone: "",
-              meeting_attendees: [],
-              meeting_observers: [],
-              meeting_notes: "",
-              session_id: null,
-              chat_history: [
-                { role: "user", content: text },
+            body: JSON.stringify(
+              toChatEditPayload(
                 {
-                  role: "assistant",
-                  content: `已解析：發文機關 ${senderDisplay}；受文者 ${receiverDisplay}；公文類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
-                },
-              ],
-              user_message: "",
-            }),
+                  ...initialState,
+                  docType,
+                  phrases,
+                  subject_detail: "",
+                  explanation_items: [],
+                  action_items: [],
+                  doc_date: "",
+                  doc_number: "",
+                  speed: "普通件",
+                  attachments: intent.attachments ?? [],
+                  recipients_main: [],
+                  recipients_cc: [],
+                  meeting_time: "",
+                  meeting_place: "",
+                  meeting_chair: "",
+                  meeting_contact: "",
+                  meeting_contact_phone: "",
+                  meeting_attendees: [],
+                  meeting_observers: [],
+                  meeting_notes: "",
+                  chatHistory: [],
+                } as DirectDocState,
+                intent,
+                "",
+                null,
+                [
+                  { role: "user", content: text },
+                  {
+                    role: "assistant",
+                    content: `已解析：發文機關 ${senderDisplay}；受文者 ${receiverDisplay}；公文類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
+                  },
+                ],
+              ),
+            ),
           })
           if (!chatRes.ok) throw new Error(`chat-edit ${chatRes.status}`)
           const data: {

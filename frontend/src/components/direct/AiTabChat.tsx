@@ -2,7 +2,7 @@ import { Loader2, Send } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import type { DirectDocState } from "./directTypes"
-import type { IntentResult } from "@/types"
+import { toChatEditPayload } from "./payload"
 
 interface AiTabChatProps {
   hook: UseDirectDocStateReturn
@@ -42,51 +42,6 @@ const ARRAY_FIELDS = new Set([
   "attachments",
 ])
 
-function buildChatEditPayload(
-  state: DirectDocState,
-  mergedIntent: IntentResult | null,
-  userMessage: string
-) {
-  return {
-    session_id: state.chatSessionId,
-    intent: mergedIntent
-      ? {
-          sender: mergedIntent.sender,
-          receiver: mergedIntent.receiver,
-          receiver_type: mergedIntent.receiver_type,
-          action_type: mergedIntent.action_type,
-          purpose: mergedIntent.purpose,
-          subject_brief: mergedIntent.subject_brief,
-          reference_doc: mergedIntent.reference_doc ?? "",
-          attachments: mergedIntent.attachments,
-          receiver_display_name: mergedIntent.receiver_display_name,
-        }
-      : {},
-    phrases: state.phrases?.phrases ?? {},
-    doc_type: state.docType,
-    direction: state.phrases?.direction ?? "平行文",
-    subtype: mergedIntent?.subtype ?? "",
-    subject_detail: state.subject_detail,
-    explanation_items: state.explanation_items,
-    action_items: state.action_items,
-    doc_date: state.doc_date,
-    doc_number: state.doc_number,
-    speed: state.speed,
-    attachments_text: state.attachments.join("、"),
-    recipients_main: state.recipients_main,
-    recipients_cc: state.recipients_cc,
-    meeting_time: state.meeting_time,
-    meeting_place: state.meeting_place,
-    meeting_chair: state.meeting_chair,
-    meeting_contact: state.meeting_contact,
-    meeting_contact_phone: state.meeting_contact_phone,
-    meeting_attendees: state.meeting_attendees,
-    meeting_observers: state.meeting_observers,
-    meeting_notes: state.meeting_notes,
-    chat_history: state.chatHistory,
-    user_message: userMessage,
-  }
-}
 
 export default function AiTabChat({ hook }: AiTabChatProps) {
   const [text, setText] = useState("")
@@ -122,7 +77,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          buildChatEditPayload(hook.state, hook.mergedIntent, trimmed)
+          toChatEditPayload(hook.state, hook.mergedIntent, trimmed, hook.state.chatSessionId)
         ),
       })
       if (!res.ok) throw new Error(`chat-edit ${res.status}`)
