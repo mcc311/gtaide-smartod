@@ -3,7 +3,7 @@ import json
 import uuid
 from dataclasses import dataclass
 
-from app.core.law_search import (
+from app.core.law_tools import (
     TOOLS as LAW_TOOLS,
     TOOL_HANDLERS as LAW_TOOL_HANDLERS,
 )
