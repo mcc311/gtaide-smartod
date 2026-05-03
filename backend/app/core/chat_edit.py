@@ -2,9 +2,6 @@
 import json
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
-
-from jinja2 import Template
 
 from app.core.law_search import (
     TOOLS as LAW_TOOLS,
@@ -15,11 +12,8 @@ from app.core.edit_tool_catalog import (
     META_FIELDS,
     MEETING_FIELDS,
 )
+from app.core.typed_prompts import ChatEditSystemPrompt
 from app.models.schemas import ChatEditRequest
-
-_PROMPT_PATH = (
-    Path(__file__).parent.parent / "templates" / "prompts" / "chat_edit_system.j2"
-)
 
 
 # ask_user — not in EDIT_TOOLS because it's not a state edit
@@ -133,28 +127,29 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
     history = _conversations[session_id]
 
     # Build messages (system rendered per-turn from current state; history is reused)
-    template = Template(_PROMPT_PATH.read_text(encoding="utf-8"))
-    system_prompt = template.render(
-        intent=req.intent,
-        phrases=req.phrases,
-        doc_type=req.doc_type,
-        direction=req.direction,
-        subtype=req.subtype,
-        subject_detail=req.subject_detail,
-        explanation_items=req.explanation_items,
-        action_items=req.action_items,
-        doc_date=req.doc_date,
-        doc_number=req.doc_number,
-        speed=req.speed,
-        attachments_text=req.attachments_text,
-        recipients_main=req.recipients_main,
-        recipients_cc=req.recipients_cc,
-        meeting_time=req.meeting_time,
-        meeting_place=req.meeting_place,
-        meeting_chair=req.meeting_chair,
-        meeting_contact=req.meeting_contact,
-        meeting_contact_phone=req.meeting_contact_phone,
-        meeting_notes=req.meeting_notes,
+    system_prompt = ChatEditSystemPrompt.render(
+        ChatEditSystemPrompt.Inputs(
+            intent=req.intent,
+            phrases=req.phrases,
+            doc_type=req.doc_type,
+            direction=req.direction,
+            subtype=req.subtype,
+            subject_detail=req.subject_detail,
+            explanation_items=req.explanation_items,
+            action_items=req.action_items,
+            doc_date=req.doc_date,
+            doc_number=req.doc_number,
+            speed=req.speed,
+            attachments_text=req.attachments_text,
+            recipients_main=req.recipients_main,
+            recipients_cc=req.recipients_cc,
+            meeting_time=req.meeting_time,
+            meeting_place=req.meeting_place,
+            meeting_chair=req.meeting_chair,
+            meeting_contact=req.meeting_contact,
+            meeting_contact_phone=req.meeting_contact_phone,
+            meeting_notes=req.meeting_notes,
+        )
     )
 
     new_user_msg = {

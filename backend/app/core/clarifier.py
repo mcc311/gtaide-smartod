@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from app.core.llm import chat_structured, chat_with_tools_then_structured
 from app.core import prompts
+from app.core.typed_prompts import GenerateSystemPrompt
 from app.core.law_search import TOOLS as LAW_TOOLS, TOOL_HANDLERS as LAW_TOOL_HANDLERS
 
 
@@ -69,7 +70,7 @@ def generate_with_answers(
                 answer_labels[fk] = q.get("header", fk)
 
     messages = [
-        {"role": "system", "content": prompts.render("generate_system.j2")},
+        {"role": "system", "content": GenerateSystemPrompt.render(GenerateSystemPrompt.Inputs())},
         {"role": "user", "content": prompts.render(
             "generate_user.j2",
             intent=intent,
