@@ -136,23 +136,24 @@ def select_expectation(
             return options[0]  # 請照辦
 
 
-def select_phrases(
+def select_phrases_pure(
     direction: Direction,
-    sender: str,
-    receiver: str,
     action_type: ActionType,
-    receiver_type: str = "政府機關",
-    is_internal: bool = False,
-    subtype: str = "",
+    receiver_type: str,
+    is_internal: bool,
+    subtype: str,
+    sender_short: str,
+    receiver_short: str,
 ) -> dict:
-    """Return all selected phrases with organ names filled in."""
+    """Pure phrase selection. Caller resolves organ short names.
+
+    Use this when you don't have access to the organ_registry, e.g. from
+    tests or contexts where the registry would be too heavy to load.
+    """
     table = INTERNAL_PHRASE_TABLE if is_internal else PHRASE_TABLE
     dir_table = table[direction.value]
 
-    sender_organ = get_organ(sender)
-    self_short = sender_organ.short_name if sender_organ else "機關"
-
-    # Determine 稱謂
+    # Determine 稱謂 based on receiver_type
     if receiver_type == "人民":
         honorific = "台端"
     elif receiver_type == "企業/公司":
@@ -164,20 +165,15 @@ def select_phrases(
     elif receiver_type == "公眾":
         honorific = ""
     elif is_internal:
-        # Internal: no 鈞/貴 prefix, just the unit name or empty
-        receiver_organ = get_organ(receiver)
-        organ_short = receiver_organ.short_name if receiver_organ else ""
         tpl = dir_table["稱謂"]
-        honorific = tpl.format(organ_short=organ_short) if "{organ_short}" in tpl else tpl
+        honorific = tpl.format(organ_short=receiver_short) if "{organ_short}" in tpl else tpl
     else:
         # External government organ
-        receiver_organ = get_organ(receiver)
-        organ_short = receiver_organ.short_name if receiver_organ else "機關"
-        honorific = dir_table["稱謂"].format(organ_short=organ_short)
+        honorific = dir_table["稱謂"].format(organ_short=receiver_short or "機關")
 
-    result = {
+    return {
         "稱謂": honorific,
-        "自稱": dir_table["自稱"].format(self_short=self_short),
+        "自稱": dir_table["自稱"].format(self_short=sender_short),
         "引敘語": dir_table["引敘語"],
         "期望語": select_expectation(direction, action_type, is_internal, subtype),
         "附送語": dir_table["附送語"][0],
@@ -186,4 +182,31 @@ def select_phrases(
         "行文性質": "內部行文" if is_internal else "對外行文",
     }
 
-    return result
+
+def select_phrases(
+    direction: Direction,
+    sender: str,
+    receiver: str,
+    action_type: ActionType,
+    receiver_type: str = "政府機關",
+    is_internal: bool = False,
+    subtype: str = "",
+) -> dict:
+    """Return all selected phrases with organ names filled in.
+
+    Resolves sender/receiver short names via organ_registry, then delegates
+    to `select_phrases_pure`. Existing callers remain unchanged.
+    """
+    sender_organ = get_organ(sender)
+    sender_short = sender_organ.short_name if sender_organ else "機關"
+    receiver_organ = get_organ(receiver)
+    receiver_short = receiver_organ.short_name if receiver_organ else "機關"
+    return select_phrases_pure(
+        direction=direction,
+        action_type=action_type,
+        receiver_type=receiver_type,
+        is_internal=is_internal,
+        subtype=subtype,
+        sender_short=sender_short,
+        receiver_short=receiver_short,
+    )
