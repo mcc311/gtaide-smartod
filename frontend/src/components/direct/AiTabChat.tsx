@@ -2,7 +2,7 @@ import { Loader2, Send } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import type { DirectDocState } from "./directTypes"
-import { toChatEditPayload } from "./payload"
+import { toChatEditPayload, applyEditToState, type Edit } from "./payload"
 
 interface AiTabChatProps {
   hook: UseDirectDocStateReturn
@@ -14,33 +14,6 @@ const QUICK_QUESTIONS = [
   "加上罰則段落",
 ]
 
-interface Edit {
-  field: string
-  value: string | string[]
-}
-
-const SCALAR_FIELDS = new Set([
-  "subject_detail",
-  "doc_date",
-  "doc_number",
-  "speed",
-  "attachments_text",
-  "meeting_time",
-  "meeting_place",
-  "meeting_chair",
-  "meeting_contact",
-  "meeting_contact_phone",
-  "meeting_notes",
-])
-const ARRAY_FIELDS = new Set([
-  "explanation_items",
-  "action_items",
-  "recipients_main",
-  "recipients_cc",
-  "meeting_attendees",
-  "meeting_observers",
-  "attachments",
-])
 
 
 export default function AiTabChat({ hook }: AiTabChatProps) {
@@ -56,10 +29,9 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
   }, [history.length])
 
   const applyEdit = (edit: Edit) => {
-    if (SCALAR_FIELDS.has(edit.field) && typeof edit.value === "string") {
-      hook.update({ [edit.field]: edit.value } as Partial<DirectDocState>, edit.field)
-    } else if (ARRAY_FIELDS.has(edit.field) && Array.isArray(edit.value)) {
-      hook.update({ [edit.field]: edit.value } as Partial<DirectDocState>, edit.field)
+    const valid = applyEditToState(edit, hook.state.fieldKinds)
+    if (valid) {
+      hook.update({ [valid.field]: valid.value } as Partial<DirectDocState>, valid.field)
     } else {
       console.warn("Unsupported edit:", edit)
     }

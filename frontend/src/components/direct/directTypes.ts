@@ -47,6 +47,9 @@ export interface ChatMessage {
   options?: string[]  // quick-reply shortcuts on assistant questions; user can also type freely
 }
 
+export type FieldKind = "scalar" | "array"
+export type FieldKinds = Record<string, FieldKind>
+
 export interface DirectDocState {
   phase: Phase
   intent: IntentResult | null
@@ -79,4 +82,5 @@ export interface DirectDocState {
   meeting_observers: string[]
   meeting_notes: string
   recentChange: string | null
+  fieldKinds: FieldKinds
 }

@@ -1,5 +1,39 @@
 import type { IntentResult, GenerateRequest } from "@/types"
-import type { DirectDocState } from "./directTypes"
+import type { DirectDocState, FieldKinds } from "./directTypes"
+
+export const DEFAULT_FIELD_KINDS: FieldKinds = {
+  subject_detail: "scalar",
+  explanation_items: "array",
+  action_items: "array",
+  recipients_main: "array",
+  recipients_cc: "array",
+  doc_date: "scalar",
+  doc_number: "scalar",
+  speed: "scalar",
+  attachments_text: "scalar",
+  meeting_time: "scalar",
+  meeting_place: "scalar",
+  meeting_chair: "scalar",
+  meeting_contact: "scalar",
+  meeting_contact_phone: "scalar",
+  meeting_notes: "scalar",
+}
+
+export interface Edit {
+  field: string
+  value: string | string[]
+}
+
+export function applyEditToState(
+  edit: Edit,
+  fieldKinds: FieldKinds,
+): { field: string; value: string | string[] } | null {
+  const kinds = Object.keys(fieldKinds).length > 0 ? fieldKinds : DEFAULT_FIELD_KINDS
+  const kind = kinds[edit.field]
+  if (kind === "scalar" && typeof edit.value === "string") return edit
+  if (kind === "array" && Array.isArray(edit.value)) return edit
+  return null
+}
 
 /**
  * Convert IntentResult to the dict shape expected by the backend's

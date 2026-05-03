@@ -31,6 +31,7 @@ from app.core.law_search import suggest_laws, get_law_categories, browse_laws_by
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
 from app.core.chat_edit import chat_edit
+from app.core.edit_tool_catalog import FIELD_KINDS
 from app.core.followup import generate_followup
 from app.core.rag import retrieve, format_examples, load_index
 
@@ -411,6 +412,12 @@ def list_action_types() -> list[dict]:
         {"value": at.value, "description": descriptions.get(at, "")}
         for at in ActionType
     ]
+
+
+@router.get("/edit-tool-catalog")
+def get_edit_tool_catalog() -> dict:
+    """Frontend uses this to know which fields are scalar vs array."""
+    return {"field_kinds": FIELD_KINDS}
 
 
 @router.post("/chat-edit", response_model=ChatEditResponse)

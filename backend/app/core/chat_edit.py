@@ -10,6 +10,11 @@ from app.core.law_search import (
     TOOLS as LAW_TOOLS,
     TOOL_HANDLERS as LAW_TOOL_HANDLERS,
 )
+from app.core.edit_tool_catalog import (
+    EDIT_TOOLS,
+    META_FIELDS,
+    MEETING_FIELDS,
+)
 from app.models.schemas import ChatEditRequest
 
 _PROMPT_PATH = (
@@ -17,139 +22,34 @@ _PROMPT_PATH = (
 )
 
 
-# OpenAI-style tool schemas
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "update_subject",
-            "description": "Replace the 主旨 (subject) field with new text.",
-            "parameters": {
-                "type": "object",
-                "properties": {"text": {"type": "string"}},
-                "required": ["text"],
+# ask_user — not in EDIT_TOOLS because it's not a state edit
+ASK_USER_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "ask_user",
+        "description": (
+            "Ask the user a clarifying question when you lack information needed "
+            "to draft or edit. The question becomes the next assistant turn. "
+            "If `options` are provided, they render as clickable shortcuts; "
+            "the user can also type a free-text answer. Use sparingly — only "
+            "when the missing info is truly load-bearing for the document."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "question": {"type": "string", "description": "The question text shown in chat"},
+                "options": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Optional 2-5 short shortcut answers (≤8 Chinese chars each)",
+                },
             },
+            "required": ["question"],
         },
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "update_explanation",
-            "description": "Replace ALL 說明/依據 items. Pass the complete new list including unchanged items.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "items": {"type": "array", "items": {"type": "string"}}
-                },
-                "required": ["items"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "update_action",
-            "description": "Replace ALL 辦法/公告事項/擬辦 items.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "items": {"type": "array", "items": {"type": "string"}}
-                },
-                "required": ["items"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "update_recipients",
-            "description": "Replace 正本 (role=main) or 副本 (role=cc) recipients list.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "role": {"type": "string", "enum": ["main", "cc"]},
-                    "names": {"type": "array", "items": {"type": "string"}},
-                },
-                "required": ["role", "names"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "update_meta",
-            "description": "Update document metadata: 發文日期/發文字號/速別/附件文字。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "field": {
-                        "type": "string",
-                        "enum": [
-                            "doc_date",
-                            "doc_number",
-                            "speed",
-                            "attachments_text",
-                        ],
-                    },
-                    "value": {"type": "string"},
-                },
-                "required": ["field", "value"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "update_meeting",
-            "description": "Update 開會通知單 specific field. Only valid when doc_type is 開會通知單.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "field": {
-                        "type": "string",
-                        "enum": [
-                            "meeting_time",
-                            "meeting_place",
-                            "meeting_chair",
-                            "meeting_contact",
-                            "meeting_contact_phone",
-                            "meeting_notes",
-                        ],
-                    },
-                    "value": {"type": "string"},
-                },
-                "required": ["field", "value"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "ask_user",
-            "description": (
-                "Ask the user a clarifying question when you lack information needed "
-                "to draft or edit. The question becomes the next assistant turn. "
-                "If `options` are provided, they render as clickable shortcuts; "
-                "the user can also type a free-text answer. Use sparingly — only "
-                "when the missing info is truly load-bearing for the document."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "question": {"type": "string", "description": "The question text shown in chat"},
-                    "options": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Optional 2-5 short shortcut answers (≤8 Chinese chars each)"
-                    }
-                },
-                "required": ["question"]
-            }
-        }
-    },
-]
+}
 
-TOOLS = TOOLS + LAW_TOOLS
+TOOLS = [*EDIT_TOOLS, ASK_USER_TOOL] + LAW_TOOLS
 
 
 @dataclass
@@ -198,20 +98,13 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
         return _ok()
 
     def update_meta(field: str, value: str) -> str:
-        if field not in {"doc_date", "doc_number", "speed", "attachments_text"}:
+        if field not in META_FIELDS:
             return json.dumps({"error": f"unknown meta field: {field}"})
         edits.append({"field": field, "value": value})
         return _ok()
 
     def update_meeting(field: str, value: str) -> str:
-        if field not in {
-            "meeting_time",
-            "meeting_place",
-            "meeting_chair",
-            "meeting_contact",
-            "meeting_contact_phone",
-            "meeting_notes",
-        }:
+        if field not in MEETING_FIELDS:
             return json.dumps({"error": f"unknown meeting field: {field}"})
         edits.append({"field": field, "value": value})
         return _ok()

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react"
 import type { IntentResult, PhraseResult, DocType, OrganNode } from "@/types"
-import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage } from "./directTypes"
-import { toChatEditPayload } from "./payload"
+import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage, FieldKinds } from "./directTypes"
+import { toChatEditPayload, applyEditToState, type Edit } from "./payload"
 
 function findOrganPath(
   name: string,
@@ -60,6 +60,7 @@ const initialState: DirectDocState = {
   meeting_observers: [],
   meeting_notes: "",
   recentChange: null,
+  fieldKinds: {},
 }
 
 function intentToDict(intent: IntentResult): Record<string, unknown> {
@@ -95,6 +96,15 @@ export function useDirectDocState() {
     fetch("/api/organs")
       .then((r) => r.json())
       .then((data: OrganNode[]) => setOrganTree(data))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/edit-tool-catalog")
+      .then((r) => r.json())
+      .then((data: { field_kinds: FieldKinds }) => {
+        setState((s) => ({ ...s, fieldKinds: data.field_kinds }))
+      })
       .catch(() => {})
   }, [])
 
@@ -354,22 +364,11 @@ export function useDirectDocState() {
           })
           if (!chatRes.ok) throw new Error(`chat-edit ${chatRes.status}`)
           const data: {
-            edits: { field: string; value: string | string[] }[]
+            edits: Edit[]
             assistant_message: string
             pending_question: { question: string; options?: string[] } | null
             session_id: string
           } = await chatRes.json()
-
-          const SCALAR = new Set([
-            "subject_detail", "doc_date", "doc_number", "speed", "attachments_text",
-            "meeting_time", "meeting_place", "meeting_chair",
-            "meeting_contact", "meeting_contact_phone", "meeting_notes",
-          ])
-          const ARRAY = new Set([
-            "explanation_items", "action_items",
-            "recipients_main", "recipients_cc",
-            "meeting_attendees", "meeting_observers", "attachments",
-          ])
 
           const assistantContent = data.pending_question?.question ?? data.assistant_message ?? ""
           const assistantOptions = data.pending_question?.options
@@ -381,10 +380,9 @@ export function useDirectDocState() {
           setState((prev) => {
             const next: DirectDocState = { ...prev, chatSessionId: data.session_id }
             for (const edit of data.edits ?? []) {
-              if (SCALAR.has(edit.field) && typeof edit.value === "string") {
-                ;(next as unknown as Record<string, unknown>)[edit.field] = edit.value
-              } else if (ARRAY.has(edit.field) && Array.isArray(edit.value)) {
-                ;(next as unknown as Record<string, unknown>)[edit.field] = edit.value
+              const valid = applyEditToState(edit, prev.fieldKinds)
+              if (valid) {
+                ;(next as unknown as Record<string, unknown>)[valid.field] = valid.value
               }
             }
             if (assistantContent) {
