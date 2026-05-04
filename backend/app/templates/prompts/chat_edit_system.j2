@@ -4,8 +4,8 @@
 
 公文類型：{{ doc_type }}{% if subtype %} / {{ subtype }}{% endif %}
 行文方向：{{ direction }}
-發文機關：{{ intent.sender or "（未填）" }}
-受文者：{{ intent.receiver or "（未填）" }}
+發文機關：{{ intent.sender|default("") or "（未填）" }}
+受文者：{{ intent.receiver|default("") or "（未填）" }}
 
 主旨：{{ subject_detail or "（尚未起草）" }}
 

@@ -460,7 +460,3 @@ def suggest_laws(
             break
 
     return suggestions
-
-
-# Backwards-compat: tool definitions moved to law_tools.py
-from app.core.law_tools import TOOLS, TOOL_HANDLERS  # noqa: F401, E402
