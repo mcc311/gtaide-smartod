@@ -62,6 +62,7 @@ class ChatEditSystemPrompt:
         meeting_contact: str = ""
         meeting_contact_phone: str = ""
         meeting_notes: str = ""
+        rag_examples: list[str] = []
 
         model_config = {"arbitrary_types_allowed": True}
 

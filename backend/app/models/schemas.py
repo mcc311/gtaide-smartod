@@ -166,6 +166,7 @@ class ChatEditRequest(BaseModel):
     intent: dict
     session_id: str | None = None
     phrases: dict = {}
+    rag_examples: list[str] = []
     doc_type: str
     direction: str = "平行文"
     subtype: str = ""

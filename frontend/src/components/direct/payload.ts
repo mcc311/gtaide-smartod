@@ -69,6 +69,7 @@ export function toChatEditPayload(
     session_id: sessionId,
     intent: mergedIntent ? intentToDict(mergedIntent) : {},
     phrases: state.phrases?.phrases ?? {},
+    rag_examples: state.ragExamples,
     doc_type: state.docType,
     direction: state.phrases?.direction ?? "平行文",
     subtype: mergedIntent?.subtype ?? "",

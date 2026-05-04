@@ -3,6 +3,7 @@ import json
 import uuid
 from dataclasses import dataclass
 
+from app.core.rag import retrieve as rag_retrieve, format_examples as rag_format_examples
 from app.core.law_tools import (
     TOOLS as LAW_TOOLS,
     TOOL_HANDLERS as LAW_TOOL_HANDLERS,
@@ -43,7 +44,37 @@ ASK_USER_TOOL = {
     },
 }
 
-TOOLS = [*EDIT_TOOLS, ASK_USER_TOOL] + LAW_TOOLS
+SEARCH_PAST_DOCS_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "search_past_documents",
+        "description": (
+            "搜尋過去類似的公文範例（從 23 萬筆公報及內部公文中檢索）。"
+            "當你需要參考特定主題的格式、用語、結構時呼叫。"
+            "回傳 3 筆相似度最高的公文片段。"
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "搜尋的關鍵字或描述（例如「採購評選 公開招標」「公示送達 退保」）",
+                },
+                "doc_type": {
+                    "type": "string",
+                    "description": "限定公文類型（函/公告/簽/便簽/書函/令/開會通知單）",
+                },
+                "subtype": {
+                    "type": "string",
+                    "description": "限定子類型（例如「公示送達」「預告法規」）",
+                },
+            },
+            "required": ["query"],
+        },
+    },
+}
+
+TOOLS = [*EDIT_TOOLS, ASK_USER_TOOL, SEARCH_PAST_DOCS_TOOL] + LAW_TOOLS
 
 
 @dataclass
@@ -108,6 +139,14 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
         pending = {"question": question, "options": options or None}
         return _ok()
 
+    def search_past_documents(query: str, doc_type: str = "", subtype: str = "") -> str:
+        try:
+            docs = rag_retrieve(query=query, doc_type=doc_type, subtype=subtype, top_k=3)
+            examples = rag_format_examples(docs)
+            return json.dumps({"examples": examples, "count": len(examples)}, ensure_ascii=False)
+        except Exception as exc:
+            return json.dumps({"error": f"{type(exc).__name__}: {exc}"})
+
     handlers = {
         "update_subject": update_subject,
         "update_explanation": update_explanation,
@@ -116,6 +155,7 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
         "update_meta": update_meta,
         "update_meeting": update_meeting,
         "ask_user": ask_user,
+        "search_past_documents": search_past_documents,
     }
     handlers = {**handlers, **LAW_TOOL_HANDLERS}
 
@@ -149,6 +189,7 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
             meeting_contact=req.meeting_contact,
             meeting_contact_phone=req.meeting_contact_phone,
             meeting_notes=req.meeting_notes,
+            rag_examples=req.rag_examples,
         )
     )
 

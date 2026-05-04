@@ -309,12 +309,29 @@ export function useDirectDocState() {
           }),
         }).then((r) => (r.ok ? r.json() : { suggestions: [] }))
 
-        const [phrases, sugg] = await Promise.all([phrasesPromise, suggestPromise])
+        const ragQuery = [intent.subject_brief, intent.subtype].filter(Boolean).join(" ")
+        const ragPromise = ragQuery
+          ? fetch("/api/retrieve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query: ragQuery,
+                doc_type: docType,
+                subtype: intent.subtype,
+                top_k: 3,
+              }),
+            }).then((r) => (r.ok ? r.json() : { documents: [], examples: [] }))
+          : Promise.resolve({ documents: [], examples: [] })
+
+        const [phrases, sugg, ragResp] = await Promise.all([phrasesPromise, suggestPromise, ragPromise])
+
+        const ragExamples: string[] = Array.isArray(ragResp?.examples) ? ragResp.examples : []
 
         setState((s) => ({
           ...s,
           phrases,
           lawSuggestions: sugg.suggestions ?? [],
+          ragExamples,
         }))
 
         // First agent turn: let the LLM decide whether to ask or draft.
@@ -330,6 +347,7 @@ export function useDirectDocState() {
                   ...initialState,
                   docType,
                   phrases,
+                  ragExamples,
                   subject_detail: "",
                   explanation_items: [],
                   action_items: [],
