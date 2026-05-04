@@ -108,24 +108,27 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
               >
                 {m.content}
               </div>
-              {m.role === "assistant" && m.options && m.options.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  {m.options.map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] bg-white hover:border-[#1B2D6B] hover:bg-[#F5F1EC]"
-                      onClick={() => {
-                        if (submitting || beforeParse) return
-                        void sendMessage(opt)
-                      }}
-                      disabled={submitting || beforeParse}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {m.role === "assistant" &&
+                m.options &&
+                m.options.length > 0 &&
+                i === history.length - 1 && (
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {m.options.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] bg-white hover:border-[#1B2D6B] hover:bg-[#F5F1EC]"
+                        onClick={() => {
+                          if (submitting || beforeParse) return
+                          void sendMessage(opt)
+                        }}
+                        disabled={submitting || beforeParse}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
             </div>
           ))
         )}
