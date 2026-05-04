@@ -10,6 +10,10 @@ from app.models.schemas import (
     GenerateResponse,
     PhrasesRequest,
     PhrasesResponse,
+    ChatEditRequest,
+    ChatEditResponse,
+    ChatEdit,
+    ChatPendingQuestion,
 )
 from app.core.organ_registry import (
     get_organ,
@@ -26,6 +30,8 @@ from app.core.intent_parser import parse_intent
 from app.core.law_search import suggest_laws, get_law_categories, browse_laws_by_category, get_article
 from app.core.content_generator import generate_content
 from app.core.clarifier import ask_clarification, generate_with_answers
+from app.core.chat_edit import chat_edit
+from app.core.edit_tool_catalog import FIELD_KINDS
 from app.core.followup import generate_followup
 from app.core.rag import retrieve, format_examples, load_index
 
@@ -174,7 +180,9 @@ def api_parse_intent(req: dict):
         return {"error": "user_input is required"}
     followup_questions = req.get("followup_questions", None)
     followup_answers = req.get("followup_answers", None)
-    result = parse_intent(user_input, followup_questions, followup_answers)
+    known_sender = req.get("known_sender", "")
+    known_sender_parent = req.get("known_sender_parent", "")
+    result = parse_intent(user_input, followup_questions, followup_answers, known_sender, known_sender_parent)
     return result.model_dump()
 
 
@@ -406,3 +414,28 @@ def list_action_types() -> list[dict]:
         {"value": at.value, "description": descriptions.get(at, "")}
         for at in ActionType
     ]
+
+
+@router.get("/edit-tool-catalog")
+def get_edit_tool_catalog() -> dict:
+    """Frontend uses this to know which fields are scalar vs array."""
+    return {"field_kinds": FIELD_KINDS}
+
+
+@router.post("/chat-edit", response_model=ChatEditResponse)
+def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
+    outcome, session_id = chat_edit(req)
+    pending_question = (
+        ChatPendingQuestion(
+            question=outcome.pending["question"],
+            options=outcome.pending.get("options"),
+        )
+        if outcome.pending
+        else None
+    )
+    return ChatEditResponse(
+        edits=[ChatEdit(field=e["field"], value=e["value"]) for e in outcome.edits],
+        assistant_message=outcome.assistant_message,
+        pending_question=pending_question,
+        session_id=session_id,
+    )

@@ -317,6 +317,44 @@ def browse_laws_by_category(category_prefix: str, top_k: int = 200) -> list[dict
     return results
 
 
+# Multi-character domain phrases that tend to appear in both subjects and law names.
+# When any of these substrings is in subject_brief, treat as a strong query signal.
+# Keep ordered most-specific-first so the substring-matching naturally prefers
+# the more specific phrase when both apply (e.g., "最有利標" before "標").
+HIGH_SIGNAL_KEYWORDS: list[str] = [
+    # 採購
+    "最有利標", "公開招標", "限制性招標", "選擇性招標",
+    "採購", "招標", "決標", "評選", "投標", "押標金", "履約",
+    # 行政程序
+    "公示送達", "聽證", "陳情", "訴願", "聲明異議",
+    "行政處分", "罰鍰", "行政罰", "怠金", "代履行",
+    # 勞動
+    "勞工保險", "勞動基準", "職災", "退休金",
+    "勞工", "勞動", "投保", "退保", "勞保",
+    "性別工作平等", "職業安全衛生",
+    # 財政
+    "預算", "決算", "審計", "會計",
+    "所得稅", "營業稅", "綜合所得", "稅捐", "稅務",
+    # 工程／土地
+    "建築", "建造", "都市計畫", "土地徵收",
+    "公共工程", "工程契約",
+    # 人事
+    "公務員", "考績", "陞遷", "懲戒", "聘僱",
+    # 資訊與個資
+    "政府資訊公開", "個人資料保護", "個人資料", "資訊安全",
+    # 環境
+    "環境影響", "污染防制", "排放標準", "廢棄物",
+    # 醫衛
+    "藥事", "醫療", "醫師", "傳染病",
+    # 教育
+    "教師", "學生輔導", "高級中等學校",
+    # 交通
+    "道路交通", "車輛", "公路",
+    # 公司／商業
+    "公司登記", "商業登記",
+]
+
+
 def suggest_laws(
     subject_brief: str,
     doc_type: str = "",
@@ -324,22 +362,20 @@ def suggest_laws(
     organ: str = "",
     top_k: int = 3,
 ) -> list[dict]:
-    """Suggest relevant laws based on document intent.
-
-    Uses LLM-free heuristic: extract keywords from subject,
-    search laws, and return top matches with relevant articles.
-    """
+    """Suggest relevant laws based on document intent."""
     if not _loaded:
         load_laws()
 
-    # Build search queries from subject + subtype
-    queries = []
-    if subject_brief:
-        queries.append(subject_brief)
-    if subtype and subtype not in subject_brief:
-        queries.append(subtype)
+    # Build search queries — prefer extracted high-signal keywords over the raw subject
+    queries: list[str] = []
+    seen_q: set[str] = set()
 
-    # Common law patterns by subtype
+    def _add_query(q: str) -> None:
+        if q and q not in seen_q:
+            seen_q.add(q)
+            queries.append(q)
+
+    # 1. Subtype-specific known laws — highest-confidence signal, always first
     SUBTYPE_LAWS = {
         "公示送達": ["行政程序法"],
         "預告法規": ["行政程序法"],
@@ -347,21 +383,42 @@ def suggest_laws(
         "法規訂定": [],
         "法規廢止": [],
     }
-    extra = SUBTYPE_LAWS.get(subtype, [])
-    queries.extend(extra)
+    for q in SUBTYPE_LAWS.get(subtype, []):
+        _add_query(q)
 
-    # Determine category from organ
+    # 2. Extract domain keywords from organ name (e.g. "勞工保險局" → "勞工保險").
+    #     Organ context is a strong, domain-specific signal — process before subject keywords
+    #     so it isn't crowded out by generic subject tokens like "投保" / "退保".
+    if organ:
+        for kw in HIGH_SIGNAL_KEYWORDS:
+            if kw in organ:
+                _add_query(kw)
+
+    # 3. Extract domain keywords from subject (most-specific first per HIGH_SIGNAL_KEYWORDS ordering)
+    for kw in HIGH_SIGNAL_KEYWORDS:
+        if kw in subject_brief:
+            _add_query(kw)
+
+    # 4. Subtype itself if not already added and not in subject
+    if subtype and subtype not in subject_brief:
+        _add_query(subtype)
+
+    # 5. Fallback: use subject_brief if no domain keyword extracted
+    if not queries and subject_brief:
+        _add_query(subject_brief)
+
+    # Determine category from organ (unchanged)
     category_prefix = ""
     if organ:
-        # Try to find matching category
-        for law in _laws[:100]:  # Quick scan
+        for law in _laws[:100]:
             if organ in law.get("category", ""):
                 parts = law["category"].split("＞")
                 if len(parts) >= 2:
                     category_prefix = f"{parts[0]}＞{parts[1]}"
                 break
 
-    # Search and collect unique laws
+    # Search and collect unique laws (existing logic — copy from current implementation,
+    # but be defensive: keep the existing relevance threshold AND article-extraction logic)
     seen = set()
     suggestions = []
     for query in queries:
@@ -369,11 +426,9 @@ def suggest_laws(
         for r in results:
             if r["name"] not in seen and r["relevance"] >= 30:
                 seen.add(r["name"])
-                # Find relevant articles by keyword matching
                 law = next((l for l in _laws if l["name"] == r["name"]), None)
                 articles = []
                 if law:
-                    # Score each article by keyword overlap with subject
                     subject_tokens = set(jieba.cut(subject_brief))
                     scored = []
                     for a in law["articles"]:
@@ -384,7 +439,11 @@ def suggest_laws(
                         if overlap >= 2:
                             scored.append((overlap, a))
                     scored.sort(key=lambda x: x[0], reverse=True)
-                    for _, a in scored[:3]:
+                    # If no articles overlap >=2, fall back to first 3 articles so the card
+                    # isn't empty
+                    fallback = [(0, a) for a in law["articles"][:3] if a["no"] and a["content"]]
+                    chosen = scored[:3] if scored else fallback
+                    for _, a in chosen:
                         articles.append({
                             "no": a["no"],
                             "content": a["content"][:150],
@@ -401,73 +460,3 @@ def suggest_laws(
             break
 
     return suggestions
-
-
-# Tool definitions for LLM
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "search_law",
-            "description": "搜尋台灣法規資料庫（11,752部）。建議帶 category_prefix 限縮搜尋範圍。常用類別：行政＞勞動部、行政＞經濟部＞商業目、行政＞衛生福利部＞食品藥物管理目、行政＞財政部＞賦稅目、行政＞內政部＞警政目。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "法規關鍵字，例如「勞工保險」「公司法」「食品安全」"
-                    },
-                    "category_prefix": {
-                        "type": "string",
-                        "description": "類別前綴，限縮搜尋範圍。如「行政＞勞動部」「行政＞經濟部＞商業目」。留空搜全部。"
-                    }
-                },
-                "required": ["query"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_article",
-            "description": "取得特定法規的條文內容。先用 search_law 找到正確法規名稱後，再用此工具查詢具體條文。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "law_name": {
-                        "type": "string",
-                        "description": "法規全名，例如「勞工保險條例」"
-                    },
-                    "article_no": {
-                        "type": "string",
-                        "description": "條號，例如「第20條」。留空則回傳前5條預覽。"
-                    }
-                },
-                "required": ["law_name"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "verify_citation",
-            "description": "驗證法規引用是否正確。輸入完整引用文字，回傳是否有效及條文內容。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "citation": {
-                        "type": "string",
-                        "description": "完整法規引用，例如「勞工保險條例第20條」「行政程序法第154條第1項」"
-                    }
-                },
-                "required": ["citation"]
-            }
-        }
-    },
-]
-
-TOOL_HANDLERS = {
-    "search_law": lambda **kwargs: json.dumps(search_law(**kwargs), ensure_ascii=False),
-    "get_article": lambda **kwargs: json.dumps(get_article(**kwargs), ensure_ascii=False),
-    "verify_citation": lambda **kwargs: json.dumps(verify_citation(**kwargs), ensure_ascii=False),
-}

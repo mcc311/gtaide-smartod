@@ -41,6 +41,10 @@ class ActionType(str, Enum):
 
 class IntentInput(BaseModel):
     user_input: str
+    followup_questions: list[str] | None = None
+    followup_answers: list[str] | None = None
+    known_sender: str = ""        # NEW: pre-selected by user, treat as ground truth
+    known_sender_parent: str = ""  # NEW: e.g. "中央機關 > 行政院 > 勞動部"
 
 
 class IntentResult(BaseModel):
@@ -154,3 +158,58 @@ class PhrasesResponse(BaseModel):
     phrases: dict
     opening: str
     expectation: str
+
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+    options: list[str] | None = None  # quick-reply shortcuts attached to assistant questions
+
+
+class ChatEditRequest(BaseModel):
+    intent: dict
+    session_id: str | None = None
+    phrases: dict = {}
+    rag_examples: list[str] = []
+    doc_type: str
+    direction: str = "平行文"
+    subtype: str = ""
+
+    # Current document state (mirrors GenerateRequest's payload fields)
+    subject_detail: str = ""
+    explanation_items: list[str] = []
+    action_items: list[str] = []
+    doc_date: str = ""
+    doc_number: str = ""
+    speed: str = "普通件"
+    attachments_text: str = ""
+    recipients_main: list[str] = []
+    recipients_cc: list[str] = []
+    meeting_time: str = ""
+    meeting_place: str = ""
+    meeting_chair: str = ""
+    meeting_contact: str = ""
+    meeting_contact_phone: str = ""
+    meeting_attendees: list[str] = []
+    meeting_observers: list[str] = []
+    meeting_notes: str = ""
+
+    chat_history: list[ChatMessage] = []
+    user_message: str
+
+
+class ChatEdit(BaseModel):
+    field: str  # e.g. "subject_detail", "explanation_items", "doc_number"
+    value: str | list[str]
+
+
+class ChatPendingQuestion(BaseModel):
+    question: str
+    options: list[str] | None = None
+
+
+class ChatEditResponse(BaseModel):
+    edits: list[ChatEdit]
+    assistant_message: str
+    pending_question: ChatPendingQuestion | None = None
+    session_id: str

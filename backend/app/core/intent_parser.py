@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from app.core.llm import chat_structured
 from app.core.organ_registry import get_all_organ_names
 from app.core import prompts
+from app.core.typed_prompts import IntentSystemPrompt
 
 
 class ParsedIntent(BaseModel):
@@ -35,18 +36,21 @@ def parse_intent(
     user_input: str,
     followup_questions: list[str] | None = None,
     followup_answers: list[str] | None = None,
+    known_sender: str = "",
+    known_sender_parent: str = "",
 ) -> ParsedIntent:
     """Parse natural language input into structured intent using LLM."""
     messages = [
-        {"role": "system", "content": prompts.render(
-            "intent_system.j2",
-            organ_list=_build_organ_list(),
+        {"role": "system", "content": IntentSystemPrompt.render(
+            IntentSystemPrompt.Inputs(organ_list=_build_organ_list()),
         )},
         {"role": "user", "content": prompts.render(
             "intent_user.j2",
             user_input=user_input,
             followup_questions=followup_questions,
             followup_answers=followup_answers,
+            known_sender=known_sender,
+            known_sender_parent=known_sender_parent,
         )},
     ]
     return chat_structured(messages, ParsedIntent, temperature=0.1)

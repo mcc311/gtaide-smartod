@@ -1,3 +1,17 @@
+{% if known_sender -%}
+# 已知發文機關（使用者明確指定）
+
+{{ known_sender }}{% if known_sender_parent %}（{{ known_sender_parent }}）{% endif %}
+
+請務必直接使用此 sender，不要從文字推測。
+
+關於 receiver 的推論規則（會影響 doc_type 判斷）：
+- 若使用者描述像是「請示上級」「報告」「擬辦」「簽核」→ doc_type=簽/便簽，receiver 同 sender 或留空（內部公文）
+- 若是「轉知所屬」「公布周知」「對外公告」→ doc_type=公告，receiver=「公眾」
+- 若文字明確提到對外發文對象（例如「函報○○部」「副本送○○局」）→ receiver=該對象
+- 若無法確定 → receiver 留空字串
+
+{% endif -%}
 使用者的原始需求：
 {{ user_input }}
 

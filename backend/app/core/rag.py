@@ -28,8 +28,11 @@ logger = logging.getLogger(__name__)
 
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data"
 DATA_PATHS = [
-    # _DATA_DIR / "datasets_from_NCHC" / "od_doc_v2.jsonl",
-    _DATA_DIR / "gazette" / "gazette_normalized_nchc.jsonl",
+    # _v2 files have a `cited_laws` field per doc (extracted by
+    # gtaide_data/extract_citations.py — regex + verify_citation).
+    # Doc ORDER preserved so embedding cache stays aligned.
+    _DATA_DIR / "gazette" / "gazette_normalized_nchc_v2.jsonl",
+    _DATA_DIR / "datasets_from_NCHC" / "od_normalized_v2.jsonl",
 ]
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -96,9 +99,12 @@ def _normalize_doc(doc: dict) -> dict:
             parts.append(f"主旨：{_str(doc['subject'])}")
         if doc.get("basis"):
             parts.append(f"依據：{_str(doc['basis'])}")
-        for item in doc.get("items", []):
-            if isinstance(item, str):
-                parts.append(item)
+        # NCHC od_normalized uses separate explanation_items + action_items lists;
+        # gazette uses a single `items` list. Concatenate whichever exist.
+        for key in ("items", "explanation_items", "action_items"):
+            for item in doc.get(key, []) or []:
+                if isinstance(item, str):
+                    parts.append(item)
         if doc.get("signer"):
             parts.append(_str(doc["signer"]))
         return {
@@ -113,6 +119,9 @@ def _normalize_doc(doc: dict) -> dict:
             "footer": "",
             "filename": "",
             "category": doc.get("source_category", ""),
+            # Pre-extracted citations (added by gtaide_data/extract_citations.py).
+            # Empty list when missing — older v1 docs simply have no citations.
+            "cited_laws": doc.get("cited_laws") or [],
         }
     return doc
 
@@ -121,8 +130,13 @@ def _search_text(doc: dict) -> str:
     """Build searchable text for a document."""
     if "subject" in doc:
         # Structured: use subject (boosted) + items + basis
-        items = doc.get("items", [])
-        items_text = " ".join(i for i in items if isinstance(i, str)) if isinstance(items, list) else ""
+        # Concatenate items from any of the recognized list fields.
+        item_parts: list[str] = []
+        for key in ("items", "explanation_items", "action_items"):
+            val = doc.get(key)
+            if isinstance(val, list):
+                item_parts.extend(i for i in val if isinstance(i, str))
+        items_text = " ".join(item_parts)
         return " ".join(filter(None, [
             str(doc.get("subject", "")),
             str(doc.get("subject", "")),
@@ -196,13 +210,30 @@ def load_embeddings():
 
     if cache_path.exists():
         logger.info(f"Loading cached embeddings from {cache_path}")
-        _embeddings = np.load(cache_path)
-        if len(_embeddings) == len(_documents):
+        cached = np.load(cache_path)
+        if len(cached) == len(_documents):
+            _embeddings = cached
             _embeddings_loaded = True
             logger.info(f"Loaded {len(_embeddings)} cached embeddings")
             return
+        elif len(cached) < len(_documents):
+            # Incremental: reuse cached prefix, only embed the new docs at the tail.
+            # This relies on DATA_PATHS load order being stable — older sources first.
+            n_new = len(_documents) - len(cached)
+            logger.info(
+                f"Cache has {len(cached)} embeddings; appending {n_new} new docs incrementally"
+            )
+            new_texts = [_search_text(doc) for doc in _documents[len(cached):]]
+            new_embeds = _get_embeddings_batch(new_texts)
+            _embeddings = np.concatenate([cached, new_embeds], axis=0)
+            np.save(cache_path, _embeddings)
+            _embeddings_loaded = True
+            logger.info(f"Cache updated to {len(_embeddings)} embeddings")
+            return
         else:
-            logger.warning("Cache size mismatch, rebuilding...")
+            logger.warning(
+                f"Cache size {len(cached)} > documents {len(_documents)}; full rebuild"
+            )
 
     logger.info(f"Building embedding index for {len(_documents)} documents (this may take a while)...")
     texts = [_search_text(doc) for doc in _documents]
@@ -322,6 +353,7 @@ def retrieve(query: str, doc_type: str = "", subtype: str = "", top_k: int = 5) 
             "text": doc.get("text", ""),
             "header": doc.get("header", ""),
             "footer": doc.get("footer", ""),
+            "cited_laws": doc.get("cited_laws") or [],
         }
         if "subject" in doc:
             result["subject"] = doc["subject"]
