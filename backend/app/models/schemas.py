@@ -41,6 +41,10 @@ class ActionType(str, Enum):
 
 class IntentInput(BaseModel):
     user_input: str
+    followup_questions: list[str] | None = None
+    followup_answers: list[str] | None = None
+    known_sender: str = ""        # NEW: pre-selected by user, treat as ground truth
+    known_sender_parent: str = ""  # NEW: e.g. "中央機關 > 行政院 > 勞動部"
 
 
 class IntentResult(BaseModel):

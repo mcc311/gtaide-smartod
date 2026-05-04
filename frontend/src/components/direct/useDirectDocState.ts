@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from "react"
 import type { IntentResult, PhraseResult, DocType, OrganNode } from "@/types"
 import type { DirectDocState, Phase, ClarifyQuestion, SelectedLaw, ChatMessage, FieldKinds } from "./directTypes"
 import { toChatEditPayload, applyEditToState, type Edit } from "./payload"
+import type { OrganSelectInfo } from "@/components/OrganSelector"
 
 function findOrganPath(
   name: string,
@@ -214,14 +215,18 @@ export function useDirectDocState() {
   )
 
   const onSubmitOnboarding = useCallback(
-    async (text: string): Promise<void> => {
+    async (text: string, senderInfo?: OrganSelectInfo): Promise<void> => {
       if (!text.trim()) return
       setState((s) => ({ ...s, phase: "parsing" }))
       try {
         const parseRes = await fetch("/api/parse-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_input: text }),
+          body: JSON.stringify({
+            user_input: text,
+            known_sender: senderInfo?.name ?? "",
+            known_sender_parent: senderInfo?.parentContext ?? "",
+          }),
         })
         if (!parseRes.ok) throw new Error("parse-intent failed")
         const parsed = await parseRes.json()
@@ -237,17 +242,30 @@ export function useDirectDocState() {
                 ? "報告"
                 : "新案"
 
-        // Look up parent paths from organ tree (defaults if unknown)
-        const senderInfo = parsed.sender
+        // senderInfo (from onboarding picker) is authoritative — use it when available
+        const finalSender = parsed.sender || senderInfo?.name || ""
+        const finalSenderLevel = senderInfo?.level ?? 0
+        const finalSenderParent = senderInfo?.parentContext ?? ""
+
+        // Fallback: look up from organ tree when senderInfo not provided
+        const senderInfoFromTree = parsed.sender && !senderInfo
           ? findOrganPath(parsed.sender, organTree)
           : null
+
         const receiverInfo = parsed.receiver
           ? findOrganPath(parsed.receiver, organTree)
           : null
 
+        // For internal doc types with empty receiver, default receiver to sender agency
+        const inferredReceiver = parsed.receiver || (
+          (parsed.doc_type === "簽" || parsed.doc_type === "便簽") && senderInfo
+            ? senderInfo.name
+            : ""
+        )
+
         const intent: IntentResult = {
-          sender: parsed.sender ?? "",
-          receiver: parsed.receiver ?? "",
+          sender: finalSender,
+          receiver: inferredReceiver,
           receiver_type: parsed.receiver_type ?? "政府機關",
           is_internal: !!parsed.is_internal,
           action_type:
@@ -257,9 +275,9 @@ export function useDirectDocState() {
           reference_doc: parsed.reference_doc || undefined,
           attachments: parsed.attachments ?? [],
           formality: parsed.formality ?? "正式",
-          sender_level: senderInfo?.level ?? 0,
+          sender_level: senderInfo?.level ?? senderInfoFromTree?.level ?? finalSenderLevel,
           receiver_level: receiverInfo?.level ?? 0,
-          sender_parent: senderInfo?.path ?? "",
+          sender_parent: senderInfo?.parentContext ?? senderInfoFromTree?.path ?? finalSenderParent,
           receiver_parent: receiverInfo?.path ?? "",
           receiver_display_name: parsed.receiver_display_name ?? "",
           subtype: parsed.subtype ?? "",

@@ -1,28 +1,62 @@
 import { useState } from "react"
 import { Send, Loader2 } from "lucide-react"
 import { EXAMPLES } from "./constants"
+import OrganSelector from "@/components/OrganSelector"
+import type { OrganSelectInfo } from "@/components/OrganSelector"
+import type { OrganNode } from "@/types"
 
 interface OnboardingOverlayProps {
-  onSubmit: (text: string) => void | Promise<void>
+  onSubmit: (text: string, sender: OrganSelectInfo) => void | Promise<void>
   onBlank: () => void
   loading: boolean
+  organTree: OrganNode[]
 }
 
-export default function OnboardingOverlay({ onSubmit, onBlank, loading }: OnboardingOverlayProps) {
+export default function OnboardingOverlay({ onSubmit, onBlank, loading, organTree }: OnboardingOverlayProps) {
   const [text, setText] = useState("")
+  const [sender, setSender] = useState<OrganSelectInfo | null>(null)
+  const canSubmit = !!sender && !!text.trim() && !loading
+
+  const handleSubmit = () => {
+    if (canSubmit && sender) onSubmit(text, sender)
+  }
+
   return (
-    <div className="absolute inset-0 z-30 bg-[#F5F1EC]/95 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full bg-white rounded-xl shadow-lg border border-[#E1E1E1] p-8">
+    <div className="absolute inset-0 z-30 bg-[#F5F1EC]/95 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-lg border border-[#E1E1E1] p-8 my-auto">
         <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#F5922A] animate-pulse" />
           開始撰寫公文
         </div>
         <h1 className="mt-3 text-3xl font-bold text-[#1B2D6B]">直接在公文紙上撰寫</h1>
         <p className="mt-2 text-sm text-[#666]">
-          點擊任何欄位即可編輯。需要 AI 幫忙？右側面板隨時呼叫。
+          先告訴我您的單位，再用一句話描述要發的公文。AI 會準確判斷對內或對外。
         </p>
 
+        {/* Sender selection */}
         <div className="mt-6">
+          <label className="block text-sm font-medium text-[#222] mb-2">
+            <span className="text-[#D5705D] mr-1">*</span>我是
+          </label>
+          <div className="border border-[#E1E1E1] rounded-lg px-3 py-2 hover:border-[#1B2D6B] transition-colors">
+            <OrganSelector
+              label="發文機關"
+              value={sender?.name ?? ""}
+              onChange={(info) => setSender(info)}
+              organTree={organTree}
+              placeholder="點此選擇您的單位..."
+            />
+          </div>
+          {sender?.parentContext && (
+            <div className="mt-1 text-xs text-[#999]">{sender.parentContext} &gt; {sender.name}</div>
+          )}
+        </div>
+
+        {/* Description textarea */}
+        <div className="mt-5">
+          <label className="block text-sm font-medium text-[#222] mb-2">
+            <span className="text-[#D5705D] mr-1">*</span>要發的公文
+          </label>
           <textarea
             className="w-full h-24 rounded-lg border border-[#E1E1E1] focus:border-[#1B2D6B] focus:ring-1 focus:ring-[#1B2D6B]/20 px-3 py-2 text-sm resize-none"
             value={text}
@@ -30,16 +64,16 @@ export default function OnboardingOverlay({ onSubmit, onBlank, loading }: Onboar
             placeholder="用一句話描述您要發的公文..."
             disabled={loading}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit(text)
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit()
             }}
           />
           <div className="mt-2 flex items-center justify-between">
             <div className="text-xs text-[#999]">⌘+Enter 送出</div>
             <button
               type="button"
-              className="inline-flex items-center gap-1 bg-[#F5922A] hover:bg-[#D47B22] disabled:opacity-50 text-white rounded-full px-4 py-2 text-sm font-medium"
-              onClick={() => onSubmit(text)}
-              disabled={!text.trim() || loading}
+              className="inline-flex items-center gap-1 bg-[#F5922A] hover:bg-[#D47B22] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full px-4 py-2 text-sm font-medium"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               AI 分析

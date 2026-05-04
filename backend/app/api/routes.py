@@ -180,7 +180,9 @@ def api_parse_intent(req: dict):
         return {"error": "user_input is required"}
     followup_questions = req.get("followup_questions", None)
     followup_answers = req.get("followup_answers", None)
-    result = parse_intent(user_input, followup_questions, followup_answers)
+    known_sender = req.get("known_sender", "")
+    known_sender_parent = req.get("known_sender_parent", "")
+    result = parse_intent(user_input, followup_questions, followup_answers, known_sender, known_sender_parent)
     return result.model_dump()
 
 

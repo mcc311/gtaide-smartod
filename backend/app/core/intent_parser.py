@@ -36,6 +36,8 @@ def parse_intent(
     user_input: str,
     followup_questions: list[str] | None = None,
     followup_answers: list[str] | None = None,
+    known_sender: str = "",
+    known_sender_parent: str = "",
 ) -> ParsedIntent:
     """Parse natural language input into structured intent using LLM."""
     messages = [
@@ -47,6 +49,8 @@ def parse_intent(
             user_input=user_input,
             followup_questions=followup_questions,
             followup_answers=followup_answers,
+            known_sender=known_sender,
+            known_sender_parent=known_sender_parent,
         )},
     ]
     return chat_structured(messages, ParsedIntent, temperature=0.1)

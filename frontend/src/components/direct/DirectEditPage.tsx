@@ -24,6 +24,7 @@ export default function DirectEditPage() {
           onSubmit={hook.onSubmitOnboarding}
           onBlank={() => hook.setPhase("ready")}
           loading={state.phase === "parsing"}
+          organTree={organTree}
         />
       )}
 
