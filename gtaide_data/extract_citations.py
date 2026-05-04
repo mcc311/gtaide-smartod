@@ -96,8 +96,6 @@ def _fast_get_article(law_name: str, article_part: str) -> dict | None:
 
 def fast_verify(law_name_part: str, article_part: str) -> dict | None:
     """Substring-find shortest law name that contains the fragment + verify article exists."""
-    if not _LAW_NAMES_BY_LEN:
-        build_law_index()
     if not law_name_part or not article_part:
         return None
     for name in _LAW_NAMES_BY_LEN:

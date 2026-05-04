@@ -1,4 +1,4 @@
-import type { IntentResult, GenerateRequest } from "@/types"
+import type { IntentResult, GenerateRequest, PhraseResult, DocType } from "@/types"
 import type { DirectDocState, FieldKinds } from "./directTypes"
 
 export const DEFAULT_FIELD_KINDS: FieldKinds = {
@@ -32,6 +32,9 @@ export function applyEditToState(
   const kind = kinds[edit.field]
   if (kind === "scalar" && typeof edit.value === "string") return edit
   if (kind === "array" && Array.isArray(edit.value)) return edit
+  console.warn(
+    `[applyEditToState] Unsupported edit: field=${edit.field} kind=${kind ?? "<unknown>"} valueType=${Array.isArray(edit.value) ? "array" : typeof edit.value}`,
+  )
   return null
 }
 
@@ -62,8 +65,7 @@ export function toChatEditPayload(
   mergedIntent: IntentResult | null,
   userMessage: string,
   sessionId: string | null,
-  // Optional: override chat_history (used by onSubmitOnboarding's first-turn synthetic history).
-  chatHistoryOverride?: Array<{ role: string; content: string }>,
+  chatHistory: Array<{ role: string; content: string }> = state.chatHistory,
 ) {
   return {
     session_id: sessionId,
@@ -90,7 +92,7 @@ export function toChatEditPayload(
     meeting_attendees: state.meeting_attendees,
     meeting_observers: state.meeting_observers,
     meeting_notes: state.meeting_notes,
-    chat_history: chatHistoryOverride ?? state.chatHistory,
+    chat_history: chatHistory,
     user_message: userMessage,
   }
 }
@@ -125,4 +127,140 @@ export function toGenerateRequest(
     meeting_notes: state.meeting_notes || undefined,
   }
   return { intent: mergedIntent, form }
+}
+
+// ---------------------------------------------------------------------------
+// I2: Cited-law aggregation
+// ---------------------------------------------------------------------------
+
+export interface CitedLawSuggestion {
+  law_name: string
+  category: string
+  article_count: number
+  articles: { no: string; content: string }[]
+}
+
+interface RagDoc {
+  cited_laws?: { law_name: string; article_no: string }[]
+}
+
+/**
+ * Normalize an article reference to its 第N條 prefix so 「第N條」and「第N條第M項」
+ * group together. Used to keep doc-frequency counts stable across granularity.
+ */
+function normalizeArticleNo(articleNo: string): string {
+  // Match leading 第N條 (with optional 之N), drop the rest
+  const m = articleNo.match(/^(第\s*\d+\s*條(?:之\d+)?)/)
+  return m ? m[1].replace(/\s+/g, "") : articleNo
+}
+
+/**
+ * Aggregate cited_laws across retrieved docs by doc-frequency, dedupe within
+ * each doc, and exclude any law already present in the AI suggestions.
+ *
+ * Returns a list of CitedLawSuggestion sorted by descending doc count, capped at 5.
+ */
+export function aggregateCitedLawSuggestions(
+  docs: RagDoc[],
+  excludeLawNames: Set<string>,
+): CitedLawSuggestion[] {
+  type Entry = {
+    law_name: string
+    docCount: number
+    articles: Map<string, number> // normalized article_no -> doc-frequency
+  }
+  const lawFreq = new Map<string, Entry>()
+
+  for (const doc of docs) {
+    const cited = Array.isArray(doc?.cited_laws) ? doc.cited_laws : []
+    // Dedupe within this doc
+    const seenLawsInDoc = new Set<string>()
+    const seenArticlesInDoc = new Set<string>() // normalized "law|art" keys
+    for (const c of cited) {
+      if (!c?.law_name) continue
+      if (excludeLawNames.has(c.law_name)) continue
+      let entry = lawFreq.get(c.law_name)
+      if (!entry) {
+        entry = { law_name: c.law_name, docCount: 0, articles: new Map() }
+        lawFreq.set(c.law_name, entry)
+      }
+      if (!seenLawsInDoc.has(c.law_name)) {
+        entry.docCount += 1
+        seenLawsInDoc.add(c.law_name)
+      }
+      const normArt = normalizeArticleNo(c.article_no || "")
+      if (!normArt) continue
+      const artKey = `${c.law_name}|${normArt}`
+      if (!seenArticlesInDoc.has(artKey)) {
+        entry.articles.set(normArt, (entry.articles.get(normArt) ?? 0) + 1)
+        seenArticlesInDoc.add(artKey)
+      }
+    }
+  }
+
+  return Array.from(lawFreq.values())
+    .sort((a, b) => b.docCount - a.docCount)
+    .slice(0, 5)
+    .map((e) => ({
+      law_name: e.law_name,
+      category: `相似公文常用（${e.docCount} 篇引用）`,
+      article_count: e.articles.size,
+      articles: Array.from(e.articles.keys())
+        .sort((a, b) => (e.articles.get(b) ?? 0) - (e.articles.get(a) ?? 0))
+        .slice(0, 5)
+        .map((no) => ({ no, content: "" })),
+    }))
+}
+
+// ---------------------------------------------------------------------------
+// I6: Synthetic state helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a synthetic DirectDocState for the very first chat-edit call in onboarding.
+ * Real React state hasn't updated synchronously yet at that point, so we manually
+ * thread freshly-parsed values through. Keeping this as a single helper means
+ * adding a new field to DirectDocState requires updating one spot, not two.
+ */
+export function makeSyntheticInitialState(args: {
+  docType: DocType
+  phrases: PhraseResult | null
+  ragExamples: string[]
+  intent: IntentResult
+  fieldKinds: FieldKinds
+}): DirectDocState {
+  return {
+    phase: "clarifying",
+    intent: args.intent,
+    intentOverrides: {},
+    docType: args.docType,
+    phrases: args.phrases,
+    chatHistory: [],
+    chatSessionId: null,
+    clarifyQuestions: [],
+    answers: {},
+    ragExamples: args.ragExamples,
+    lawSuggestions: [],
+    selectedLaws: [],
+    fieldKinds: args.fieldKinds,
+    subject_detail: "",
+    explanation_items: [],
+    action_items: [],
+    citations: [],
+    doc_date: "",
+    doc_number: "",
+    speed: "普通件",
+    attachments: args.intent.attachments ?? [],
+    recipients_main: [],
+    recipients_cc: [],
+    meeting_time: "",
+    meeting_place: "",
+    meeting_chair: "",
+    meeting_contact: "",
+    meeting_contact_phone: "",
+    meeting_attendees: [],
+    meeting_observers: [],
+    meeting_notes: "",
+    recentChange: null,
+  }
 }

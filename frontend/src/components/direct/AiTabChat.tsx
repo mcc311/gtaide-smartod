@@ -49,7 +49,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          toChatEditPayload(hook.state, hook.mergedIntent, trimmed, hook.state.chatSessionId)
+          toChatEditPayload(hook.state, hook.mergedIntent, trimmed, hook.state.chatSessionId, hook.state.chatHistory)
         ),
       })
       if (!res.ok) throw new Error(`chat-edit ${res.status}`)

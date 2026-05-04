@@ -6,6 +6,7 @@ final assistant message. Verifies that:
 - ask_user populates outcome.pending
 - The loop terminates when the LLM returns no more tool_calls
 """
+import collections
 import json
 from types import SimpleNamespace
 
@@ -64,7 +65,7 @@ def test_agent_accumulates_edits_and_pending(monkeypatch):
     import app.core.llm as llm_module
     monkeypatch.setattr(llm_module, "_client", _FakeClient([round1, round2]))
     # Reset the in-memory conversation store so we get a fresh session
-    monkeypatch.setattr(chat_edit_module, "_conversations", {})
+    monkeypatch.setattr(chat_edit_module, "_conversations", collections.OrderedDict())
 
     req = ChatEditRequest(
         intent={"sender": "本處", "receiver": "本處"},
@@ -98,7 +99,7 @@ def test_agent_returns_natural_text_when_no_tool_calls(monkeypatch):
     only_text = _fake_message(content="請問是否要我直接起草？", tool_calls=None)
     import app.core.llm as llm_module
     monkeypatch.setattr(llm_module, "_client", _FakeClient([only_text]))
-    monkeypatch.setattr(chat_edit_module, "_conversations", {})
+    monkeypatch.setattr(chat_edit_module, "_conversations", collections.OrderedDict())
 
     req = ChatEditRequest(
         intent={},

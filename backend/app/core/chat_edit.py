@@ -1,4 +1,5 @@
 """Tool-calling chat-edit: LLM revises specific fields of a 公文 draft."""
+import collections
 import json
 import uuid
 from dataclasses import dataclass
@@ -86,7 +87,8 @@ class ChatEditOutcome:
 
 # In-memory per-session conversation store (excludes system prompt — rebuilt per turn).
 # Each entry is a list of OpenAI-format messages (user / assistant with tool_calls / tool / assistant final).
-_conversations: dict[str, list[dict]] = {}
+_MAX_SESSIONS = 500
+_conversations: collections.OrderedDict[str, list[dict]] = collections.OrderedDict()
 
 MAX_TOOL_ROUNDS = 6
 
@@ -163,7 +165,12 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
     session_id = (req.session_id or "").strip()
     if not session_id or session_id not in _conversations:
         session_id = str(uuid.uuid4())
+        if len(_conversations) >= _MAX_SESSIONS:
+            _conversations.popitem(last=False)
         _conversations[session_id] = []
+    else:
+        # Move accessed session to the end so LRU eviction keeps active sessions
+        _conversations.move_to_end(session_id)
     history = _conversations[session_id]
 
     # Build messages (system rendered per-turn from current state; history is reused)
@@ -240,9 +247,12 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
             messages.append(tool_msg)
             new_messages.append(tool_msg)
     else:
-        # Max rounds without a non-tool-call response — fabricate a closing message
+        # Max rounds without a non-tool-call response — fabricate a closing message.
+        # Explicit tool_calls=None ensures replay-on-next-turn produces a clean
+        # assistant turn rather than something the LLM might interpret as truncated.
         assistant_text = "（已達最多工具呼叫輪數，請使用者繼續描述需求）"
-        new_messages.append({"role": "assistant", "content": assistant_text})
+        closing_msg = {"role": "assistant", "content": assistant_text, "tool_calls": None}
+        new_messages.append(closing_msg)
 
     # Persist new turns
     _conversations[session_id].extend(new_messages)

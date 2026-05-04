@@ -1,5 +1,12 @@
+/**
+ * Tests for the pure transforms in payload.ts. The React hook
+ * `useDirectDocState` itself is intentionally NOT unit-tested here —
+ * its behaviour is covered by manual smoke testing on the dev server.
+ * The pure helpers below carry the contracts that matter for backend
+ * payload shape and edit dispatch.
+ */
 import { describe, it, expect } from "vitest"
-import { toChatEditPayload, applyEditToState, DEFAULT_FIELD_KINDS, type Edit } from "./payload"
+import { toChatEditPayload, applyEditToState, aggregateCitedLawSuggestions, DEFAULT_FIELD_KINDS, type Edit } from "./payload"
 import type { DirectDocState } from "./directTypes"
 import type { IntentResult } from "@/types"
 
@@ -43,7 +50,7 @@ function makeState(overrides: Partial<DirectDocState> = {}): DirectDocState {
 
 describe("toChatEditPayload", () => {
   it("sends intent={} when mergedIntent is null (pre-parse state)", () => {
-    const payload = toChatEditPayload(makeState(), null, "hi", null)
+    const payload = toChatEditPayload(makeState(), null, "hi", null, [])
     expect(payload.intent).toEqual({})
     expect(payload.user_message).toBe("hi")
     expect(payload.session_id).toBeNull()
@@ -51,23 +58,22 @@ describe("toChatEditPayload", () => {
 
   it("joins attachments into attachments_text with 、 separator", () => {
     const state = makeState({ attachments: ["附件A", "附件B", "附件C"] })
-    const payload = toChatEditPayload(state, null, "", null)
+    const payload = toChatEditPayload(state, null, "", null, [])
     expect(payload.attachments_text).toBe("附件A、附件B、附件C")
   })
 
-  it("uses chatHistoryOverride when provided (for synthetic onboarding turn)", () => {
-    const state = makeState({ chatHistory: [{ role: "assistant", content: "ignored" }] })
-    const override = [
+  it("forwards chat_history exactly as provided", () => {
+    const history = [
       { role: "user", content: "real input" },
       { role: "assistant", content: "real ack" },
     ]
-    const payload = toChatEditPayload(state, null, "", null, override)
-    expect(payload.chat_history).toEqual(override)
+    const payload = toChatEditPayload(makeState(), null, "", null, history)
+    expect(payload.chat_history).toEqual(history)
   })
 
   it("propagates session_id and rag_examples", () => {
     const state = makeState({ ragExamples: ["過去公文 1", "過去公文 2"] })
-    const payload = toChatEditPayload(state, null, "msg", "sid-123")
+    const payload = toChatEditPayload(state, null, "msg", "sid-123", [])
     expect(payload.session_id).toBe("sid-123")
     expect(payload.rag_examples).toEqual(["過去公文 1", "過去公文 2"])
   })
@@ -97,13 +103,60 @@ describe("toChatEditPayload", () => {
       receiver_display_name: "",
       subtype: "公示送達",
     }
-    const payload = toChatEditPayload(makeState(), intent, "", null)
+    const payload = toChatEditPayload(makeState(), intent, "", null, [])
     expect(payload.intent).toMatchObject({
       sender: "勞保局",
       receiver: "公眾",
       action_type: "新案",
     })
     expect(payload.subtype).toBe("公示送達")
+  })
+})
+
+describe("aggregateCitedLawSuggestions", () => {
+  it("dedupes the same article cited multiple times within one doc", () => {
+    const docs = [
+      {
+        cited_laws: [
+          { law_name: "政府採購法", article_no: "第22條" },
+          { law_name: "政府採購法", article_no: "第22條" },
+          { law_name: "政府採購法", article_no: "第22條第1項" },
+        ],
+      },
+    ]
+    const result = aggregateCitedLawSuggestions(docs, new Set())
+    expect(result).toHaveLength(1)
+    expect(result[0].law_name).toBe("政府採購法")
+    // 第22條 and 第22條第1項 normalize to the same prefix, so 1 unique article
+    expect(result[0].articles).toHaveLength(1)
+    expect(result[0].articles[0].no).toBe("第22條")
+  })
+
+  it("counts doc-frequency, not occurrence-frequency", () => {
+    const docs = [
+      { cited_laws: [{ law_name: "甲法", article_no: "第1條" }] },
+      { cited_laws: [{ law_name: "甲法", article_no: "第1條" }] },
+      { cited_laws: [{ law_name: "甲法", article_no: "第1條" }] },
+    ]
+    const result = aggregateCitedLawSuggestions(docs, new Set())
+    expect(result[0].category).toBe("相似公文常用（3 篇引用）")
+  })
+
+  it("excludes laws already in the AI-suggested set", () => {
+    const docs = [
+      { cited_laws: [{ law_name: "甲法", article_no: "第1條" }] },
+      { cited_laws: [{ law_name: "乙法", article_no: "第2條" }] },
+    ]
+    const result = aggregateCitedLawSuggestions(docs, new Set(["甲法"]))
+    expect(result.map((r) => r.law_name)).toEqual(["乙法"])
+  })
+
+  it("sorts by descending doc count, caps at 5", () => {
+    const docs = Array.from({ length: 6 }, (_, i) => ({
+      cited_laws: [{ law_name: `法${i}`, article_no: "第1條" }],
+    }))
+    const result = aggregateCitedLawSuggestions(docs, new Set())
+    expect(result).toHaveLength(5)
   })
 })
 

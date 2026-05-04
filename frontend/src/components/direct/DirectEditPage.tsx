@@ -15,6 +15,8 @@ export default function DirectEditPage() {
   const [lawSearchOpen, setLawSearchOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
 
+  const exportPayload = toGenerateRequest(hook.state, hook.mergedIntent)
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#F5F1EC] relative">
       <Header canUndo={hook.canUndo} onUndo={hook.undo} onRestart={hook.reset} onExport={() => setExportOpen(true)} />
@@ -42,18 +44,14 @@ export default function DirectEditPage() {
         initialSuggestions={hook.state.lawSuggestions}
         onSave={(selected) => hook.update({ selectedLaws: selected })}
       />
-      {(() => {
-        const built = toGenerateRequest(hook.state, hook.mergedIntent)
-        if (!built) return null
-        return (
-          <ExportModal
-            open={exportOpen}
-            onClose={() => setExportOpen(false)}
-            intent={built.intent}
-            form={built.form}
-          />
-        )
-      })()}
+      {exportPayload && (
+        <ExportModal
+          open={exportOpen}
+          onClose={() => setExportOpen(false)}
+          intent={exportPayload.intent}
+          form={exportPayload.form}
+        />
+      )}
     </div>
   )
 }
