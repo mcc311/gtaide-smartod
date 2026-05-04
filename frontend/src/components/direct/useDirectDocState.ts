@@ -345,10 +345,56 @@ export function useDirectDocState() {
 
         const ragExamples: string[] = Array.isArray(ragResp?.examples) ? ragResp.examples : []
 
+        // Aggregate cited_laws across the retrieved similar docs by frequency.
+        // Each cited_laws entry: {law_name, article_no}.
+        type CitedLaw = { law_name: string; article_no: string }
+        const lawFreq = new Map<string, { law_name: string; articles: Map<string, number>; count: number }>()
+        const docs = Array.isArray(ragResp?.documents) ? ragResp.documents : []
+        for (const doc of docs) {
+          const cited: CitedLaw[] = Array.isArray(doc?.cited_laws) ? doc.cited_laws : []
+          // Dedupe within this doc — counting by doc, not by occurrence
+          const seenInDoc = new Set<string>()
+          for (const c of cited) {
+            if (!c?.law_name) continue
+            const lawKey = c.law_name
+            if (!lawFreq.has(lawKey)) {
+              lawFreq.set(lawKey, { law_name: c.law_name, articles: new Map(), count: 0 })
+            }
+            const entry = lawFreq.get(lawKey)!
+            // Count one doc per law (doc-level frequency)
+            if (!seenInDoc.has(lawKey)) {
+              entry.count += 1
+              seenInDoc.add(lawKey)
+            }
+            const artKey = c.article_no || ""
+            if (artKey) {
+              entry.articles.set(artKey, (entry.articles.get(artKey) ?? 0) + 1)
+            }
+          }
+        }
+
+        // Convert aggregated map → LawSuggestion[]; merge with /api/suggest-laws results
+        // (prefer suggest-laws's full law metadata when same law_name appears in both).
+        const aiSuggestions = Array.isArray(sugg.suggestions) ? sugg.suggestions : []
+        const aiSuggestedNames = new Set(aiSuggestions.map((s: { law_name: string }) => s.law_name))
+        const ragSuggestions = Array.from(lawFreq.values())
+          .filter((e) => !aiSuggestedNames.has(e.law_name))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5)
+          .map((e) => ({
+            law_name: e.law_name,
+            category: `相似公文常用（${e.count} 篇引用）`,
+            article_count: e.articles.size,
+            articles: Array.from(e.articles.keys())
+              .sort((a, b) => (e.articles.get(b) ?? 0) - (e.articles.get(a) ?? 0))
+              .slice(0, 5)
+              .map((no) => ({ no, content: "" })),
+          }))
+
         setState((s) => ({
           ...s,
           phrases,
-          lawSuggestions: sugg.suggestions ?? [],
+          lawSuggestions: [...aiSuggestions, ...ragSuggestions],
           ragExamples,
         }))
 
@@ -476,19 +522,66 @@ export function useDirectDocState() {
   )
 
   const regenerate = useCallback(async (): Promise<void> => {
+    // Route through chat-edit so we use the same agent prompt that knows to
+    // preserve user-stated specifics. Sending user_message directly (not via
+    // chat_history) makes the agent treat it as the active turn.
     if (!state.intent) return
+    const userMsg: ChatMessage = {
+      role: "user",
+      content: "我選了新的法規，請保留我先前說過的具體值，重做主旨/說明/辦法並把法條引用進去。",
+    }
+    setState((s) => ({
+      ...s,
+      chatHistory: [...s.chatHistory, userMsg],
+      phase: "generating",
+    }))
     const merged = { ...state.intent, ...state.intentOverrides }
-    await _runGeneration(
-      merged,
-      phrasesToDict(state.phrases),
-      state.answers,
-      state.clarifyQuestions,
-      state.ragExamples,
-      state.selectedLaws,
-      state.docType,
-      state.phrases?.direction ?? "平行文"
-    )
-  }, [state, _runGeneration])
+    try {
+      const res = await fetch("/api/chat-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          toChatEditPayload(state, merged, userMsg.content, state.chatSessionId)
+        ),
+      })
+      if (!res.ok) throw new Error(`chat-edit ${res.status}`)
+      const data: {
+        edits: { field: string; value: string | string[] }[]
+        assistant_message: string
+        pending_question: { question: string; options?: string[] } | null
+        session_id: string
+      } = await res.json()
+
+      const assistantContent = data.pending_question?.question ?? data.assistant_message ?? ""
+      const assistantOptions = data.pending_question?.options
+      setState((prev) => {
+        const next: DirectDocState = { ...prev, chatSessionId: data.session_id, phase: "ready" }
+        for (const edit of data.edits ?? []) {
+          const valid = applyEditToState(edit as Edit, prev.fieldKinds)
+          if (valid) {
+            ;(next as unknown as Record<string, unknown>)[valid.field] = valid.value
+          }
+        }
+        if (assistantContent) {
+          next.chatHistory = [
+            ...next.chatHistory,
+            { role: "assistant", content: assistantContent, options: assistantOptions },
+          ]
+        }
+        return next
+      })
+    } catch (err) {
+      console.error(err)
+      setState((s) => ({
+        ...s,
+        phase: "ready",
+        chatHistory: [
+          ...s.chatHistory,
+          { role: "assistant", content: "（錯誤：重新生成失敗）" },
+        ],
+      }))
+    }
+  }, [state])
 
   // Computed
   const mergedIntent = useMemo<IntentResult | null>(() => {

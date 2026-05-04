@@ -19,10 +19,11 @@ logger = logging.getLogger(__name__)
 
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "gtaide_data"
 DATA_PATHS = [
-    # Order matters for embedding cache reuse: keep gazette first so the
-    # existing embeddings_cache.npy (built before NCHC was added) aligns.
-    _DATA_DIR / "gazette" / "gazette_normalized_nchc.jsonl",
-    _DATA_DIR / "datasets_from_NCHC" / "od_normalized.jsonl",
+    # _v2 files have a `cited_laws` field per doc (extracted by
+    # gtaide_data/extract_citations.py — regex + verify_citation).
+    # Doc ORDER preserved so embedding cache stays aligned.
+    _DATA_DIR / "gazette" / "gazette_normalized_nchc_v2.jsonl",
+    _DATA_DIR / "datasets_from_NCHC" / "od_normalized_v2.jsonl",
 ]
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -104,6 +105,9 @@ def _normalize_doc(doc: dict) -> dict:
             "footer": "",
             "filename": "",
             "category": doc.get("source_category", ""),
+            # Pre-extracted citations (added by gtaide_data/extract_citations.py).
+            # Empty list when missing — older v1 docs simply have no citations.
+            "cited_laws": doc.get("cited_laws") or [],
         }
     return doc
 
@@ -326,6 +330,7 @@ def retrieve(query: str, doc_type: str = "", subtype: str = "", top_k: int = 5) 
             "text": doc.get("text", ""),
             "header": doc.get("header", ""),
             "footer": doc.get("footer", ""),
+            "cited_laws": doc.get("cited_laws") or [],
         }
         if "subject" in doc:
             result["subject"] = doc["subject"]
