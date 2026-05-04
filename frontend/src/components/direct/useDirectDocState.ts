@@ -386,15 +386,12 @@ export function useDirectDocState() {
                   chatHistory: [],
                 } as DirectDocState,
                 intent,
-                "",
+                // Pass the user's original sentence as user_message (not as chat_history)
+                // so the agent treats it as the active request — without it the agent goes
+                // into "kickoff mode" and ○○○-substitutes specific user-stated values.
+                text,
                 null,
-                [
-                  { role: "user", content: text },
-                  {
-                    role: "assistant",
-                    content: `已解析：發文機關 ${senderDisplay}；受文者 ${receiverDisplay}；公文類型「${docType}${intent.subtype ? "・" + intent.subtype : ""}」。`,
-                  },
-                ],
+                [],
               ),
             ),
           })
