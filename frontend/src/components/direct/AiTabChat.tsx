@@ -59,11 +59,14 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
         assistant_message: string
         pending_question?: { question: string; options?: string[] } | null
         session_id: string
+        suggested_followups?: string[] | null
       } = await res.json()
       for (const edit of data.edits ?? []) applyEdit(edit)
       if (data.session_id) {
         hook.update({ chatSessionId: data.session_id })
       }
+      // Always refresh suggestedFollowups (independent of session_id presence) — null/missing → []
+      hook.update({ suggestedFollowups: data.suggested_followups ?? [] })
       const replyContent = data.pending_question?.question ?? data.assistant_message ?? ""
       const replyOptions = data.pending_question?.options
       if (replyContent) {
@@ -142,7 +145,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
 
       <div className="mt-3 space-y-2">
         <div className="flex flex-wrap gap-1.5">
-          {QUICK_QUESTIONS.map((q) => (
+          {(hook.state.suggestedFollowups.length > 0 ? hook.state.suggestedFollowups : QUICK_QUESTIONS).map((q) => (
             <button
               key={q}
               type="button"

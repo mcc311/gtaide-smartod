@@ -262,5 +262,6 @@ export function makeSyntheticInitialState(args: {
     meeting_observers: [],
     meeting_notes: "",
     recentChange: null,
+    suggestedFollowups: [],
   }
 }

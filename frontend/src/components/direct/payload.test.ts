@@ -44,6 +44,7 @@ function makeState(overrides: Partial<DirectDocState> = {}): DirectDocState {
     meeting_observers: [],
     meeting_notes: "",
     recentChange: null,
+    suggestedFollowups: [],
     ...overrides,
   }
 }

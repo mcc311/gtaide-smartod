@@ -75,7 +75,31 @@ SEARCH_PAST_DOCS_TOOL = {
     },
 }
 
-TOOLS = [*EDIT_TOOLS, ASK_USER_TOOL, SEARCH_PAST_DOCS_TOOL] + LAW_TOOLS
+SUGGEST_FOLLOWUPS_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "suggest_followups",
+        "description": (
+            "建議 3 個使用者下一步可能想問的後續問題（≤15 字、針對當前公文狀態量身訂做）。"
+            "於該輪即將結束時呼叫；可與 update_* 工具同輪使用（先做修改，再呼叫此工具給出對應的後續建議）。"
+            "前端會把這些渲染為快速回覆按鈕，覆蓋預設的 hardcoded 提示。"
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1,
+                    "maxItems": 5,
+                },
+            },
+            "required": ["questions"],
+        },
+    },
+}
+
+TOOLS = [*EDIT_TOOLS, ASK_USER_TOOL, SEARCH_PAST_DOCS_TOOL, SUGGEST_FOLLOWUPS_TOOL] + LAW_TOOLS
 
 
 @dataclass
@@ -83,6 +107,7 @@ class ChatEditOutcome:
     edits: list[dict]
     assistant_message: str
     pending: dict | None  # {"question": str, "options": list[str] | None} when ask_user was called
+    suggested_followups: list[str] | None = None
 
 
 # In-memory per-session conversation store (excludes system prompt — rebuilt per turn).
@@ -102,6 +127,7 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
     from app.core.llm import _client, MODEL
     edits: list[dict] = []
     pending: dict | None = None
+    suggested_followups: list[str] | None = None
 
     def _ok():
         return json.dumps({"ok": True})
@@ -141,6 +167,12 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
         pending = {"question": question, "options": options or None}
         return _ok()
 
+    def suggest_followups(questions: list[str]) -> str:
+        nonlocal suggested_followups
+        # Truncate at 5; trim each to 30 chars max for safety
+        suggested_followups = [str(q)[:30] for q in questions[:5] if q]
+        return _ok()
+
     def search_past_documents(query: str, doc_type: str = "", subtype: str = "") -> str:
         try:
             docs = rag_retrieve(query=query, doc_type=doc_type, subtype=subtype, top_k=3)
@@ -158,6 +190,7 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
         "update_meeting": update_meeting,
         "ask_user": ask_user,
         "search_past_documents": search_past_documents,
+        "suggest_followups": suggest_followups,
     }
     handlers = {**handlers, **LAW_TOOL_HANDLERS}
 
@@ -258,6 +291,6 @@ def chat_edit(req: ChatEditRequest) -> "tuple[ChatEditOutcome, str]":
     _conversations[session_id].extend(new_messages)
 
     return (
-        ChatEditOutcome(edits=edits, assistant_message=assistant_text, pending=pending),
+        ChatEditOutcome(edits=edits, assistant_message=assistant_text, pending=pending, suggested_followups=suggested_followups),
         session_id,
     )

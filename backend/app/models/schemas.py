@@ -213,3 +213,4 @@ class ChatEditResponse(BaseModel):
     assistant_message: str
     pending_question: ChatPendingQuestion | None = None
     session_id: str
+    suggested_followups: list[str] | None = None
