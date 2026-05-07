@@ -235,7 +235,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
               onChange={(v) => update({ subject_detail: v }, "subject_detail")}
             />
           ) : (
-            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
           )}
         </SectionRow>
 
@@ -313,7 +313,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
                   onChange={(items) => update({ explanation_items: items }, "explanation_items")}
                 />
               ) : (
-                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
               )}
             </SectionRow>
 
@@ -333,7 +333,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
                   onChange={(items) => update({ action_items: items }, "action_items")}
                 />
               ) : (
-                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} />
+                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
               )}
             </SectionRow>
           </>

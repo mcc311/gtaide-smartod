@@ -15,6 +15,8 @@ export default function DirectEditPage() {
   const [lawSearchOpen, setLawSearchOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
 
+  const showAiPanel = state.phase !== "onboarding" && state.phase !== "parsing"
+
   const exportPayload = toGenerateRequest(hook.state, hook.mergedIntent)
 
   return (
@@ -30,11 +32,11 @@ export default function DirectEditPage() {
         />
       )}
 
-      <main className="relative flex-1 grid grid-cols-1 lg:grid-cols-[1fr_360px] overflow-hidden">
+      <main className={`relative flex-1 grid grid-cols-1 ${showAiPanel ? "lg:grid-cols-[1fr_360px]" : ""} overflow-hidden`}>
         <section className="overflow-y-auto p-6 lg:p-10">
           <DocCanvas hook={hook} organTree={organTree} />
         </section>
-        <AiPanel hook={hook} onOpenLawSearch={() => setLawSearchOpen(true)} />
+        {showAiPanel && <AiPanel hook={hook} onOpenLawSearch={() => setLawSearchOpen(true)} />}
       </main>
 
       <BottomStatusBar hook={hook} />
