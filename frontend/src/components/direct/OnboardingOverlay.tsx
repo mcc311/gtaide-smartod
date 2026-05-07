@@ -105,6 +105,12 @@ export default function OnboardingOverlay({ onSubmit, onBlank, loading, organTre
         >
           或從空白公文開始 →
         </button>
+
+        <div className="mt-5 pt-3 border-t border-[#E1E1E1] text-xs text-[#666] leading-relaxed">
+          <strong className="text-[#222]">隱私通知：</strong>
+          您於本系統中輸入的公文描述、AI 對話內容、生成草稿與匯出結果，將以匿名識別碼（cookie）儲存供未來服務改善使用。
+          請<strong className="text-[#9A3412]">避免輸入個人身分證字號、敏感個資或機密案件細節</strong>；測試請使用虛擬資料。
+        </div>
       </div>
     </div>
   )

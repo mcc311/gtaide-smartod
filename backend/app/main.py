@@ -36,6 +36,11 @@ app.add_middleware(
 
 @app.middleware("http")
 async def smartod_uid_middleware(request: Request, call_next):
+    # Skip CORS preflight — every OPTIONS would otherwise mint a throwaway uuid.
+    # The actual request that follows still goes through this branch and gets a uid.
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     uid = request.cookies.get("smartod_uid", "")
     is_new = not uid
     if is_new:
