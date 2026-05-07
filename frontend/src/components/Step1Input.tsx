@@ -41,6 +41,7 @@ export default function Step1Input({ onParsed, onSkip }: Step1InputProps) {
       const res = await fetch("/api/parse-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ user_input: userInput.trim() }),
       })
       if (!res.ok) throw new Error(`API 回應錯誤 (${res.status})`)

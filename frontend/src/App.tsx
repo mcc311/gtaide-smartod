@@ -97,7 +97,7 @@ export default function App() {
   const [lawSuggestions, setLawSuggestions] = useState<Array<{law_name: string; articles: Array<{no: string; content: string}>; selected: boolean}>>([])
 
   useEffect(() => {
-    fetch("/api/organs")
+    fetch("/api/organs", { credentials: "include" })
       .then((r) => r.json())
       .then((data: OrganNode[]) => setOrganTree(data))
       .catch(() => {})
@@ -184,6 +184,7 @@ export default function App() {
       const res = await fetch("/api/suggest-laws", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           intent,
           doc_type: docType,

@@ -48,6 +48,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
       const res = await fetch("/api/chat-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(
           toChatEditPayload(hook.state, hook.mergedIntent, trimmed, hook.state.chatSessionId, hook.state.chatHistory)
         ),

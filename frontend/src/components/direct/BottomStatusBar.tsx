@@ -65,6 +65,9 @@ export default function BottomStatusBar({ hook }: BottomStatusBarProps) {
         <span>·</span>
         <span>{state.phrases?.direction || "—"}</span>
       </div>
+      <span className="text-[#999] text-[10px] ml-auto shrink-0 truncate">
+        操作紀錄匿名記錄
+      </span>
     </footer>
   )
 }

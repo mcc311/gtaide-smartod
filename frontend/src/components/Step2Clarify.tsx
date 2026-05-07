@@ -76,6 +76,7 @@ export default function Step2Clarify({
         const res = await fetch("/api/clarify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ intent, phrases, doc_type: docType, direction, subtype }),
         })
         if (cancelled) return
@@ -144,6 +145,7 @@ export default function Step2Clarify({
       const res = await fetch("/api/generate-with-answers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           intent,
           phrases,

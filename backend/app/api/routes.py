@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from app.core.audit_log import log_event
 
 from app.models.schemas import (
     ActionType,
@@ -112,7 +113,7 @@ def get_phrases(req: PhrasesRequest):
 
 
 @router.post("/generate", response_model=GenerateResponse)
-def generate_document(req: GenerateRequest):
+def generate_document(req: GenerateRequest, request: Request):
     """Generate a full official document."""
     direction = get_direction(req.intent.sender, req.intent.receiver, req.intent.receiver_type,
                               req.intent.sender_level, req.intent.receiver_level)
@@ -144,6 +145,15 @@ def generate_document(req: GenerateRequest):
         subject_detail=req.subject_detail,
     )
 
+    log_event(
+        request.state.uid,
+        None,  # generate doesn't carry session id
+        "export",
+        doc_type=str(doc_type),
+        subject_detail=req.subject_detail,
+        rendered_chars=len(rendered) if rendered else 0,
+    )
+
     return GenerateResponse(
         doc_type=doc_type,
         direction=direction,
@@ -170,7 +180,7 @@ def api_followup(req: dict):
 
 
 @router.post("/parse-intent")
-def api_parse_intent(req: dict):
+def api_parse_intent(req: dict, request: Request):
     """Use LLM to parse natural language into structured intent.
 
     Accepts optional followup_questions and followup_answers for richer context.
@@ -183,6 +193,21 @@ def api_parse_intent(req: dict):
     known_sender = req.get("known_sender", "")
     known_sender_parent = req.get("known_sender_parent", "")
     result = parse_intent(user_input, followup_questions, followup_answers, known_sender, known_sender_parent)
+    log_event(
+        request.state.uid,
+        None,  # parse-intent runs before any session exists
+        "parse-intent",
+        user_input=user_input,
+        known_sender=known_sender,
+        output={
+            "sender": result.sender,
+            "receiver": result.receiver,
+            "doc_type": result.doc_type,
+            "subtype": result.subtype,
+            "subject_brief": result.subject_brief,
+            "is_internal": result.is_internal,
+        },
+    )
     return result.model_dump()
 
 
@@ -423,8 +448,17 @@ def get_edit_tool_catalog() -> dict:
 
 
 @router.post("/chat-edit", response_model=ChatEditResponse)
-def chat_edit_route(req: ChatEditRequest) -> ChatEditResponse:
+def chat_edit_route(req: ChatEditRequest, request: Request) -> ChatEditResponse:
     outcome, session_id = chat_edit(req)
+    log_event(
+        request.state.uid,
+        session_id,
+        "chat-edit-turn",
+        user_message=req.user_message,
+        edits=outcome.edits,
+        pending=outcome.pending,
+        assistant_message=outcome.assistant_message,
+    )
     pending_question = (
         ChatPendingQuestion(
             question=outcome.pending["question"],

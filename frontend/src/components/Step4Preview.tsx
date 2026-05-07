@@ -40,6 +40,7 @@ export default function Step4Preview({
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       })
       if (!res.ok) {
