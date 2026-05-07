@@ -81,7 +81,8 @@ SUGGEST_FOLLOWUPS_TOOL = {
         "name": "suggest_followups",
         "description": (
             "建議 3 個使用者下一步可能想問的後續問題（≤15 字、針對當前公文狀態量身訂做）。"
-            "在最後輪（沒有其他工具呼叫之前）使用。前端會把這些渲染為快速回覆按鈕。"
+            "於該輪即將結束時呼叫；可與 update_* 工具同輪使用（先做修改，再呼叫此工具給出對應的後續建議）。"
+            "前端會把這些渲染為快速回覆按鈕，覆蓋預設的 hardcoded 提示。"
         ),
         "parameters": {
             "type": "object",

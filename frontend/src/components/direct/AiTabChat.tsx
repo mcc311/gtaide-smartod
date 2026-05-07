@@ -63,8 +63,10 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
       } = await res.json()
       for (const edit of data.edits ?? []) applyEdit(edit)
       if (data.session_id) {
-        hook.update({ chatSessionId: data.session_id, suggestedFollowups: data.suggested_followups ?? [] })
+        hook.update({ chatSessionId: data.session_id })
       }
+      // Always refresh suggestedFollowups (independent of session_id presence) — null/missing → []
+      hook.update({ suggestedFollowups: data.suggested_followups ?? [] })
       const replyContent = data.pending_question?.question ?? data.assistant_message ?? ""
       const replyOptions = data.pending_question?.options
       if (replyContent) {
