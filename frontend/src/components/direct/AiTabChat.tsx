@@ -145,17 +145,23 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
 
       <div className="mt-3 space-y-2">
         <div className="flex flex-wrap gap-1.5">
-          {(hook.state.suggestedFollowups.length > 0 ? hook.state.suggestedFollowups : QUICK_QUESTIONS).map((q) => (
-            <button
-              key={q}
-              type="button"
-              className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] hover:border-[#1B2D6B]"
-              onClick={() => setText(q)}
-              disabled={submitting || beforeParse}
-            >
-              {q}
-            </button>
-          ))}
+          {(() => {
+            const hasHadAgentTurn = hook.state.chatHistory.some(
+              (m) => m.role === "assistant" && m.content && !m.content.startsWith("已解析：")
+            )
+            const followups = hasHadAgentTurn ? hook.state.suggestedFollowups : QUICK_QUESTIONS
+            return followups.map((q) => (
+              <button
+                key={q}
+                type="button"
+                className="text-xs px-2 py-1 rounded-full border border-[#E1E1E1] hover:border-[#1B2D6B]"
+                onClick={() => setText(q)}
+                disabled={submitting || beforeParse}
+              >
+                {q}
+              </button>
+            ))
+          })()}
         </div>
 
         <div className="border border-[#E1E1E1] rounded-md p-2 flex gap-2 items-end">
