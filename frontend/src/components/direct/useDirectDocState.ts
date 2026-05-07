@@ -62,6 +62,7 @@ const initialState: DirectDocState = {
   meeting_notes: "",
   recentChange: null,
   fieldKinds: {},
+  suggestedFollowups: [],
 }
 
 function intentToDict(intent: IntentResult): Record<string, unknown> {
@@ -400,6 +401,7 @@ export function useDirectDocState() {
             assistant_message: string
             pending_question: { question: string; options?: string[] } | null
             session_id: string
+            suggested_followups?: string[] | null
           } = await chatRes.json()
 
           const assistantContent = data.pending_question?.question ?? data.assistant_message ?? ""
@@ -410,7 +412,11 @@ export function useDirectDocState() {
             )
 
           setState((prev) => {
-            const next: DirectDocState = { ...prev, chatSessionId: data.session_id }
+            const next: DirectDocState = {
+              ...prev,
+              chatSessionId: data.session_id,
+              suggestedFollowups: data.suggested_followups ?? [],
+            }
             for (const edit of data.edits ?? []) {
               const valid = applyEditToState(edit, prev.fieldKinds)
               if (valid) {
@@ -508,12 +514,18 @@ export function useDirectDocState() {
         assistant_message: string
         pending_question: { question: string; options?: string[] } | null
         session_id: string
+        suggested_followups?: string[] | null
       } = await res.json()
 
       const assistantContent = data.pending_question?.question ?? data.assistant_message ?? ""
       const assistantOptions = data.pending_question?.options
       setState((prev) => {
-        const next: DirectDocState = { ...prev, chatSessionId: data.session_id, phase: "ready" }
+        const next: DirectDocState = {
+          ...prev,
+          chatSessionId: data.session_id,
+          phase: "ready",
+          suggestedFollowups: data.suggested_followups ?? [],
+        }
         for (const edit of data.edits ?? []) {
           const valid = applyEditToState(edit as Edit, prev.fieldKinds)
           if (valid) {

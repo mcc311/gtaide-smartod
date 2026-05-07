@@ -83,4 +83,5 @@ export interface DirectDocState {
   meeting_notes: string
   recentChange: string | null
   fieldKinds: FieldKinds
+  suggestedFollowups: string[]
 }

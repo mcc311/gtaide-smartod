@@ -472,4 +472,5 @@ def chat_edit_route(req: ChatEditRequest, request: Request) -> ChatEditResponse:
         assistant_message=outcome.assistant_message,
         pending_question=pending_question,
         session_id=session_id,
+        suggested_followups=outcome.suggested_followups,
     )

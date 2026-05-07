@@ -84,11 +84,22 @@ export default function OrganSelector({
   const searchResults = useMemo(() => {
     if (!searchText.trim()) return []
     const q = searchText.trim().toLowerCase()
-    return allFlat.filter(
-      (n) =>
-        n.name.toLowerCase().includes(q) ||
-        (n.short_name && n.short_name.toLowerCase().includes(q))
-    ).slice(0, 20)
+
+    // Score each candidate; higher = better match
+    const scored: Array<{ node: FlatNode; score: number }> = []
+    for (const n of allFlat) {
+      const name = n.name.toLowerCase()
+      const short = (n.short_name || "").toLowerCase()
+      let s = 0
+      if (name === q || short === q) s = 100                  // exact match
+      else if (name.startsWith(q)) s = 80                      // prefix on full name
+      else if (short && short.startsWith(q)) s = 70            // prefix on short name
+      else if (name.includes(q)) s = 50 - Math.min(name.indexOf(q), 30)  // substring (earlier = better)
+      else if (short && short.includes(q)) s = 30
+      if (s > 0) scored.push({ node: n, score: s })
+    }
+    scored.sort((a, b) => b.score - a.score || a.node.name.length - b.node.name.length)
+    return scored.slice(0, 30).map((x) => x.node)
   }, [searchText, allFlat])
 
   const getParentPath = (excludeLast = false) => {
@@ -166,7 +177,6 @@ export default function OrganSelector({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value
     setSearchText(v)
-    onChange({ name: v })
     if (!open) setOpen(true)
     setCustomInputNode(null)
     setCustomInputText("")

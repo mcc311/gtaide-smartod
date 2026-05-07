@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Send, Loader2 } from "lucide-react"
 import { EXAMPLES } from "./constants"
 import OrganSelector from "@/components/OrganSelector"
@@ -15,6 +15,34 @@ interface OnboardingOverlayProps {
 export default function OnboardingOverlay({ onSubmit, onBlank, loading, organTree }: OnboardingOverlayProps) {
   const [text, setText] = useState("")
   const [sender, setSender] = useState<OrganSelectInfo | null>(null)
+
+  // Default sender: 國科會 (first user cohort). Auto-applied when organ tree loads
+  // and user hasn't manually picked yet.
+  const nstcDefault = useMemo<OrganSelectInfo | null>(() => {
+    function find(nodes: OrganNode[], path: string[] = []): OrganSelectInfo | null {
+      for (const n of nodes) {
+        if (n.name === "國家科學及技術委員會") {
+          return {
+            name: n.name,
+            receiverType: n.receiver_type,
+            level: n.level ?? path.length,
+            parentContext: path.join(" > "),
+            isCustom: false,
+          }
+        }
+        const found = find(n.children, [...path, n.name])
+        if (found) return found
+      }
+      return null
+    }
+    return find(organTree)
+  }, [organTree])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (nstcDefault && !sender) setSender(nstcDefault)
+  }, [nstcDefault, sender])
+
   const canSubmit = !!sender && !!text.trim() && !loading
 
   const handleSubmit = () => {
