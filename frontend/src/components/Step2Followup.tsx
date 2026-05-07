@@ -33,6 +33,7 @@ export default function Step2Followup({
         const res = await fetch("/api/followup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ user_input: userInput }),
         })
         if (cancelled) return

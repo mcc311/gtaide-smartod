@@ -1,6 +1,7 @@
 import threading
+import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.core.rag import load_index, load_embeddings, load_embedding_gemma_model
@@ -31,5 +32,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def smartod_uid_middleware(request: Request, call_next):
+    uid = request.cookies.get("smartod_uid", "")
+    is_new = not uid
+    if is_new:
+        uid = str(uuid.uuid4())
+    request.state.uid = uid
+    response = await call_next(request)
+    if is_new:
+        response.set_cookie(
+            key="smartod_uid",
+            value=uid,
+            httponly=True,
+            samesite="lax",
+            max_age=63072000,  # 2 years
+            secure=False,  # nginx is plain HTTP currently — flip to True after HTTPS
+        )
+    return response
+
 
 app.include_router(router, prefix="/api")

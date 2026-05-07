@@ -56,6 +56,7 @@ export default function BasicInfoForm({
         const res = await fetch("/api/get-phrases", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             sender: current.sender,
             receiver: current.receiver,

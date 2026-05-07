@@ -94,14 +94,14 @@ export function useDirectDocState() {
   const [organTree, setOrganTree] = useState<OrganNode[]>([])
 
   useEffect(() => {
-    fetch("/api/organs")
+    fetch("/api/organs", { credentials: "include" })
       .then((r) => r.json())
       .then((data: OrganNode[]) => setOrganTree(data))
       .catch(() => {})
   }, [])
 
   useEffect(() => {
-    fetch("/api/edit-tool-catalog")
+    fetch("/api/edit-tool-catalog", { credentials: "include" })
       .then((r) => r.json())
       .then((data: { field_kinds: FieldKinds }) => {
         setState((s) => ({ ...s, fieldKinds: data.field_kinds }))
@@ -180,6 +180,7 @@ export function useDirectDocState() {
         const res = await fetch("/api/generate-with-answers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             intent: intentToDict(intentForApi),
             phrases: phrasesForApi,
@@ -222,6 +223,7 @@ export function useDirectDocState() {
         const parseRes = await fetch("/api/parse-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             user_input: text,
             known_sender: senderInfo?.name ?? "",
@@ -304,6 +306,7 @@ export function useDirectDocState() {
         const phrasesPromise = fetch("/api/get-phrases", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             sender: intent.sender,
             receiver: intent.receiver,
@@ -320,6 +323,7 @@ export function useDirectDocState() {
         const suggestPromise = fetch("/api/suggest-laws", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             intent: intentToDict(intent),
             doc_type: docType,
@@ -332,6 +336,7 @@ export function useDirectDocState() {
           ? fetch("/api/retrieve", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              credentials: "include",
               body: JSON.stringify({
                 query: ragQuery,
                 doc_type: docType,
@@ -369,6 +374,7 @@ export function useDirectDocState() {
           const chatRes = await fetch("/api/chat-edit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify(
               toChatEditPayload(
                 makeSyntheticInitialState({
@@ -491,6 +497,7 @@ export function useDirectDocState() {
       const res = await fetch("/api/chat-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(
           toChatEditPayload(s, merged, userMsg.content, s.chatSessionId, s.chatHistory)
         ),

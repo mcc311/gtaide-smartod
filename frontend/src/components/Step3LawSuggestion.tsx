@@ -68,7 +68,7 @@ export default function Step3LawSuggestion({
   }, [suggestions])
 
   useEffect(() => {
-    fetch("/api/law-categories")
+    fetch("/api/law-categories", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => setCategories(data.categories || []))
       .catch(() => {})
@@ -81,6 +81,7 @@ export default function Step3LawSuggestion({
       const res = await fetch("/api/suggest-laws", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           intent: { subject_brief: searchText.trim() },
           doc_type: "",
@@ -107,6 +108,7 @@ export default function Step3LawSuggestion({
       fetch("/api/browse-laws", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ category_prefix: prefix }),
       })
         .then((r) => r.json())
@@ -130,6 +132,7 @@ export default function Step3LawSuggestion({
       const res = await fetch("/api/law-articles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ law_name: lawName }),
       })
       if (res.ok) {
@@ -149,6 +152,7 @@ export default function Step3LawSuggestion({
       const res = await fetch("/api/browse-laws", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ category_prefix: prefix }),
       })
       if (res.ok) {
