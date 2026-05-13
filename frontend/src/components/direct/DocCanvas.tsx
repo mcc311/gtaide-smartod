@@ -56,8 +56,8 @@ function layoutFor(docType: DocType): DocLayoutFlags {
     case "簽":
       return {
         showReceiver: false,
-        showDocNumber: false,
-        docNumberLabel: "發文字號",
+        showDocNumber: true,
+        docNumberLabel: "公文號碼",
         showSpeed: false,
         showAttachments: false,
         showRecipientsBlock: false,
