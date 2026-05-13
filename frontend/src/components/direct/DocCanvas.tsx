@@ -239,22 +239,18 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
 
       {/* ── Meta block ── */}
       <dl className="mt-6 grid grid-cols-1 gap-y-2 text-sm">
-        {/* 受文者 — hidden for 簽 and 便簽 */}
+        {/* 受文者 — hidden for 簽 and 便簽; for 公告 may be 公眾 or specific targets */}
         {layout.showReceiver && (
           <div className="flex items-baseline gap-2">
             <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
             <dd className="flex-1">
-              {state.docType === "公告" ? (
-                <span className="text-sm text-[#1B2D6B]">公眾</span>
-              ) : (
-                <OrganSelector
-                  label="受文者"
-                  value={mergedIntent?.receiver ?? ""}
-                  onChange={handleReceiver}
-                  organTree={organTree}
-                  placeholder="點此選擇受文者"
-                />
-              )}
+              <OrganSelector
+                label="受文者"
+                value={mergedIntent?.receiver ?? ""}
+                onChange={handleReceiver}
+                organTree={organTree}
+                placeholder={state.docType === "公告" ? "公眾（或點此選擇特定對象）" : "點此選擇受文者"}
+              />
             </dd>
           </div>
         )}
