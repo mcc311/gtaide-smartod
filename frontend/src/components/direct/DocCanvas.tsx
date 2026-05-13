@@ -69,7 +69,9 @@ function layoutFor(docType: DocType): DocLayoutFlags {
       }
     case "公告":
       return {
-        showReceiver: true,
+        // 公告 broadcasts to 公眾 — hide the receiver field (state already
+        // defaults to「公眾」at parse-intent + docType-switch time).
+        showReceiver: false,
         showDocNumber: true,
         docNumberLabel: "發文字號",
         showSpeed: false,
