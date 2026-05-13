@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import type React from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
-import type { DocType, OrganNode, IntentResult, PhraseResult } from "@/types"
+import type { DocType, OrganNode, IntentResult } from "@/types"
 import OrganSelector from "@/components/OrganSelector"
 import type { OrganSelectInfo } from "@/components/OrganSelector"
 import Editable from "./Editable"
@@ -10,16 +10,6 @@ import TagsInline from "./TagsInline"
 import ListSection from "./ListSection"
 import PlaceholderBlock from "./PlaceholderBlock"
 import { DOC_TYPES, DIRECTIONS } from "./constants"
-
-// Inner phrase keys to expose as chips. 期望語/開頭語 are stored at top-level
-// (state.phrases.expectation / .opening) and rendered separately.
-const INNER_PHRASE_KEYS: Array<keyof PhraseResult["phrases"]> = [
-  "稱謂",
-  "自稱",
-  "引敘語",
-  "附送語",
-  "經辦語",
-]
 
 // ── Handbook-derived layout flags ────────────────────────────────────────────
 // Derived from 行政院文書處理手冊 per-doc-type field rules.
@@ -175,22 +165,6 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
   const direction = state.phrases?.direction ?? "平行文"
   const subtype = mergedIntent?.subtype ?? ""
 
-  const updateInnerPhrase = (k: keyof PhraseResult["phrases"], v: string) => {
-    if (!state.phrases) return
-    update(
-      {
-        phrases: {
-          ...state.phrases,
-          phrases: { ...state.phrases.phrases, [k]: v },
-        },
-      },
-      `phrase_${k}`
-    )
-  }
-  const updateTopPhrase = (k: "opening" | "expectation", v: string) => {
-    if (!state.phrases) return
-    update({ phrases: { ...state.phrases, [k]: v } }, `phrase_${k}`)
-  }
   const directionColor =
     direction === "上行文"
       ? "bg-[#FEE7E5] text-[#991B1B]"
@@ -327,34 +301,9 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
         )}
       </dl>
 
-      {state.phrases && (
-        <div className="mt-5 pt-3 border-t border-dashed border-[#E1E1E1]">
-          <div className="text-xs uppercase tracking-wider text-[#999] mb-2">公文用語（將套用於各段）</div>
-          <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm">
-            {INNER_PHRASE_KEYS.map((k) => (
-              <PhraseChip
-                key={k}
-                label={k}
-                value={state.phrases?.phrases[k] ?? ""}
-                onChange={(v) => updateInnerPhrase(k, v)}
-                recent={state.recentChange === `phrase_${k}`}
-              />
-            ))}
-            <PhraseChip
-              label="開頭語"
-              value={state.phrases.opening ?? ""}
-              onChange={(v) => updateTopPhrase("opening", v)}
-              recent={state.recentChange === "phrase_opening"}
-            />
-            <PhraseChip
-              label="期望語"
-              value={state.phrases.expectation ?? ""}
-              onChange={(v) => updateTopPhrase("expectation", v)}
-              recent={state.recentChange === "phrase_expectation"}
-            />
-          </div>
-        </div>
-      )}
+      {/* 公文用語 chips (稱謂/自稱/期望語/etc.) hidden by request — phrases
+          are still fetched and applied automatically by the backend at
+          generate time; users don't need to see/edit them on the canvas. */}
 
       <hr className="my-5 border-t border-[#E1E1E1]" />
 
@@ -549,27 +498,3 @@ function SectionRow({ label, children }: { label: string; children: React.ReactN
   )
 }
 
-function PhraseChip({
-  label,
-  value,
-  onChange,
-  recent,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  recent?: boolean
-}) {
-  return (
-    <span className="inline-flex items-center gap-1 bg-[#F5F1EC] rounded-md px-2 py-1 border border-transparent hover:border-[#E1E1E1]">
-      <span className="text-xs text-[#999]">{label}</span>
-      <Editable
-        value={value}
-        placeholder="—"
-        className="text-sm text-[#1B2D6B]"
-        onChange={onChange}
-        recent={recent}
-      />
-    </span>
-  )
-}
