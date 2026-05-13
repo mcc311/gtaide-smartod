@@ -84,17 +84,20 @@ function layoutFor(docType: DocType): DocLayoutFlags {
         signerLabel: "機關首長",
       }
     case "令":
+      // 手冊十七.(一)：令文不分段，動詞在前（訂定/修正/廢止/任免/遷調/獎懲），
+      // 單一陳述句，無「主旨/說明/辦法」段名。發布以政府公報為主，必要時
+      // 「以公文分行各機關」— 故保留正本/副本欄位。
       return {
-        showReceiver: true,
+        showReceiver: false,
         showDocNumber: true,
         docNumberLabel: "發文字號",
         showSpeed: false,
         showAttachments: false,
         showRecipientsBlock: true,
-        showStructuredSections: true,
-        subjectLabel: "主旨",
-        explanationLabel: "說明",
-        actionLabel: "辦法",
+        showStructuredSections: false,
+        subjectLabel: "",
+        explanationLabel: "",
+        actionLabel: "",
         signerLabel: "機關首長",
       }
     case "開會通知單":
@@ -354,23 +357,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
       <hr className="my-5 border-t border-[#E1E1E1]" />
 
       {/* ── Body sections ── */}
-      {!layout.showStructuredSections && state.docType === "便簽" ? (
-        /* 便簽：純條列，無主旨/說明/擬辦段落標籤 */
-        <section className="space-y-4">
-          {state.action_items.length > 0 || state.phase === "ready" ? (
-            <ListSection
-              items={state.action_items}
-              placeholder="點此新增條列項目..."
-              onChange={(items) => update({ action_items: items }, "action_items")}
-            />
-          ) : (
-            <PlaceholderBlock
-              unansweredCount={hook.unansweredRequired.length}
-              generating={state.phase === "generating"}
-            />
-          )}
-        </section>
-      ) : state.docType === "開會通知單" ? (
+      {state.docType === "開會通知單" ? (
         /* 開會通知單：主旨 + 開會欄位 */
         <section className="space-y-4">
           <SectionRow label={layout.subjectLabel}>
@@ -456,8 +443,24 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
             </SectionRow>
           </div>
         </section>
+      ) : !layout.showStructuredSections ? (
+        /* 便簽 / 令：純條列（單一陳述句）— 無主旨/說明/辦法段名 */
+        <section className="space-y-4">
+          {state.action_items.length > 0 || state.phase === "ready" ? (
+            <ListSection
+              items={state.action_items}
+              placeholder={state.docType === "令" ? "點此撰寫令文（動詞在前，例：訂定/修正/廢止/任免...）" : "點此新增條列項目..."}
+              onChange={(items) => update({ action_items: items }, "action_items")}
+            />
+          ) : (
+            <PlaceholderBlock
+              unansweredCount={hook.unansweredRequired.length}
+              generating={state.phase === "generating"}
+            />
+          )}
+        </section>
       ) : (
-        /* 函/書函/簽/公告/令：結構化 主旨/說明/辦法 段落 */
+        /* 函/書函/簽/公告：結構化 主旨/說明/辦法 段落 */
         <section className="space-y-4">
           <SectionRow label={layout.subjectLabel}>
             {state.subject_detail ? (
