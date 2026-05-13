@@ -207,7 +207,14 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
           value={docType}
           options={[...DOC_TYPES]}
           className="text-xl font-semibold text-[#1B2D6B]"
-          onChange={(v) => update({ docType: v as DocType }, "doc_type")}
+          onChange={(v) => {
+            const newType = v as DocType
+            update({ docType: newType }, "doc_type")
+            // 公告 default receiver: 公眾 (still editable)
+            if (newType === "公告" && !mergedIntent?.receiver) {
+              overrideIntent({ receiver: "公眾" }, "receiver")
+            }
+          }}
           recent={state.recentChange === "doc_type"}
         />
       </header>
@@ -239,7 +246,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
 
       {/* ── Meta block ── */}
       <dl className="mt-6 grid grid-cols-1 gap-y-2 text-sm">
-        {/* 受文者 — hidden for 簽 and 便簽; for 公告 may be 公眾 or specific targets */}
+        {/* 受文者 — hidden for 簽/便簽; 公告 defaults to 公眾, still editable */}
         {layout.showReceiver && (
           <div className="flex items-baseline gap-2">
             <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
@@ -249,7 +256,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
                 value={mergedIntent?.receiver ?? ""}
                 onChange={handleReceiver}
                 organTree={organTree}
-                placeholder={state.docType === "公告" ? "公眾（或點此選擇特定對象）" : "點此選擇受文者"}
+                placeholder="點此選擇受文者"
               />
             </dd>
           </div>
