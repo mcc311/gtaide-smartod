@@ -289,7 +289,10 @@ export function useDirectDocState() {
         }
         const docType: DocType = inferredDocType
 
-        setState((s) => ({ ...s, intent, docType, phase: "clarifying" }))
+        // Go straight to "generating" so the animated placeholder shows from
+        // the very first render — avoids a flash of static 待補充 during the
+        // parallel get-phrases / suggest-laws / retrieve window.
+        setState((s) => ({ ...s, intent, docType, phase: "generating" }))
 
         const senderDisplay = intent.sender_parent
           ? `${intent.sender_parent} > ${intent.sender}`
@@ -371,9 +374,8 @@ export function useDirectDocState() {
         // First agent turn: let the LLM decide whether to ask or draft.
         // Use locally-scoped values (intent, phrases, sugg, docType) — not state — to avoid
         // stale closures from setState calls earlier in this function.
-        // Flip to "generating" so PlaceholderBlock shows the loading animation while
-        // the first draft is in flight (response handler resets it to "ready").
-        setState((s) => ({ ...s, phase: "generating" }))
+        // (phase is already "generating" from parse-intent success — response handler
+        // resets it to "ready" on draft, or "clarifying" on ask-only.)
         try {
           const chatRes = await fetch("/api/chat-edit", {
             method: "POST",
