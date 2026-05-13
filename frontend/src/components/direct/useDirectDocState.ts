@@ -259,11 +259,13 @@ export function useDirectDocState() {
           ? findOrganPath(parsed.receiver, organTree)
           : null
 
-        // For internal doc types with empty receiver, default receiver to sender agency
+        // Receiver defaults: 簽/便簽 → sender agency itself; 公告 → 公眾 (field hidden)
         const inferredReceiver = parsed.receiver || (
           (parsed.doc_type === "簽" || parsed.doc_type === "便簽") && senderInfo
             ? senderInfo.name
-            : ""
+            : parsed.doc_type === "公告"
+              ? "公眾"
+              : ""
         )
 
         const intent: IntentResult = {

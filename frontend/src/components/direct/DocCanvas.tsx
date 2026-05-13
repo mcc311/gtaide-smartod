@@ -69,7 +69,9 @@ function layoutFor(docType: DocType): DocLayoutFlags {
       }
     case "公告":
       return {
-        showReceiver: true,
+        // 公告 typically broadcasts to 公眾 — hide the receiver field entirely.
+        // Specific-target cases (招標、公示送達) are rare; can be added later if needed.
+        showReceiver: false,
         showDocNumber: true,
         docNumberLabel: "發文字號",
         showSpeed: false,
@@ -239,7 +241,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
 
       {/* ── Meta block ── */}
       <dl className="mt-6 grid grid-cols-1 gap-y-2 text-sm">
-        {/* 受文者 — hidden for 簽 and 便簽; for 公告 may be 公眾 or specific targets */}
+        {/* 受文者 — hidden for 簽/便簽/公告 */}
         {layout.showReceiver && (
           <div className="flex items-baseline gap-2">
             <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
@@ -249,7 +251,7 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
                 value={mergedIntent?.receiver ?? ""}
                 onChange={handleReceiver}
                 organTree={organTree}
-                placeholder={state.docType === "公告" ? "公眾（或點此選擇特定對象）" : "點此選擇受文者"}
+                placeholder="點此選擇受文者"
               />
             </dd>
           </div>
