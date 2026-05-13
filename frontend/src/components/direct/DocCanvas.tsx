@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import type React from "react"
 import type { UseDirectDocStateReturn } from "./useDirectDocState"
 import type { DocType, OrganNode, IntentResult, PhraseResult } from "@/types"
@@ -20,6 +21,114 @@ const INNER_PHRASE_KEYS: Array<keyof PhraseResult["phrases"]> = [
   "經辦語",
 ]
 
+// ── Handbook-derived layout flags ────────────────────────────────────────────
+// Derived from 行政院文書處理手冊 per-doc-type field rules.
+type DocLayoutFlags = {
+  showReceiver: boolean
+  showDocNumber: boolean
+  docNumberLabel: string         // 預設「發文字號」，便簽改「公文號碼」
+  showSpeed: boolean
+  showAttachments: boolean
+  showRecipientsBlock: boolean   // 正本/副本
+  showStructuredSections: boolean // 便簽 = false（純條列）
+  subjectLabel: string           // 主旨 / 開會事由
+  explanationLabel: string       // 說明 / 依據
+  actionLabel: string            // 辦法 / 公告事項 / 擬辦
+  signerLabel: string            // 機關首長 / 簽辦人
+}
+
+function layoutFor(docType: DocType): DocLayoutFlags {
+  switch (docType) {
+    case "便簽":
+      return {
+        showReceiver: false,
+        showDocNumber: true,
+        docNumberLabel: "公文號碼",
+        showSpeed: false,
+        showAttachments: false,
+        showRecipientsBlock: false,
+        showStructuredSections: false,
+        subjectLabel: "",
+        explanationLabel: "",
+        actionLabel: "",
+        signerLabel: "簽辦人",
+      }
+    case "簽":
+      return {
+        showReceiver: false,
+        showDocNumber: false,
+        docNumberLabel: "發文字號",
+        showSpeed: false,
+        showAttachments: false,
+        showRecipientsBlock: false,
+        showStructuredSections: true,
+        subjectLabel: "主旨",
+        explanationLabel: "說明",
+        actionLabel: "擬辦",
+        signerLabel: "簽辦人",
+      }
+    case "公告":
+      return {
+        showReceiver: true,
+        showDocNumber: true,
+        docNumberLabel: "發文字號",
+        showSpeed: false,
+        showAttachments: true,
+        showRecipientsBlock: false,
+        showStructuredSections: true,
+        subjectLabel: "主旨",
+        explanationLabel: "依據",
+        actionLabel: "公告事項",
+        signerLabel: "機關首長",
+      }
+    case "令":
+      return {
+        showReceiver: true,
+        showDocNumber: true,
+        docNumberLabel: "發文字號",
+        showSpeed: false,
+        showAttachments: false,
+        showRecipientsBlock: true,
+        showStructuredSections: true,
+        subjectLabel: "主旨",
+        explanationLabel: "說明",
+        actionLabel: "辦法",
+        signerLabel: "機關首長",
+      }
+    case "開會通知單":
+      return {
+        showReceiver: true,
+        showDocNumber: true,
+        docNumberLabel: "發文字號",
+        showSpeed: true,
+        showAttachments: true,
+        showRecipientsBlock: true,
+        showStructuredSections: false,
+        subjectLabel: "開會事由",
+        explanationLabel: "說明",
+        actionLabel: "辦法",
+        signerLabel: "機關首長",
+      }
+    case "函":
+    case "書函":
+    default:
+      return {
+        showReceiver: true,
+        showDocNumber: true,
+        docNumberLabel: "發文字號",
+        showSpeed: true,
+        showAttachments: true,
+        showRecipientsBlock: true,
+        showStructuredSections: true,
+        subjectLabel: "主旨",
+        explanationLabel: "說明",
+        actionLabel: "辦法",
+        signerLabel: "機關首長",
+      }
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface DocCanvasProps {
   hook: UseDirectDocStateReturn
   organTree: OrganNode[]
@@ -27,6 +136,8 @@ interface DocCanvasProps {
 
 export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
   const { state, mergedIntent, update, overrideIntent } = hook
+
+  const layout = useMemo(() => layoutFor(state.docType), [state.docType])
 
   const handleSender = (info: OrganSelectInfo) => {
     overrideIntent(
@@ -126,19 +237,31 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
         )}
       </div>
 
+      {/* ── Meta block ── */}
       <dl className="mt-6 grid grid-cols-1 gap-y-2 text-sm">
-        <div className="flex items-baseline gap-2">
-          <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
-          <dd className="flex-1">
-            <OrganSelector
-              label="受文者"
-              value={mergedIntent?.receiver ?? ""}
-              onChange={handleReceiver}
-              organTree={organTree}
-              placeholder="點此選擇受文者"
-            />
-          </dd>
-        </div>
+        {/* 受文者 — hidden for 簽 and 便簽 */}
+        {layout.showReceiver && (
+          <div className="flex items-baseline gap-2">
+            <dt className="text-[#666] shrink-0 w-20">受文者：</dt>
+            <dd className="flex-1">
+              {state.docType === "公告" ? (
+                <span className="text-sm text-[#1B2D6B]">公眾</span>
+              ) : (
+                <OrganSelector
+                  label="受文者"
+                  value={mergedIntent?.receiver ?? ""}
+                  onChange={handleReceiver}
+                  organTree={organTree}
+                  placeholder="點此選擇受文者"
+                />
+              )}
+            </dd>
+          </div>
+        )}
+
+        {/* 發文日期 is always shown; 發文字號 is conditional.
+            便簽: only date + 公文號碼 in a 2-col row.
+            Others: 2-col row with date + doc_number, then speed on next row. */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div className="flex items-baseline gap-2">
             <dt className="text-[#666] shrink-0 w-20">發文日期：</dt>
@@ -151,39 +274,47 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
               />
             </dd>
           </div>
+          {layout.showDocNumber && (
+            <div className="flex items-baseline gap-2">
+              <dt className="text-[#666] shrink-0 w-20">{layout.docNumberLabel}：</dt>
+              <dd className="flex-1">
+                <Editable
+                  value={state.doc_number}
+                  placeholder="如：保普字第1150010234號"
+                  onChange={(v) => update({ doc_number: v }, "doc_number")}
+                  recent={state.recentChange === "doc_number"}
+                />
+              </dd>
+            </div>
+          )}
+          {layout.showSpeed && (
+            <div className="flex items-baseline gap-2">
+              <dt className="text-[#666] shrink-0 w-20">速別：</dt>
+              <dd className="flex-1">
+                <Pickable
+                  value={state.speed}
+                  options={["最速件", "速件", "普通件"]}
+                  onChange={(v) => update({ speed: v as "最速件" | "速件" | "普通件" }, "speed")}
+                  recent={state.recentChange === "speed"}
+                />
+              </dd>
+            </div>
+          )}
+        </div>
+
+        {/* 附件 — hidden for 簽/便簽/令 */}
+        {layout.showAttachments && (
           <div className="flex items-baseline gap-2">
-            <dt className="text-[#666] shrink-0 w-20">發文字號：</dt>
+            <dt className="text-[#666] shrink-0 w-20">附件：</dt>
             <dd className="flex-1">
-              <Editable
-                value={state.doc_number}
-                placeholder="如：保普字第1150010234號"
-                onChange={(v) => update({ doc_number: v }, "doc_number")}
-                recent={state.recentChange === "doc_number"}
+              <TagsInline
+                tags={state.attachments}
+                onChange={(t) => update({ attachments: t }, "attachments")}
+                placeholder="+ 附件"
               />
             </dd>
           </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-[#666] shrink-0 w-20">速別：</dt>
-            <dd className="flex-1">
-              <Pickable
-                value={state.speed}
-                options={["最速件", "速件", "普通件"]}
-                onChange={(v) => update({ speed: v as "最速件" | "速件" | "普通件" }, "speed")}
-                recent={state.recentChange === "speed"}
-              />
-            </dd>
-          </div>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <dt className="text-[#666] shrink-0 w-20">附件：</dt>
-          <dd className="flex-1">
-            <TagsInline
-              tags={state.attachments}
-              onChange={(t) => update({ attachments: t }, "attachments")}
-              placeholder="+ 附件"
-            />
-          </dd>
-        </div>
+        )}
       </dl>
 
       {state.phrases && (
@@ -217,30 +348,46 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
 
       <hr className="my-5 border-t border-[#E1E1E1]" />
 
-      <section className="space-y-4">
-        <SectionRow label={state.docType === "開會通知單" ? "開會事由" : "主旨"}>
-          {state.subject_detail ? (
-            <Editable
-              multiline
-              value={state.subject_detail}
-              onChange={(v) => update({ subject_detail: v }, "subject_detail")}
-              recent={state.recentChange === "subject_detail"}
-              className="text-sm leading-relaxed"
-            />
-          ) : state.phase === "ready" ? (
-            <Editable
-              multiline
-              value=""
-              placeholder="點此撰寫主旨..."
-              onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+      {/* ── Body sections ── */}
+      {!layout.showStructuredSections && state.docType === "便簽" ? (
+        /* 便簽：純條列，無主旨/說明/擬辦段落標籤 */
+        <section className="space-y-4">
+          {state.action_items.length > 0 || state.phase === "ready" ? (
+            <ListSection
+              items={state.action_items}
+              placeholder="點此新增條列項目..."
+              onChange={(items) => update({ action_items: items }, "action_items")}
             />
           ) : (
-            <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
+            <PlaceholderBlock
+              unansweredCount={hook.unansweredRequired.length}
+              generating={state.phase === "generating"}
+            />
           )}
-        </SectionRow>
-
-        {/* Meeting-specific fields — replace 說明/辦法 for 開會通知單 */}
-        {state.docType === "開會通知單" ? (
+        </section>
+      ) : state.docType === "開會通知單" ? (
+        /* 開會通知單：主旨 + 開會欄位 */
+        <section className="space-y-4">
+          <SectionRow label={layout.subjectLabel}>
+            {state.subject_detail ? (
+              <Editable
+                multiline
+                value={state.subject_detail}
+                onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+                recent={state.recentChange === "subject_detail"}
+                className="text-sm leading-relaxed"
+              />
+            ) : state.phase === "ready" ? (
+              <Editable
+                multiline
+                value=""
+                placeholder="點此撰寫開會事由..."
+                onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+              />
+            ) : (
+              <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
+            )}
+          </SectionRow>
           <div className="space-y-2">
             <SectionRow label="開會時間">
               <Editable
@@ -303,48 +450,59 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
               />
             </SectionRow>
           </div>
-        ) : (
-          <>
-            <SectionRow label={state.docType === "公告" ? "依據" : "說明"}>
-              {state.phase === "ready" || state.explanation_items.length > 0 ? (
-                <ListSection
-                  items={state.explanation_items}
-                  placeholder={state.docType === "公告" ? "點此新增依據..." : "點此新增說明事項..."}
-                  onChange={(items) => update({ explanation_items: items }, "explanation_items")}
-                />
-              ) : (
-                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
-              )}
-            </SectionRow>
+        </section>
+      ) : (
+        /* 函/書函/簽/公告/令：結構化 主旨/說明/辦法 段落 */
+        <section className="space-y-4">
+          <SectionRow label={layout.subjectLabel}>
+            {state.subject_detail ? (
+              <Editable
+                multiline
+                value={state.subject_detail}
+                onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+                recent={state.recentChange === "subject_detail"}
+                className="text-sm leading-relaxed"
+              />
+            ) : state.phase === "ready" ? (
+              <Editable
+                multiline
+                value=""
+                placeholder="點此撰寫主旨..."
+                onChange={(v) => update({ subject_detail: v }, "subject_detail")}
+              />
+            ) : (
+              <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
+            )}
+          </SectionRow>
 
-            <SectionRow
-              label={
-                state.docType === "公告"
-                  ? "公告事項"
-                  : state.docType === "簽" || state.docType === "便簽"
-                  ? "擬辦"
-                  : "辦法"
-              }
-            >
-              {state.phase === "ready" || state.action_items.length > 0 ? (
-                <ListSection
-                  items={state.action_items}
-                  placeholder="點此新增段落..."
-                  onChange={(items) => update({ action_items: items }, "action_items")}
-                />
-              ) : (
-                <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
-              )}
-            </SectionRow>
-          </>
-        )}
-      </section>
+          <SectionRow label={layout.explanationLabel}>
+            {state.phase === "ready" || state.explanation_items.length > 0 ? (
+              <ListSection
+                items={state.explanation_items}
+                placeholder={state.docType === "公告" ? "點此新增依據..." : "點此新增說明事項..."}
+                onChange={(items) => update({ explanation_items: items }, "explanation_items")}
+              />
+            ) : (
+              <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
+            )}
+          </SectionRow>
 
-      {/* Recipients (正本/副本) — only for doc types with formal recipients */}
-      {(state.docType === "函" ||
-        state.docType === "書函" ||
-        state.docType === "開會通知單" ||
-        state.docType === "令") && (
+          <SectionRow label={layout.actionLabel}>
+            {state.phase === "ready" || state.action_items.length > 0 ? (
+              <ListSection
+                items={state.action_items}
+                placeholder="點此新增段落..."
+                onChange={(items) => update({ action_items: items }, "action_items")}
+              />
+            ) : (
+              <PlaceholderBlock unansweredCount={hook.unansweredRequired.length} generating={state.phase === "generating"} />
+            )}
+          </SectionRow>
+        </section>
+      )}
+
+      {/* ── Recipients (正本/副本) ── */}
+      {layout.showRecipientsBlock && (
         <div className="mt-6 pt-3 border-t border-dashed border-[#E1E1E1] space-y-2">
           <SectionRow label="正本">
             <TagsInline
@@ -363,11 +521,10 @@ export default function DocCanvas({ hook, organTree }: DocCanvasProps) {
         </div>
       )}
 
+      {/* ── Footer ── */}
       <footer className="mt-8 text-right text-sm text-[#1B2D6B]">
         <div className="font-semibold">{mergedIntent?.sender || "—"}</div>
-        <div className="text-xs text-[#666] mt-1">
-          {state.docType === "簽" || state.docType === "便簽" ? "簽辦人" : "機關首長"}
-        </div>
+        <div className="text-xs text-[#666] mt-1">{layout.signerLabel}</div>
       </footer>
     </article>
   )

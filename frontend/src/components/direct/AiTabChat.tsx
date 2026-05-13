@@ -146,9 +146,7 @@ export default function AiTabChat({ hook }: AiTabChatProps) {
       <div className="mt-3 space-y-2">
         <div className="flex flex-wrap gap-1.5">
           {(() => {
-            const hasHadAgentTurn = hook.state.chatHistory.some(
-              (m) => m.role === "assistant" && m.content && !m.content.startsWith("已解析：")
-            )
+            const hasHadAgentTurn = hook.state.chatSessionId !== null
             const followups = hasHadAgentTurn ? hook.state.suggestedFollowups : QUICK_QUESTIONS
             return followups.map((q) => (
               <button

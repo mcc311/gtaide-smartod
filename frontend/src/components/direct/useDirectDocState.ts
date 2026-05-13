@@ -371,6 +371,9 @@ export function useDirectDocState() {
         // First agent turn: let the LLM decide whether to ask or draft.
         // Use locally-scoped values (intent, phrases, sugg, docType) — not state — to avoid
         // stale closures from setState calls earlier in this function.
+        // Flip to "generating" so PlaceholderBlock shows the loading animation while
+        // the first draft is in flight (response handler resets it to "ready").
+        setState((s) => ({ ...s, phase: "generating" }))
         try {
           const chatRes = await fetch("/api/chat-edit", {
             method: "POST",
@@ -429,15 +432,16 @@ export function useDirectDocState() {
                 { role: "assistant", content: assistantContent, options: assistantOptions },
               ]
             }
-            if (hasDraft) {
-              next.phase = "ready"
-            }
+            // Always exit "generating" so PlaceholderBlock animation stops and chat
+            // becomes interactive again. Draft → "ready"; ask-only → "clarifying".
+            next.phase = hasDraft ? "ready" : "clarifying"
             return next
           })
         } catch (err) {
           console.error(err)
           setState((s) => ({
             ...s,
+            phase: "clarifying",
             chatHistory: [
               ...s.chatHistory,
               { role: "assistant", content: "（錯誤：第一輪 AI 助理連線失敗，請重新整理頁面）" },
