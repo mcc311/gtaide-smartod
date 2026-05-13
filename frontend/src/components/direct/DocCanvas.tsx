@@ -71,6 +71,8 @@ function layoutFor(docType: DocType): DocLayoutFlags {
       return {
         // 公告 broadcasts to 公眾 — hide the receiver field (state already
         // defaults to「公眾」at parse-intent + docType-switch time).
+        // 手冊十七.(三).(1)：「公告刊載時不署機關首長職銜、姓名，免蓋用印信」—
+        // 草稿階段仍顯示首長以利簽核，footer 加註提醒刊載時應移除。
         showReceiver: false,
         showDocNumber: true,
         docNumberLabel: "發文字號",
@@ -81,7 +83,7 @@ function layoutFor(docType: DocType): DocLayoutFlags {
         subjectLabel: "主旨",
         explanationLabel: "依據",
         actionLabel: "公告事項",
-        signerLabel: "機關首長",
+        signerLabel: "機關首長（公告刊載時免署）",
       }
     case "令":
       // 手冊十七.(一)：令文不分段，動詞在前（訂定/修正/廢止/任免/遷調/獎懲），
