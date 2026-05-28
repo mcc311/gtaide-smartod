@@ -193,7 +193,18 @@ def load_index():
 
 
 def load_embeddings():
-    """Build embedding index. Separate from BM25 since it takes longer."""
+    """Build embedding index. Separate from BM25 since it takes longer.
+
+    Behavior:
+    - If cache size == corpus → fast load, no API calls.
+    - If cache < corpus → incremental rebuild with **checkpoint saves every
+      CHECKPOINT_EVERY docs** so partial progress survives uvicorn restarts.
+      (Previously the daemon background thread got killed mid-job on every
+      deploy, losing all progress and re-billing the next startup.)
+    - If env `RAG_DISABLE_EMBED_REBUILD=1` is set, skip rebuild entirely;
+      embedding search degrades to "no-op" and `retrieve()` falls back to
+      BM25 + gemma. Use this when you want to pause OpenRouter spend.
+    """
     global _embeddings, _embeddings_loaded
 
     if _embeddings_loaded:
@@ -217,32 +228,74 @@ def load_embeddings():
             logger.info(f"Loaded {len(_embeddings)} cached embeddings")
             return
         elif len(cached) < len(_documents):
-            # Incremental: reuse cached prefix, only embed the new docs at the tail.
-            # This relies on DATA_PATHS load order being stable — older sources first.
+            if os.getenv("RAG_DISABLE_EMBED_REBUILD") == "1":
+                logger.warning(
+                    f"Cache has {len(cached)} / {len(_documents)} embeddings. "
+                    "RAG_DISABLE_EMBED_REBUILD=1 → skipping rebuild; embedding "
+                    "search disabled (BM25 + gemma only)."
+                )
+                _embeddings = None
+                _embeddings_loaded = True
+                return
             n_new = len(_documents) - len(cached)
             logger.info(
-                f"Cache has {len(cached)} embeddings; appending {n_new} new docs incrementally"
+                f"Cache has {len(cached)} embeddings; appending {n_new} new docs "
+                f"incrementally with checkpoints"
             )
-            new_texts = [_search_text(doc) for doc in _documents[len(cached):]]
-            new_embeds = _get_embeddings_batch(new_texts)
-            _embeddings = np.concatenate([cached, new_embeds], axis=0)
-            np.save(cache_path, _embeddings)
+            CHECKPOINT_EVERY = 5000
+            buf: np.ndarray = cached.copy()
+            start = len(cached)
+            processed = 0
+            while processed < n_new:
+                chunk_end = min(processed + CHECKPOINT_EVERY, n_new)
+                chunk_texts = [
+                    _search_text(d)
+                    for d in _documents[start + processed : start + chunk_end]
+                ]
+                chunk_embeds = _get_embeddings_batch(chunk_texts)
+                buf = np.concatenate([buf, chunk_embeds], axis=0)
+                np.save(cache_path, buf)
+                processed = chunk_end
+                logger.info(
+                    f"Checkpoint saved: {len(buf)} / {len(_documents)} embeddings"
+                )
+            _embeddings = buf
             _embeddings_loaded = True
-            logger.info(f"Cache updated to {len(_embeddings)} embeddings")
+            logger.info(f"Incremental rebuild complete ({len(buf)} embeddings)")
             return
         else:
             logger.warning(
                 f"Cache size {len(cached)} > documents {len(_documents)}; full rebuild"
             )
 
-    logger.info(f"Building embedding index for {len(_documents)} documents (this may take a while)...")
-    texts = [_search_text(doc) for doc in _documents]
-    _embeddings = _get_embeddings_batch(texts)
-    _embeddings_loaded = True
+    if os.getenv("RAG_DISABLE_EMBED_REBUILD") == "1":
+        logger.warning(
+            "No embedding cache and RAG_DISABLE_EMBED_REBUILD=1 → skipping rebuild; "
+            "embedding search disabled (BM25 + gemma only)."
+        )
+        _embeddings = None
+        _embeddings_loaded = True
+        return
 
-    # Cache to disk
-    np.save(cache_path, _embeddings)
-    logger.info(f"Embedding index built and cached ({_embeddings.shape})")
+    logger.info(
+        f"Building embedding index for {len(_documents)} documents from scratch "
+        f"with checkpoints (this may take a while)..."
+    )
+    CHECKPOINT_EVERY = 5000
+    buf: np.ndarray | None = None
+    processed = 0
+    n_total = len(_documents)
+    while processed < n_total:
+        chunk_end = min(processed + CHECKPOINT_EVERY, n_total)
+        chunk_texts = [_search_text(d) for d in _documents[processed:chunk_end]]
+        chunk_embeds = _get_embeddings_batch(chunk_texts)
+        buf = chunk_embeds if buf is None else np.concatenate([buf, chunk_embeds], axis=0)
+        np.save(cache_path, buf)
+        processed = chunk_end
+        logger.info(f"Checkpoint saved: {len(buf)} / {n_total} embeddings")
+    _embeddings = buf
+    _embeddings_loaded = True
+    logger.info(f"Embedding index built and cached ({buf.shape if buf is not None else 'empty'})")
 
 
 def _bm25_search(query: str, top_k: int = 50) -> list[tuple[int, float]]:
